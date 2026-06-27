@@ -1,0 +1,8 @@
+# C:\Users\surya\.gemini\antigravity\scratch\trademaster\.gitignore
+.DS_Store
+node_modules/
+dist/
+*.log
+.env
+.vscode/
+.idea/
