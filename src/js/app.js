@@ -498,6 +498,9 @@ window.TradeMasterApp = (function() {
         </div>
       `;
     }
+
+    // Render upcoming IPO tracker table
+    renderUpcomingIPOs();
   }
 
   async function renderGlobalNewsSummary() {
@@ -785,6 +788,248 @@ window.TradeMasterApp = (function() {
     `;
   }
 
+  // IPO Dataset & Scoring Engine
+  const upcomingIPOs = [
+    {
+      symbol: 'PRDL',
+      name: 'PT Prodia Diagnostic Line Tbk',
+      sector: 'Healthcare',
+      price: '100 - 120',
+      underwriter: 'Sucor Sekuritas',
+      per: '10.3x - 12.3x',
+      lockup: '8 bln (Semua PS) + ESA 12 bln',
+      uwScore: 5.0,
+      valScore: 5.0,
+      lockupScore: 5.0,
+      reason: 'Underwriter top-tier + Valuasi sangat murah + Proteksi lock-up terketat.'
+    },
+    {
+      symbol: 'RANS',
+      name: 'PT Rans/Raffi Ahmad Tbk',
+      sector: 'Media & Ent',
+      price: '135 - 170',
+      underwriter: 'Trimegah Sekuritas',
+      per: '30x - 38x',
+      lockup: '8 bln (Standar POJK)',
+      uwScore: 4.5,
+      valScore: 2.5,
+      lockupScore: 4.0,
+      reason: 'Hype sangat tinggi (Raffi Ahmad) + Underwriter solid, namun valuasi premium.'
+    },
+    {
+      symbol: 'JELI',
+      name: 'PT Niramas Utama (Inaco)',
+      sector: 'Consumer',
+      price: '900 - 1.120',
+      underwriter: 'Sucor Sekuritas',
+      per: '25.2x (ROE 27%)',
+      lockup: 'Sukarela 12 bln (No POJK)',
+      uwScore: 5.0,
+      valScore: 3.5,
+      lockupScore: 2.5,
+      reason: 'Underwriter agresif + Brand Inaco kuat, namun tidak ada lock-up wajib POJK.'
+    },
+    {
+      symbol: 'JECX',
+      name: 'PT Nitrasanata Dharma Tbk',
+      sector: 'Healthcare',
+      price: '1.200 - 1.400',
+      underwriter: 'Trimegah Sekuritas',
+      per: '52.9x - 61.8x',
+      lockup: '12 bln (Pengendali)',
+      uwScore: 4.5,
+      valScore: 1.0,
+      lockupScore: 4.5,
+      reason: 'Di-back grup Emtek & lock-up panjang, namun valuasi terlalu mahal (PER > 50x).'
+    },
+    {
+      symbol: 'EMMI',
+      name: 'PT Esa Medika Mandiri Tbk',
+      sector: 'Healthcare',
+      price: '446 - 515',
+      underwriter: 'BRI Danareksa & INA',
+      per: '20x (ROE 25%)',
+      lockup: '8 bln (Standar POJK)',
+      uwScore: 3.5,
+      valScore: 3.5,
+      lockupScore: 4.0,
+      reason: 'Underwriter institusional stabil, profil fundamental & pertumbuhan laba sehat.'
+    },
+    {
+      symbol: 'BACH',
+      name: 'PT Bach Multi Global Tbk',
+      sector: 'Industrials',
+      price: '400 - 500',
+      underwriter: 'Erdikha Elit Sekuritas',
+      per: '10.5x - 13.1x',
+      lockup: '8 bln + Opsi GTP Djarum 51%',
+      uwScore: 2.5,
+      valScore: 5.0,
+      lockupScore: 4.5,
+      reason: 'Valuasi murah & potensi diakuisisi Grup Djarum, namun underwriter kurang agresif.'
+    }
+  ];
+
+  function renderUpcomingIPOs() {
+    const list = document.getElementById('stock-ipo-list');
+    if (!list) return;
+
+    list.innerHTML = upcomingIPOs.map(item => {
+      const score = Math.round(((item.uwScore + item.valScore + item.lockupScore) / 15) * 100);
+      let rec = 'HOLD';
+      let badgeClass = 'badge-warning';
+      if (score >= 85) { rec = 'STRONG BUY'; badgeClass = 'badge-success'; }
+      else if (score >= 72) { rec = 'BUY'; badgeClass = 'badge-success'; }
+      else if (score >= 60) { rec = 'SPEKULATIF'; badgeClass = 'badge-warning'; }
+      else { rec = 'HINDARI'; badgeClass = 'badge-danger'; }
+
+      return `
+        <tr>
+          <td style="font-weight: 700;">${item.symbol}</td>
+          <td>${item.sector}</td>
+          <td style="font-weight: bold;">Rp${item.price}</td>
+          <td>${item.underwriter}</td>
+          <td>${item.per}</td>
+          <td>${item.lockup}</td>
+          <td style="font-weight: bold; color: var(--primary);">${score}%</td>
+          <td>
+            <span class="badge ${badgeClass}" title="${item.reason}">${rec}</span>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  // Crypto Moonshot Scanner Logic
+  async function scanCryptoMoonshots() {
+    console.log('Scanning crypto moonshots...');
+    const list = document.getElementById('crypto-moonshot-list');
+    if (!list) return;
+
+    list.innerHTML = `<tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 24px;">Memindai seluruh pasar USDT di Binance... Mohon tunggu...</td></tr>`;
+
+    try {
+      const response = await fetch('https://api.binance.com/api/v3/ticker/24hr');
+      const tickers = await response.json();
+      
+      const usdPairs = tickers.filter(t => {
+        const sym = t.symbol;
+        return sym.endsWith('USDT') && 
+               !sym.includes('UP') && 
+               !sym.includes('DOWN') && 
+               !sym.includes('BUSD') && 
+               !sym.includes('USDC') && 
+               !sym.includes('FDUSD') && 
+               !sym.includes('DAI') && 
+               !sym.includes('EUR') && 
+               !sym.includes('TRY') && 
+               !sym.includes('RUB') &&
+               parseFloat(t.quoteVolume) > 1000000;
+      });
+
+      const scored = usdPairs.map(t => {
+        const last = parseFloat(t.lastPrice);
+        const high = parseFloat(t.highPrice);
+        const low = parseFloat(t.lowPrice);
+        const change = parseFloat(t.priceChangePercent);
+        const quoteVol = parseFloat(t.quoteVolume);
+
+        const rangePos = high === low ? 0.5 : (last - low) / (high - low);
+        
+        let score = 0;
+        score += rangePos * 45;
+
+        if (change >= 2.0 && change <= 12.0) {
+          score += 35;
+        } else if (change > 12.0 && change <= 20.0) {
+          score += 20;
+        } else if (change > 20.0) {
+          score += 5;
+        } else if (change >= 0.0 && change < 2.0) {
+          score += 15;
+        }
+
+        const volFactor = Math.min((quoteVol / 10000000) * 20, 20);
+        score += volFactor;
+
+        return {
+          symbol: t.symbol.replace('USDT', ''),
+          pair: t.symbol,
+          price: last,
+          volume: quoteVol,
+          change,
+          rangePos,
+          score: Math.round(score),
+          rsi: 'Loading...'
+        };
+      });
+
+      const topMoonshots = scored
+        .sort((a, b) => b.score - a.score)
+        .slice(0, 6);
+
+      list.innerHTML = topMoonshots.map(m => `
+        <tr id="moonshot-row-${m.symbol}">
+          <td style="font-weight: 700; display: flex; align-items: center; gap: 8px;">
+            <span class="logo-icon" style="width: 20px; height: 20px; font-size: 0.75rem; box-shadow: none;">${m.symbol[0]}</span>
+            ${m.symbol} <span style="font-size: 0.75rem; color: var(--text-muted);">/USDT</span>
+          </td>
+          <td style="font-weight: bold;">$${m.price.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 6})}</td>
+          <td>$${(m.volume / 1000000).toFixed(2)}M</td>
+          <td class="metric-change ${m.change >= 0 ? 'up' : 'down'}">${m.change >= 0 ? '▲ +' : '▼ '}${m.change.toFixed(2)}%</td>
+          <td id="moonshot-rsi-${m.symbol}">Calculated...</td>
+          <td>${(m.rangePos * 100).toFixed(0)}%</td>
+          <td style="font-weight: bold; color: var(--primary);">${m.score}%</td>
+          <td>
+            <span id="moonshot-badge-${m.symbol}" class="badge badge-warning">SCANNING...</span>
+          </td>
+        </tr>
+      `).join('');
+
+      topMoonshots.forEach(async (m) => {
+        try {
+          const candles = await TradeMasterAPI.getCryptoChartData(m.symbol, '1h', 30);
+          if (candles && candles.length >= 14) {
+            const rsiValues = TradeMasterTA.calculateRSI(candles, 14);
+            const currentRsi = rsiValues[rsiValues.length - 1];
+
+            const rsiEl = document.getElementById(`moonshot-rsi-${m.symbol}`);
+            const badgeEl = document.getElementById(`moonshot-badge-${m.symbol}`);
+            
+            if (rsiEl) rsiEl.innerText = currentRsi.toFixed(1);
+
+            if (badgeEl) {
+              let rec = 'NEUTRAL';
+              let badgeClass = 'badge-warning';
+
+              if (currentRsi >= 50 && currentRsi <= 65 && m.score >= 70) {
+                rec = 'BUY BREAKOUT';
+                badgeClass = 'badge-success';
+              } else if (currentRsi > 70) {
+                rec = 'OVERBOUGHT';
+                badgeClass = 'badge-danger';
+              } else if (currentRsi < 40) {
+                rec = 'OVERSOLD / ACCUM';
+                badgeClass = 'badge-info';
+              }
+
+              badgeEl.innerText = rec;
+              badgeEl.className = `badge ${badgeClass}`;
+            }
+          }
+        } catch (e) {
+          console.error(`Failed to scan dynamic indicators for ${m.symbol}:`, e);
+          const rsiEl = document.getElementById(`moonshot-rsi-${m.symbol}`);
+          if (rsiEl) rsiEl.innerText = 'N/A';
+        }
+      });
+
+    } catch (err) {
+      console.error('Failed to run moonshot scanner:', err);
+      list.innerHTML = `<tr><td colspan="8" style="text-align: center; color: var(--danger);">Gagal memindai pasar. Periksa koneksi internet Anda.</td></tr>`;
+    }
+  }
+
   // 4. Initial Navigation and Routing
   function navigateTo(pageId, assetSymbol = null) {
     console.log(`Navigating to page: ${pageId}`);
@@ -882,7 +1127,8 @@ window.TradeMasterApp = (function() {
   return {
     init,
     navigateTo,
-    state
+    state,
+    scanCryptoMoonshots
   };
 })();
 
