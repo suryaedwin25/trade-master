@@ -1681,6 +1681,8 @@ window.TradeMasterApp = (function() {
       { name: 'Timothy Ronald', holdings: ['BBRI', 'GOTO'], sector: 'Growth & Aggressive Allocation (>1% stake)', status: 'ACCUMULATING', pnl: 42 },
       { name: 'Belvin Tannadi', holdings: ['BRMS', 'MEDC'], sector: 'Swing / Commodities (>1% stake swing)', status: 'ACTIVE SWING', pnl: 15 },
       { name: 'Andri Hakim', holdings: ['BBRI', 'GOTO', 'TLKM'], sector: 'Tech & Growth (>1% blockholder)', status: 'ACCUMULATING', pnl: 12 },
+      { name: 'David Noah', holdings: ['BRMS', 'ADRO', 'MEDC'], sector: 'Momentum / Volume Breakout (>1% stake)', status: 'ACTIVE SWING', pnl: 25 },
+      { name: 'Founder Remora', holdings: ['BUMI', 'DEWA', 'BRMS'], sector: 'Systematic Swing / Scalping (>1% stake)', status: 'ACTIVE SCALPING', pnl: 35 },
       { name: 'Leon Hartono', holdings: ['BBCA', 'BBRI', 'GOTO'], sector: 'Macro & Tech leader (>1% blockholder)', status: 'HOLDING', pnl: 18 },
       { name: 'Anthoni Salim', holdings: ['BUMI', 'DNET', 'META'], sector: 'Grup Salim (Konsumer & Infrastruktur)', status: 'HOLDING', pnl: 32 },
       { name: 'Hermanto Tanoko', holdings: ['CLEO', 'AVIA', 'PEVE'], sector: 'Tan Corp (Consumer Goods & Paint)', status: 'HOLDING', pnl: 48 },
