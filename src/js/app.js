@@ -7,6 +7,8 @@ window.TradeMasterApp = (function() {
     activePage: 'dashboard',
     crypto: {
       selected: 'BTC',
+      exchange: 'Binance',
+      cryptoMode: 'CEX',
       chartInterval: '1d',
       activeIndicators: ['EMA9', 'EMA21'], // defaults
       chartData: [],
@@ -14,6 +16,7 @@ window.TradeMasterApp = (function() {
       priceChange: 0,
       trades: [],
       wsConnection: null,
+      pollInterval: null, // to handle polling for non-Binance exchange price updates
       chartInstance: null,
       indicatorChartInstance: null,
       candlestickSeries: null,
@@ -331,22 +334,32 @@ window.TradeMasterApp = (function() {
   async function renderCryptoPage() {
     console.log('Rendering Crypto Terminal...');
     const symbol = state.crypto.selected;
+    const exchange = state.crypto.exchange || 'Binance';
     
     // Set headers
-    document.getElementById('crypto-title').innerText = `${symbol}/USDT`;
+    document.getElementById('crypto-title').innerText = `${symbol}/USDT (${exchange})`;
     
-    // Set up selector active asset
+    // Set up selectors
     const select = document.getElementById('crypto-select');
     if (select) select.value = symbol;
+
+    const exchangeSelect = document.getElementById('exchange-select');
+    if (exchangeSelect) exchangeSelect.value = exchange;
+
+    // Clear old poll intervals
+    if (state.crypto.pollInterval) {
+      clearInterval(state.crypto.pollInterval);
+      state.crypto.pollInterval = null;
+    }
 
     // Initialize Chart
     const chart = initMainChart('crypto-chart-pane', 'crypto');
     
-    // Fetch Chart Data
-    const data = await TradeMasterAPI.getCryptoChartData(symbol, state.crypto.chartInterval);
+    // Fetch Chart Data using the selected exchange
+    const data = await TradeMasterAPI.getCryptoChartData(symbol, state.crypto.chartInterval, 150, exchange);
     state.crypto.chartData = data;
     
-    if (state.crypto.candlestickSeries) {
+    if (state.crypto.candlestickSeries && data.length > 0) {
       state.crypto.candlestickSeries.setData(data);
       state.crypto.chartInstance.timeScale().fitContent();
     }
@@ -390,41 +403,103 @@ window.TradeMasterApp = (function() {
       `;
     }
 
-    // Connect to Live WebSocket for Trades
+    // Connect to Live Trades/Feeds
     state.crypto.trades = [];
     const tradesContainer = document.getElementById('crypto-trades-list');
-    
-    // Setup fallback live simulated price updates if ws fails, or directly stream ws
-    TradeMasterAPI.connectCryptoWS(symbol, (trade) => {
-      // Keep only last 15 trades
-      state.crypto.trades.unshift(trade);
-      if (state.crypto.trades.length > 15) state.crypto.trades.pop();
 
-      // Update ticker real-time price info
-      state.crypto.livePrice = trade.price;
-      const priceText = document.getElementById('crypto-live-price');
-      if (priceText) {
-        priceText.innerText = `$${trade.price.toLocaleString()}`;
-        priceText.style.color = trade.isBuyerMaker ? 'var(--danger)' : 'var(--success)';
+    if (exchange === 'Binance') {
+      // Use Binance WebSocket for real-time order book stream
+      TradeMasterAPI.connectCryptoWS(symbol, (trade) => {
+        state.crypto.trades.unshift(trade);
+        if (state.crypto.trades.length > 15) state.crypto.trades.pop();
+
+        state.crypto.livePrice = trade.price;
+        const priceText = document.getElementById('crypto-live-price');
+        if (priceText) {
+          priceText.innerText = `$${trade.price.toLocaleString()}`;
+          priceText.style.color = trade.isBuyerMaker ? 'var(--danger)' : 'var(--success)';
+        }
+
+        if (tradesContainer) {
+          tradesContainer.innerHTML = state.crypto.trades.map(t => `
+            <div class="trade-row">
+              <span class="trade-price ${t.isBuyerMaker ? 'sell' : 'buy'}">$${t.price.toLocaleString()}</span>
+              <span>${t.quantity.toFixed(4)}</span>
+              <span style="color: var(--text-dark); font-size: 0.75rem;">${new Date(t.time).toLocaleTimeString()}</span>
+            </div>
+          `).join('');
+        }
+
+        const topCrypto = document.getElementById('top-crypto-ticker');
+        if (topCrypto) {
+          topCrypto.innerHTML = `<span class="ticker-label">${symbol}:</span> <span class="ticker-val up">$${trade.price.toLocaleString()}</span>`;
+        }
+      });
+    } else {
+      // Close CEX Binance WebSocket if open
+      if (state.crypto.wsConnection) {
+        state.crypto.wsConnection.close();
+        state.crypto.wsConnection = null;
       }
 
-      // Render trade row
+      // Initial price fetch for Bybit/Gate.io
+      const initialTicker = await TradeMasterAPI.getCryptoLiveTicker(symbol, exchange);
+      if (initialTicker) {
+        document.getElementById('crypto-live-price').innerText = `$${initialTicker.price.toLocaleString()}`;
+        const topCrypto = document.getElementById('top-crypto-ticker');
+        if (topCrypto) {
+          topCrypto.innerHTML = `<span class="ticker-label">${symbol}:</span> <span class="ticker-val up">$${initialTicker.price.toLocaleString()}</span>`;
+        }
+      }
+
       if (tradesContainer) {
-        tradesContainer.innerHTML = state.crypto.trades.map(t => `
-          <div class="trade-row">
-            <span class="trade-price ${t.isBuyerMaker ? 'sell' : 'buy'}">$${t.price.toLocaleString()}</span>
-            <span>${t.quantity.toFixed(4)}</span>
-            <span style="color: var(--text-dark); font-size: 0.75rem;">${new Date(t.time).toLocaleTimeString()}</span>
-          </div>
-        `).join('');
+        tradesContainer.innerHTML = '<tr><td colspan="3" style="text-align: center; color: var(--text-dark); padding: 20px;">Streaming Live via 2s Polling...</td></tr>';
       }
 
-      // Add ticker item to main header top bar
-      const topCrypto = document.getElementById('top-crypto-ticker');
-      if (topCrypto) {
-        topCrypto.innerHTML = `<span class="ticker-label">${symbol}:</span> <span class="ticker-val up">$${trade.price.toLocaleString()}</span>`;
-      }
-    });
+      // Start Polling loop (every 2 seconds) to simulate live trading tick updates
+      state.crypto.pollInterval = setInterval(async () => {
+        const ticker = await TradeMasterAPI.getCryptoLiveTicker(symbol, exchange);
+        if (ticker) {
+          state.crypto.livePrice = ticker.price;
+          const priceText = document.getElementById('crypto-live-price');
+          
+          let color = 'var(--text-main)';
+          let isSell = Math.random() > 0.5;
+          if (priceText) {
+            const oldPrice = parseFloat(priceText.innerText.replace('$', '').replace(/,/g, ''));
+            if (ticker.price > oldPrice) { color = 'var(--success)'; isSell = false; }
+            else if (ticker.price < oldPrice) { color = 'var(--danger)'; isSell = true; }
+            priceText.innerText = `$${ticker.price.toLocaleString()}`;
+            priceText.style.color = color;
+          }
+
+          // Simulate a live trade row to keep the terminal feeling "alive"
+          const simulatedTrade = {
+            price: ticker.price,
+            quantity: Math.random() * 2 + 0.01,
+            time: Date.now(),
+            isBuyerMaker: isSell
+          };
+          state.crypto.trades.unshift(simulatedTrade);
+          if (state.crypto.trades.length > 12) state.crypto.trades.pop();
+
+          if (tradesContainer) {
+            tradesContainer.innerHTML = state.crypto.trades.map(t => `
+              <div class="trade-row">
+                <span class="trade-price ${t.isBuyerMaker ? 'sell' : 'buy'}">$${t.price.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 4})}</span>
+                <span>${t.quantity.toFixed(4)}</span>
+                <span style="color: var(--text-dark); font-size: 0.75rem;">${new Date(t.time).toLocaleTimeString()}</span>
+              </div>
+            `).join('');
+          }
+
+          const topCrypto = document.getElementById('top-crypto-ticker');
+          if (topCrypto) {
+            topCrypto.innerHTML = `<span class="ticker-label">${symbol}:</span> <span class="ticker-val up">$${ticker.price.toLocaleString()}</span>`;
+          }
+        }
+      }, 2500);
+    }
   }
 
   async function renderStocksPage() {
@@ -1030,31 +1105,45 @@ window.TradeMasterApp = (function() {
     }
   }
 
+  // DEX Hot Watchlist Dataset
+  const hotDEXTokens = [
+    { symbol: 'WIF', name: 'dogwifhat', address: 'EKpQGSJtjMFqG1Aea4zXCrG5ZG9zpTaR71BYmUAgpump', network: 'solana' },
+    { symbol: 'POPCAT', name: 'Popcat', address: '7GCihmAZ8FB6xMCp5m1APH868BdbanapKKuB9vvtpxc5', network: 'solana' },
+    { symbol: 'BONK', name: 'Bonk', address: 'DezXAZ8z7PnrnRJjz3wX4mRe9SGS931w15po1kGBAzt4', network: 'solana' },
+    { symbol: 'DEGEN', name: 'Degen', address: '0x4ed4e862860bedd9a605b4b4c659d5b4149fa088', network: 'base' },
+    { symbol: 'BRETT', name: 'Brett', address: '0x532f27544282a3546cf5570c62900d5eac1e8b21', network: 'base' },
+    { symbol: 'MEW', name: 'cat in a dogs world', address: 'MEW1gQWJ3nEXg2qgX8DGLqcVQJGsiRuTy8gYkVu2pump', network: 'solana' }
+  ];
+
   // DEX Terminal Mode Toggles & DexScreener Fetcher
   function setCryptoMode(mode) {
     state.cryptoMode = mode;
     
     const cexBtn = document.getElementById('btn-cex-mode');
     const dexBtn = document.getElementById('btn-dex-mode');
-    const cryptoSelect = document.getElementById('crypto-select');
+    const cexSelectors = document.getElementById('cex-selectors');
     const dexInput = document.getElementById('dex-input-container');
     const cexChartControls = document.getElementById('cex-chart-controls');
     const cexChartPane = document.getElementById('crypto-chart-pane');
     const subChartPane = document.getElementById('crypto-sub-chart');
     const dexChartPane = document.getElementById('dex-chart-pane');
+    const cexTradesCard = document.getElementById('cex-trades-card');
+    const dexWatchlistCard = document.getElementById('dex-watchlist-card');
     const titleEl = document.getElementById('crypto-title');
     const subtitleEl = document.getElementById('crypto-subtitle');
 
     if (mode === 'CEX') {
       if (cexBtn) cexBtn.classList.add('active');
       if (dexBtn) dexBtn.classList.remove('active');
-      if (cryptoSelect) cryptoSelect.style.display = 'block';
+      if (cexSelectors) cexSelectors.style.display = 'flex';
       if (dexInput) dexInput.style.display = 'none';
       if (cexChartControls) cexChartControls.style.display = 'flex';
       if (cexChartPane) cexChartPane.style.display = 'block';
       if (dexChartPane) dexChartPane.style.display = 'none';
+      if (cexTradesCard) cexTradesCard.style.display = 'block';
+      if (dexWatchlistCard) dexWatchlistCard.style.display = 'none';
       
-      titleEl.innerText = `${state.crypto.selected}/USDT`;
+      titleEl.innerText = `${state.crypto.selected}/USDT (${state.crypto.exchange})`;
       subtitleEl.innerText = 'Real-time charts streaming directly via Binance WebSocket API.';
       
       // Reload CEX Chart
@@ -1062,33 +1151,61 @@ window.TradeMasterApp = (function() {
     } else {
       if (cexBtn) cexBtn.classList.remove('active');
       if (dexBtn) dexBtn.classList.add('active');
-      if (cryptoSelect) cryptoSelect.style.display = 'none';
+      if (cexSelectors) cexSelectors.style.display = 'none';
       if (dexInput) dexInput.style.display = 'flex';
       if (cexChartControls) cexChartControls.style.display = 'none';
       if (cexChartPane) cexChartPane.style.display = 'none';
       if (subChartPane) subChartPane.style.display = 'none';
       if (dexChartPane) dexChartPane.style.display = 'block';
+      if (cexTradesCard) cexTradesCard.style.display = 'none';
+      if (dexWatchlistCard) dexWatchlistCard.style.display = 'block';
 
       titleEl.innerText = 'DEX Token Scanner';
       subtitleEl.innerText = 'Decentralized Exchange token tracker powered by DexScreener API.';
 
-      // Close Binance WS
+      // Close Binance WS / Polling
       if (state.crypto.wsConnection) {
         state.crypto.wsConnection.close();
         state.crypto.wsConnection = null;
       }
+      if (state.crypto.pollInterval) {
+        clearInterval(state.crypto.pollInterval);
+        state.crypto.pollInterval = null;
+      }
       
-      // Clear trades list & orderbook
-      const tradesContainer = document.getElementById('crypto-trades-list');
-      if (tradesContainer) tradesContainer.innerHTML = '<tr><td colspan="3" style="text-align: center; color: var(--text-dark);">DEX Mode: WebSocket orderbook disabled.</td></tr>';
-      
-      document.getElementById('crypto-live-price').innerText = '$0.00';
-      document.getElementById('crypto-signal-box').innerHTML = `
-        <div style="text-align: center; color: var(--text-muted);">
-          Masukkan Contract Address token di atas untuk menganalisis sinyal & chart DEX.
-        </div>
-      `;
+      // Render Hot DEX watchlist buttons
+      const buttonsContainer = document.getElementById('dex-watchlist-buttons');
+      if (buttonsContainer) {
+        buttonsContainer.innerHTML = hotDEXTokens.map(t => `
+          <button class="btn-indicator" style="text-align: left; width: 100%; display: flex; justify-content: space-between; padding: 10px; margin: 0;" onclick="TradeMasterApp.selectDEXToken('${t.symbol}', '${t.address}')">
+            <span style="font-weight:bold; color:var(--text-main);">${t.symbol}</span>
+            <span style="color:var(--text-muted); font-size:0.75rem;">${t.network.toUpperCase()}</span>
+          </button>
+        `).join('');
+      }
+
+      // Automatically load the first DEX token (dogwifhat)
+      selectDEXToken(hotDEXTokens[0].symbol, hotDEXTokens[0].address);
     }
+  }
+
+  function selectDEXToken(symbol, address) {
+    const input = document.getElementById('dex-address-input');
+    if (input) {
+      input.value = address;
+    }
+    
+    // Highlight active button in watchlist
+    document.querySelectorAll('#dex-watchlist-buttons button').forEach(btn => {
+      btn.style.borderColor = 'var(--card-border)';
+      btn.style.background = 'rgba(255,255,255,0.03)';
+      if (btn.innerText.includes(symbol)) {
+        btn.style.borderColor = 'var(--primary)';
+        btn.style.background = 'rgba(108, 92, 231, 0.15)';
+      }
+    });
+
+    searchDEXToken();
   }
 
   async function searchDEXToken() {
@@ -1228,10 +1345,16 @@ window.TradeMasterApp = (function() {
   function navigateTo(pageId, assetSymbol = null) {
     console.log(`Navigating to page: ${pageId}`);
     
-    // Stop WS if leaving crypto page
-    if (state.activePage === 'crypto' && pageId !== 'crypto' && state.crypto.wsConnection) {
-      state.crypto.wsConnection.close();
-      state.crypto.wsConnection = null;
+    // Stop WS / Polling if leaving crypto page
+    if (state.activePage === 'crypto' && pageId !== 'crypto') {
+      if (state.crypto.wsConnection) {
+        state.crypto.wsConnection.close();
+        state.crypto.wsConnection = null;
+      }
+      if (state.crypto.pollInterval) {
+        clearInterval(state.crypto.pollInterval);
+        state.crypto.pollInterval = null;
+      }
     }
 
     // Update active nav items in UI
@@ -1283,6 +1406,15 @@ window.TradeMasterApp = (function() {
       });
     }
 
+    // 2b. CEX Exchange selector handler
+    const exchangeSelect = document.getElementById('exchange-select');
+    if (exchangeSelect) {
+      exchangeSelect.addEventListener('change', (e) => {
+        state.crypto.exchange = e.target.value;
+        renderCryptoPage();
+      });
+    }
+
     // 3. Stock selector handler
     const stockSelect = document.getElementById('stock-select');
     if (stockSelect) {
@@ -1324,7 +1456,8 @@ window.TradeMasterApp = (function() {
     state,
     scanCryptoMoonshots,
     setCryptoMode,
-    searchDEXToken
+    searchDEXToken,
+    selectDEXToken
   };
 })();
 

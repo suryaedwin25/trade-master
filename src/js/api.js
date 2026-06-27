@@ -109,9 +109,51 @@ window.TradeMasterAPI = (function() {
       return ws;
     },
 
-    // 3. Crypto API - Historical Candlestick data for Charts
-    async getCryptoChartData(symbol, interval = '1d', limit = 150) {
+    // 3. Crypto API - Historical Candlestick data for Charts (Binance, Bybit, Gate.io)
+    async getCryptoChartData(symbol, interval = '1d', limit = 150, exchange = 'Binance') {
       const pair = symbol.toUpperCase() + 'USDT';
+      
+      if (exchange === 'Bybit') {
+        const bybitInterval = interval === '1d' ? 'D' : '60';
+        const url = `https://api.bybit.com/v5/market/kline?category=linear&symbol=${pair}&interval=${bybitInterval}&limit=${limit}`;
+        try {
+          const data = await fetchJSON(url);
+          const rawList = data.result.list || [];
+          // Bybit returns newest first, reverse it for charting
+          return [...rawList].reverse().map(item => ({
+            time: parseInt(item[0]) / 1000,
+            open: parseFloat(item[1]),
+            high: parseFloat(item[2]),
+            low: parseFloat(item[3]),
+            close: parseFloat(item[4]),
+            volume: parseFloat(item[5])
+          }));
+        } catch (err) {
+          console.error(`Failed to fetch Bybit chart data for ${symbol}:`, err);
+          return [];
+        }
+      } 
+      
+      if (exchange === 'Gate.io') {
+        const gateInterval = interval === '1d' ? '1d' : '1h';
+        const url = `https://api.gateio.ws/api/v4/spot/candlesticks?currency_pair=${symbol.toUpperCase()}_USDT&limit=${limit}&interval=${gateInterval}`;
+        try {
+          const data = await fetchJSON(url);
+          return data.map(item => ({
+            time: parseInt(item[0]), // Already in seconds
+            open: parseFloat(item[5]),
+            high: parseFloat(item[3]),
+            low: parseFloat(item[4]),
+            close: parseFloat(item[2]),
+            volume: parseFloat(item[1])
+          }));
+        } catch (err) {
+          console.error(`Failed to fetch Gate.io chart data for ${symbol}:`, err);
+          return [];
+        }
+      }
+
+      // Default: Binance
       const url = `https://api.binance.com/api/v3/klines?symbol=${pair}&interval=${interval}&limit=${limit}`;
       try {
         const data = await fetchJSON(url);
@@ -124,8 +166,56 @@ window.TradeMasterAPI = (function() {
           volume: parseFloat(item[5])
         }));
       } catch (err) {
-        console.error(`Failed to fetch crypto chart data for ${symbol}:`, err);
+        console.error(`Failed to fetch Binance chart data for ${symbol}:`, err);
         return [];
+      }
+    },
+
+    // 3b. Crypto API - Fetch single live ticker price (for non-websocket feeds or initial loads)
+    async getCryptoLiveTicker(symbol, exchange = 'Binance') {
+      const pair = symbol.toUpperCase() + 'USDT';
+      
+      if (exchange === 'Bybit') {
+        const url = `https://api.bybit.com/v5/market/tickers?category=linear&symbol=${pair}`;
+        try {
+          const data = await fetchJSON(url);
+          const item = data.result.list[0];
+          return {
+            price: parseFloat(item.lastPrice),
+            change: parseFloat(item.price24hPcnt) * 100 // Bybit returns fraction e.g. 0.02
+          };
+        } catch (e) {
+          console.error('Failed to fetch Bybit ticker:', e);
+          return null;
+        }
+      }
+      
+      if (exchange === 'Gate.io') {
+        const url = `https://api.gateio.ws/api/v4/spot/tickers?currency_pair=${symbol.toUpperCase()}_USDT`;
+        try {
+          const data = await fetchJSON(url);
+          const item = data[0];
+          return {
+            price: parseFloat(item.last),
+            change: parseFloat(item.change_percentage)
+          };
+        } catch (e) {
+          console.error('Failed to fetch Gate.io ticker:', e);
+          return null;
+        }
+      }
+
+      // Default: Binance
+      const url = `https://api.binance.com/api/v3/ticker/24hr?symbol=${pair}`;
+      try {
+        const data = await fetchJSON(url);
+        return {
+          price: parseFloat(data.lastPrice),
+          change: parseFloat(data.priceChangePercent)
+        };
+      } catch (e) {
+        console.error('Failed to fetch Binance ticker:', e);
+        return null;
       }
     },
 
