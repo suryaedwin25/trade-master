@@ -24,10 +24,12 @@ window.TradeMasterAPI = (function() {
   }
 
   // Fetch with Cache and optional CORS Proxy
-  async function fetchJSON(url, useProxy = false) {
+  async function fetchJSON(url, useProxy = false, skipCache = false) {
     const cacheKey = `cache_${url}`;
-    const cached = getCachedData(cacheKey);
-    if (cached) return cached;
+    if (!skipCache) {
+      const cached = getCachedData(cacheKey);
+      if (cached) return cached;
+    }
 
     const fetchUrl = useProxy ? `${CORS_PROXY}${encodeURIComponent(url)}` : url;
     const response = await fetch(fetchUrl);
@@ -41,7 +43,9 @@ window.TradeMasterAPI = (function() {
       result = await response.json();
     }
     
-    setCachedData(cacheKey, result);
+    if (!skipCache) {
+      setCachedData(cacheKey, result);
+    }
     return result;
   }
 
@@ -222,9 +226,9 @@ window.TradeMasterAPI = (function() {
     // 4. Saham IDX API - Get Historical Stock Price (Yahoo Finance via Proxy)
     async getIDXChartData(symbol, range = '3mo', interval = '1d') {
       const ticker = `${symbol.toUpperCase()}.JK`;
-      const url = `https://query1.finance.yahoo.com/v8/finance/chart/${ticker}?range=${range}&interval=${interval}`;
+      const url = `https://query1.finance.yahoo.com/v8/finance/chart/${ticker}?range=${range}&interval=${interval}&_nocache=${Date.now()}`;
       try {
-        const data = await fetchJSON(url, true);
+        const data = await fetchJSON(url, true, true); // skipCache = true
         const result = data.chart.result[0];
         const timestamps = result.timestamp;
         const indicators = result.indicators.quote[0];
@@ -246,9 +250,9 @@ window.TradeMasterAPI = (function() {
     // 4b. Saham IDX API - Get current quotes for multiple stocks in a single request
     async getIDXQuotes(symbols) {
       const tickers = symbols.map(s => `${s.toUpperCase()}.JK`).join(',');
-      const url = `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${tickers}`;
+      const url = `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${tickers}&_nocache=${Date.now()}`;
       try {
-        const data = await fetchJSON(url, true);
+        const data = await fetchJSON(url, true, true); // skipCache = true
         return data.quoteResponse.result.map(item => ({
           symbol: item.symbol.replace('.JK', ''),
           price: item.regularMarketPrice,

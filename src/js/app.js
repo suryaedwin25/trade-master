@@ -514,8 +514,8 @@ window.TradeMasterApp = (function() {
     // Render upcoming IPO tracker table
     renderUpcomingIPOs();
 
-    // Render Whale stock accumulation leaderboard
-    renderWhaleStocksLeaderboard();
+    // Render Broker portfolio accumulation tracker
+    renderBrokerAccumulationTracker();
   }
 
   async function renderGlobalNewsSummary() {
@@ -1732,32 +1732,30 @@ window.TradeMasterApp = (function() {
     }
   }
 
-  // Render Whale Stock Accumulation Leaderboard (Top accumulated stocks on IDX)
-  function renderWhaleStocksLeaderboard() {
-    const list = document.getElementById('whale-accumulated-stock-list');
+  // Render Broker Accumulation Tracker (Portfolio of Top Brokers)
+  function renderBrokerAccumulationTracker() {
+    const list = document.getElementById('broker-accumulation-list');
     if (!list) return;
 
-    const topAccumulated = [
-      { symbol: 'BBRI', avgEntry: 4180, netBuy: 240.5, pnl: 4.8 },
-      { symbol: 'BMRI', avgEntry: 6050, netBuy: 182.2, pnl: 3.5 },
-      { symbol: 'BRMS', avgEntry: 168, netBuy: 45.8, pnl: 14.2 },
-      { symbol: 'TLKM', avgEntry: 3220, netBuy: -82.4, pnl: -2.1 },
-      { symbol: 'GOTO', avgEntry: 52, netBuy: 22.5, pnl: 5.8 }
+    const brokerAccumulation = [
+      { code: 'AK', name: 'UBS Sekuritas', stock: 'BBRI', netBuy: 240.5, avgEntry: 4180 },
+      { code: 'RX', name: 'Macquarie', stock: 'BMRI', netBuy: 182.2, avgEntry: 6050 },
+      { code: 'CS', name: 'Credit Suisse', stock: 'BRMS', netBuy: 45.8, avgEntry: 168 },
+      { code: 'KZ', name: 'CLSA Sekuritas', stock: 'BBCA', netBuy: 190.1, avgEntry: 10120 },
+      { code: 'YP', name: 'Mirae Asset (Ritel)', stock: 'GOTO', netBuy: 22.5, avgEntry: 52 },
+      { code: 'PD', name: 'Indo Premier (Ritel)', stock: 'BUMI', netBuy: 15.4, avgEntry: 85 }
     ];
 
-    list.innerHTML = topAccumulated.map(s => {
-      const pnlColor = s.pnl >= 0 ? 'var(--success)' : 'var(--danger)';
-      const pnlText = `${s.pnl >= 0 ? '+' : ''}${s.pnl.toFixed(1)}%`;
-      
-      const netBuyColor = s.netBuy >= 0 ? 'var(--success)' : 'var(--danger)';
-      const netBuyText = `${s.netBuy >= 0 ? '+' : ''}Rp${Math.abs(s.netBuy).toFixed(1)}B`;
-
+    list.innerHTML = brokerAccumulation.map(b => {
+      const isRetail = b.code === 'YP' || b.code === 'PD';
       return `
-        <tr style="cursor: pointer;" onclick="TradeMasterApp.navigateTo('stocks', '${s.symbol}')" title="Klik untuk menganalisis ${s.symbol} secara detail">
-          <td style="font-weight: 700; color: var(--primary);">${s.symbol}</td>
-          <td style="font-weight: bold;">Rp${s.avgEntry.toLocaleString()}</td>
-          <td style="font-weight: bold; color: ${netBuyColor};">${netBuyText}</td>
-          <td style="font-weight: bold; color: ${pnlColor};">${pnlText}</td>
+        <tr style="cursor: pointer;" onclick="TradeMasterApp.navigateTo('stocks', '${b.stock}')" title="Klik untuk melacak & memuat saham ${b.stock} ke analisis utama">
+          <td style="font-weight: 700;">
+            <span class="badge ${isRetail ? 'badge-warning' : 'badge-success'}" style="font-size:0.7rem; padding: 2px 6px;">${b.code}</span>
+          </td>
+          <td style="font-weight: bold; color: var(--primary);">${b.stock}</td>
+          <td style="font-weight: bold; color: var(--success);">+Rp${b.netBuy.toFixed(1)}B</td>
+          <td style="color: var(--text-muted);">Rp${b.avgEntry.toLocaleString()}</td>
         </tr>
       `;
     }).join('');
