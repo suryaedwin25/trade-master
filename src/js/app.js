@@ -1676,8 +1676,12 @@ window.TradeMasterApp = (function() {
 
     const influencers = [
       { name: 'Lo Kheng Hong', holdings: ['GJTL', 'CFIN', 'BMTR'], style: 'Value Investing (Mercy Rp50)', status: 'HOLDING', pnl: 180 },
-      { name: 'Timothy Ronald', holdings: ['BTC', 'SOL', 'BBRI'], style: 'Growth / Aggressive Portfolio', status: 'ACCUMULATING', pnl: 42 },
+      { name: 'Timothy Ronald', holdings: ['BTC', 'SOL', 'BBRI'], style: 'Growth & Aggressive Portfolio', status: 'ACCUMULATING', pnl: 42 },
       { name: 'Belvin Tannadi', holdings: ['BRMS', 'MEDC', 'PGAS'], style: 'Swing Trade / Breakout', status: 'ACTIVE SWING', pnl: 15 },
+      { name: 'Andri Hakim', holdings: ['BBRI', 'GOTO', 'TLKM'], style: 'Tech & Growth Investment', status: 'ACCUMULATING', pnl: 12 },
+      { name: 'David Noah', holdings: ['BRMS', 'ADRO', 'MEDC'], style: 'Momentum / Volume Breakout', status: 'ACTIVE SWING', pnl: 25 },
+      { name: 'Founder Remora', holdings: ['BUMI', 'DEWA', 'BRMS'], style: 'Systematic Swing / Scalping', status: 'ACTIVE SCALPING', pnl: 35 },
+      { name: 'Leon Hartono', holdings: ['BBCA', 'BBRI', 'GOTO'], style: 'Macro Trend Following (Overpost)', status: 'HOLDING', pnl: 18 },
       { name: 'Raffi Ahmad (RANS)', holdings: ['RANS', 'GOTO'], style: 'Speculative / Hype-Catalyst', status: 'HOLD / MONITOR', pnl: -8 }
     ];
 
