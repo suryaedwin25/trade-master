@@ -153,6 +153,24 @@ window.TradeMasterAPI = (function() {
       }
     },
 
+    // 4b. Saham IDX API - Get current quotes for multiple stocks in a single request
+    async getIDXQuotes(symbols) {
+      const tickers = symbols.map(s => `${s.toUpperCase()}.JK`).join(',');
+      const url = `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${tickers}`;
+      try {
+        const data = await fetchJSON(url, true);
+        return data.quoteResponse.result.map(item => ({
+          symbol: item.symbol.replace('.JK', ''),
+          price: item.regularMarketPrice,
+          change: item.regularMarketChangePercent,
+          name: item.shortName
+        }));
+      } catch (err) {
+        console.error('Failed to fetch IDX quotes:', err);
+        return [];
+      }
+    },
+
     // 5. Global News API - Fetch Financial & Geopolitical News
     async getGlobalNews(queries = ['financial market', 'geopolitics', 'saham indonesia', 'crypto regulation']) {
       // Use Google News RSS feed search wrapped in CORS proxy

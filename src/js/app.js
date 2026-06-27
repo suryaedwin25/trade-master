@@ -272,36 +272,56 @@ window.TradeMasterApp = (function() {
     if (stockContainer) {
       stockContainer.innerHTML = `<tr><td colspan="5" style="text-align: center;">Mengambil data IHSG...</td></tr>`;
       
-      const stockRows = await Promise.all(stocks.map(async (s) => {
-        const data = await TradeMasterAPI.getIDXChartData(s, '1mo', '1d');
-        if (data.length === 0) return '';
-        const last = data[data.length - 1];
-        const prev = data[data.length - 2];
-        const price = last.close;
-        const changePct = ((last.close - prev.close) / prev.close) * 100;
-        
-        // Calculate dynamic TA signal
-        const taSignals = TradeMasterTA.generateSignals(data);
+      try {
+        const quotes = await TradeMasterAPI.getIDXQuotes(stocks);
+        if (quotes.length > 0) {
+          stockContainer.innerHTML = quotes.map(q => `
+            <tr style="cursor: pointer;" onclick="TradeMasterApp.navigateTo('stocks', '${q.symbol}')">
+              <td style="font-weight: 700;">${q.symbol}.JK</td>
+              <td style="font-weight: bold;">Rp${q.price.toLocaleString()}</td>
+              <td class="${q.change >= 0 ? 'metric-change up' : 'metric-change down'}">
+                ${q.change >= 0 ? '▲' : '▼'} ${q.change.toFixed(2)}%
+              </td>
+              <td>
+                <span id="ta-badge-${q.symbol}" class="badge badge-warning">Analyzing...</span>
+              </td>
+              <td id="ta-acc-${q.symbol}" style="color: var(--text-muted); font-size: 0.8rem;">Menghitung...</td>
+            </tr>
+          `).join('');
 
-        return `
-          <tr style="cursor: pointer;" onclick="TradeMasterApp.navigateTo('stocks', '${s}')">
-            <td style="font-weight: 700;">${s}.JK</td>
-            <td style="font-weight: bold;">Rp${price.toLocaleString()}</td>
-            <td class="${changePct >= 0 ? 'metric-change up' : 'metric-change down'}">
-              ${changePct >= 0 ? '▲' : '▼'} ${changePct.toFixed(2)}%
-            </td>
-            <td>
-              <span class="badge ${
-                taSignals.recommendation.includes('BUY') ? 'badge-success' : 
-                taSignals.recommendation.includes('SELL') ? 'badge-danger' : 'badge-warning'
-              }">${taSignals.recommendation}</span>
-            </td>
-            <td style="color: var(--text-muted); font-size: 0.8rem;">TA: ${taSignals.accuracy}% Accurate</td>
-          </tr>
-        `;
-      }));
-
-      stockContainer.innerHTML = stockRows.join('');
+          // Load TA signals asynchronously in the background one by one
+          quotes.forEach(async (q) => {
+            try {
+              const data = await TradeMasterAPI.getIDXChartData(q.symbol, '1mo', '1d');
+              if (data.length > 0) {
+                const taSignals = TradeMasterTA.generateSignals(data);
+                const badge = document.getElementById(`ta-badge-${q.symbol}`);
+                const acc = document.getElementById(`ta-acc-${q.symbol}`);
+                
+                if (badge) {
+                  badge.innerText = taSignals.recommendation;
+                  badge.className = `badge ${
+                    taSignals.recommendation.includes('BUY') ? 'badge-success' : 
+                    taSignals.recommendation.includes('SELL') ? 'badge-danger' : 'badge-warning'
+                  }`;
+                }
+                if (acc) {
+                  acc.innerText = `TA: ${taSignals.accuracy}% Accurate`;
+                }
+              }
+            } catch (e) {
+              console.error(`Failed to calculate async TA for ${q.symbol}:`, e);
+              const badge = document.getElementById(`ta-badge-${q.symbol}`);
+              if (badge) badge.innerText = 'N/A';
+            }
+          });
+        } else {
+          stockContainer.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--danger);">Gagal mengambil data saham.</td></tr>`;
+        }
+      } catch (err) {
+        console.error('Failed to load dashboard quotes:', err);
+        stockContainer.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--danger);">Error koneksi API.</td></tr>`;
+      }
     }
 
     // Render global issues news teaser
