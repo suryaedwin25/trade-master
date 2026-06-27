@@ -369,31 +369,27 @@
             </div>
           </div>
 
-          <!-- Bottom Row: IPO Tracker (3fr) and Speculative Trading List (2fr) -->
-          <div style="display: grid; grid-template-columns: 3.2fr 2.8fr; gap: 24px; margin-top: 24px;">
+          <!-- Bottom Row: IPO Tracker, Speculative Trading List, and Whale Stock Accumulation -->
+          <div style="display: grid; grid-template-columns: 1.1fr 1.05fr 1.05fr; gap: 20px; margin-top: 24px;">
             
             <!-- Upcoming IPO Tracker & Analyzer -->
-            <div class="card" style="margin: 0;">
-              <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 8px; border-bottom: 1px solid var(--card-border); margin-bottom: 12px;">
-                <span class="card-title" style="font-size: 1rem; display: flex; align-items: center; gap: 8px;">
-                  <i data-lucide="rocket" style="color: var(--primary); width: 16px; height: 16px;"></i>
-                  Upcoming IPO Tracker (Juli 2026)
+            <div class="card" style="margin: 0; padding: 16px;">
+              <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 6px; border-bottom: 1px solid var(--card-border); margin-bottom: 10px;">
+                <span class="card-title" style="font-size: 0.9rem; display: flex; align-items: center; gap: 6px;">
+                  <i data-lucide="rocket" style="color: var(--primary); width: 14px; height: 14px;"></i>
+                  Upcoming IPO Tracker
                 </span>
-                <span class="badge badge-info" style="font-size: 0.75rem;">Kualitatif</span>
+                <span class="badge badge-info" style="font-size: 0.65rem; padding: 2px 6px;">Jul 2026</span>
               </div>
-              <p style="color: var(--text-muted); font-size: 0.8rem; margin-bottom: 12px;">
-                Analisis emiten berdasarkan reputasi underwriter, valuasi PER, dan proteksi lock-up.
-              </p>
               <div class="table-container" style="max-height: 250px; overflow-y: auto;">
-                <table style="font-size: 0.78rem;">
+                <table style="font-size: 0.72rem; width: 100%;">
                   <thead>
                     <tr>
                       <th>Emiten</th>
                       <th>Underwriter</th>
                       <th>Valuasi</th>
-                      <th>Lock-up</th>
                       <th>Score</th>
-                      <th>Rekomendasi</th>
+                      <th>Sinyal</th>
                     </tr>
                   </thead>
                   <tbody id="stock-ipo-list">
@@ -404,29 +400,51 @@
             </div>
 
             <!-- Speculative Stock Watchlist & Scanner -->
-            <div class="card" style="margin: 0;">
-              <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 8px; border-bottom: 1px solid var(--card-border); margin-bottom: 12px;">
-                <span class="card-title" style="font-size: 1rem; display: flex; align-items: center; gap: 8px;">
-                  <i data-lucide="shield-alert" style="color: var(--warning); width: 16px; height: 16px;"></i>
-                  Saham Spekulatif (High-Beta Momentum)
+            <div class="card" style="margin: 0; padding: 16px;">
+              <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 6px; border-bottom: 1px solid var(--card-border); margin-bottom: 10px;">
+                <span class="card-title" style="font-size: 0.9rem; display: flex; align-items: center; gap: 6px;">
+                  <i data-lucide="shield-alert" style="color: var(--warning); width: 14px; height: 14px;"></i>
+                  Saham Spekulatif
                 </span>
-                <span class="badge badge-warning" style="font-size: 0.75rem;">Trading Cepat</span>
+                <span class="badge badge-warning" style="font-size: 0.65rem; padding: 2px 6px;">High-Beta</span>
               </div>
-              <p style="color: var(--text-muted); font-size: 0.8rem; margin-bottom: 12px;">
-                Sinyal cepat saham dengan volatilitas harian tinggi untuk scalping/swing trade.
-              </p>
               <div class="table-container" style="max-height: 250px; overflow-y: auto;">
-                <table style="font-size: 0.78rem;">
+                <table style="font-size: 0.72rem; width: 100%;">
                   <thead>
                     <tr>
                       <th>Emiten</th>
                       <th>Harga</th>
                       <th>Change %</th>
-                      <th>Volatilitas</th>
-                      <th>Sinyal Aksi</th>
+                      <th>Sinyal</th>
                     </tr>
                   </thead>
                   <tbody id="speculative-stock-list">
+                    <!-- Generated dynamically by JS -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Whale Stock Accumulation Leaderboard -->
+            <div class="card" style="margin: 0; padding: 16px;">
+              <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 6px; border-bottom: 1px solid var(--card-border); margin-bottom: 10px;">
+                <span class="card-title" style="font-size: 0.9rem; display: flex; align-items: center; gap: 6px;">
+                  <i data-lucide="landmark" style="color: var(--success); width: 14px; height: 14px;"></i>
+                  Whale Accumulation (BEI)
+                </span>
+                <span class="badge badge-success" style="font-size: 0.65rem; padding: 2px 6px;">Bandarmologi</span>
+              </div>
+              <div class="table-container" style="max-height: 250px; overflow-y: auto;">
+                <table style="font-size: 0.72rem; width: 100%;">
+                  <thead>
+                    <tr>
+                      <th>Emiten</th>
+                      <th>Whale Entry Avg</th>
+                      <th>Net Buy Flow</th>
+                      <th>Status PnL</th>
+                    </tr>
+                  </thead>
+                  <tbody id="whale-accumulated-stock-list">
                     <!-- Generated dynamically by JS -->
                   </tbody>
                 </table>
