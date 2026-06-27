@@ -1030,6 +1030,200 @@ window.TradeMasterApp = (function() {
     }
   }
 
+  // DEX Terminal Mode Toggles & DexScreener Fetcher
+  function setCryptoMode(mode) {
+    state.cryptoMode = mode;
+    
+    const cexBtn = document.getElementById('btn-cex-mode');
+    const dexBtn = document.getElementById('btn-dex-mode');
+    const cryptoSelect = document.getElementById('crypto-select');
+    const dexInput = document.getElementById('dex-input-container');
+    const cexChartControls = document.getElementById('cex-chart-controls');
+    const cexChartPane = document.getElementById('crypto-chart-pane');
+    const subChartPane = document.getElementById('crypto-sub-chart');
+    const dexChartPane = document.getElementById('dex-chart-pane');
+    const titleEl = document.getElementById('crypto-title');
+    const subtitleEl = document.getElementById('crypto-subtitle');
+
+    if (mode === 'CEX') {
+      if (cexBtn) cexBtn.classList.add('active');
+      if (dexBtn) dexBtn.classList.remove('active');
+      if (cryptoSelect) cryptoSelect.style.display = 'block';
+      if (dexInput) dexInput.style.display = 'none';
+      if (cexChartControls) cexChartControls.style.display = 'flex';
+      if (cexChartPane) cexChartPane.style.display = 'block';
+      if (dexChartPane) dexChartPane.style.display = 'none';
+      
+      titleEl.innerText = `${state.crypto.selected}/USDT`;
+      subtitleEl.innerText = 'Real-time charts streaming directly via Binance WebSocket API.';
+      
+      // Reload CEX Chart
+      renderCryptoPage();
+    } else {
+      if (cexBtn) cexBtn.classList.remove('active');
+      if (dexBtn) dexBtn.classList.add('active');
+      if (cryptoSelect) cryptoSelect.style.display = 'none';
+      if (dexInput) dexInput.style.display = 'flex';
+      if (cexChartControls) cexChartControls.style.display = 'none';
+      if (cexChartPane) cexChartPane.style.display = 'none';
+      if (subChartPane) subChartPane.style.display = 'none';
+      if (dexChartPane) dexChartPane.style.display = 'block';
+
+      titleEl.innerText = 'DEX Token Scanner';
+      subtitleEl.innerText = 'Decentralized Exchange token tracker powered by DexScreener API.';
+
+      // Close Binance WS
+      if (state.crypto.wsConnection) {
+        state.crypto.wsConnection.close();
+        state.crypto.wsConnection = null;
+      }
+      
+      // Clear trades list & orderbook
+      const tradesContainer = document.getElementById('crypto-trades-list');
+      if (tradesContainer) tradesContainer.innerHTML = '<tr><td colspan="3" style="text-align: center; color: var(--text-dark);">DEX Mode: WebSocket orderbook disabled.</td></tr>';
+      
+      document.getElementById('crypto-live-price').innerText = '$0.00';
+      document.getElementById('crypto-signal-box').innerHTML = `
+        <div style="text-align: center; color: var(--text-muted);">
+          Masukkan Contract Address token di atas untuk menganalisis sinyal & chart DEX.
+        </div>
+      `;
+    }
+  }
+
+  async function searchDEXToken() {
+    const input = document.getElementById('dex-address-input');
+    if (!input || !input.value.trim()) return;
+
+    const address = input.value.trim();
+    const signalBox = document.getElementById('crypto-signal-box');
+    if (signalBox) {
+      signalBox.innerHTML = '<div style="text-align: center; color: var(--text-muted);">Scanning DEX Liquidity Pool...</div>';
+    }
+
+    try {
+      const response = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${address}`);
+      const data = await response.json();
+      
+      if (!data.pairs || data.pairs.length === 0) {
+        if (signalBox) {
+          signalBox.innerHTML = `
+            <div style="text-align: center; color: var(--danger);">
+              Token tidak ditemukan di DexScreener. Pastikan Contract Address benar dan likuiditas sudah ditambahkan.
+            </div>
+          `;
+        }
+        return;
+      }
+
+      // Pick the primary pair (highest liquidity)
+      const pair = data.pairs.sort((a, b) => (b.liquidity?.usd || 0) - (a.liquidity?.usd || 0))[0];
+      const symbol = pair.baseToken.symbol;
+      const name = pair.baseToken.name;
+      const price = parseFloat(pair.priceUsd);
+      const volume24h = pair.volume?.h24 || 0;
+      const change24h = pair.priceChange?.h24 || 0;
+      const liquidity = pair.liquidity?.usd || 0;
+      const chain = pair.chainId;
+      const pairAddress = pair.pairAddress;
+
+      // Update titles
+      document.getElementById('crypto-title').innerText = `${symbol} / USD (${chain.toUpperCase()})`;
+      document.getElementById('crypto-live-price').innerText = `$${price.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 6})}`;
+
+      // Embed chart iframe
+      const iframe = document.getElementById('dex-chart-iframe');
+      if (iframe) {
+        iframe.src = `https://dexscreener.com/${chain}/${pairAddress}?embed=1&theme=dark&trades=0`;
+      }
+
+      // Calculate custom DEX breakout score
+      let score = 0;
+      const details = [];
+
+      // 1. Liquidity evaluation
+      if (liquidity > 200000) {
+        score += 35;
+        details.push({ indicator: 'Likuiditas Pool', direction: 'Sangat Aman', note: `Likuiditas sebesar $${Math.round(liquidity).toLocaleString()} (Resiko rug/honeypot rendah)` });
+      } else if (liquidity > 50000) {
+        score += 20;
+        details.push({ indicator: 'Likuiditas Pool', direction: 'Sedang', note: `Likuiditas sebesar $${Math.round(liquidity).toLocaleString()} (Gunakan dana dingin)` });
+      } else {
+        score -= 20;
+        details.push({ indicator: 'Likuiditas Pool', direction: 'RISIKO RUG', note: `Likuiditas sangat tipis $${Math.round(liquidity).toLocaleString()} (Rawan slippage & dump)` });
+      }
+
+      // 2. 24h Change / Breakout check
+      if (change24h >= 5 && change24h <= 25) {
+        score += 35;
+        details.push({ indicator: 'Momentum 24h', direction: 'Bullish Breakout', note: `Token naik +${change24h.toFixed(1)}% dalam 24 jam terakhir (Fase breakout)` });
+      } else if (change24h > 25 && change24h < 80) {
+        score += 15;
+        details.push({ indicator: 'Momentum 24h', direction: 'Uptrend Kuat', note: `Naik +${change24h.toFixed(1)}%. Sudah melambung cukup tinggi, waspada profit taking.` });
+      } else if (change24h >= 80) {
+        score -= 10;
+        details.push({ indicator: 'Momentum 24h', direction: 'OVEREXTENDED', note: `Naik +${change24h.toFixed(1)}% (Sangat rawan koreksi mendalam/FOMO Trap)` });
+      } else if (change24h < 0) {
+        details.push({ indicator: 'Momentum 24h', direction: 'Downtrend', note: `Token koreksi sebesar ${change24h.toFixed(1)}%` });
+      }
+
+      // 3. Trading Volume activity
+      if (volume24h > 500000) {
+        score += 30;
+        details.push({ indicator: 'Aktivitas Transaksi', direction: 'Sangat Aktif', note: `Volume 24 jam mencapai $${Math.round(volume24h).toLocaleString()}` });
+      } else if (volume24h > 50000) {
+        score += 15;
+      }
+
+      // Constrain score
+      const finalScore = Math.max(0, Math.min(100, score));
+      let rec = 'HOLD / MONITOR';
+      if (liquidity < 15000) rec = 'HINDARI (RUG RISK)';
+      else if (finalScore >= 80) rec = 'BUY BREAKOUT';
+      else if (finalScore >= 60) rec = 'DCA / SPEKULATIF';
+      else if (finalScore < 40) rec = 'SELL / HINDARI';
+
+      if (signalBox) {
+        signalBox.innerHTML = `
+          <div style="text-align: center; margin-bottom: 20px;">
+            <div style="font-size: 0.85rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">DEX Analysis (${name})</div>
+            <div style="font-size: 1.7rem; font-weight: 900; margin: 8px 0; color: ${
+              rec.includes('BUY') ? 'var(--success)' : 
+              rec.includes('HINDARI') ? 'var(--danger)' : 'var(--warning)'
+            }">${rec}</div>
+            <div class="badge badge-info">Breakout Score: ${finalScore}%</div>
+          </div>
+          <div style="border-top: 1px solid var(--card-border); padding-top: 15px;">
+            <div style="font-weight: 600; font-size: 0.85rem; margin-bottom: 10px;">Metrik Kolam Likuiditas (LP):</div>
+            <div style="display: flex; flex-direction: column; gap: 8px; max-height: 180px; overflow-y: auto;">
+              ${details.map(d => `
+                <div style="display: flex; flex-direction: column; background: rgba(255,255,255,0.02); padding: 8px; border-radius: 6px; font-size: 0.8rem; border-left: 2px solid ${
+                  d.direction.includes('Aman') || d.direction.includes('Bullish') || d.direction.includes('Aktif') ? 'var(--success)' :
+                  d.direction.includes('RUG') || d.direction.includes('OVEREXTENDED') ? 'var(--danger)' : 'var(--warning)'
+                }">
+                  <div style="display: flex; justify-content: space-between; font-weight: bold; margin-bottom: 2px;">
+                    <span>${d.indicator}</span>
+                    <span style="color: ${
+                      d.direction.includes('Aman') || d.direction.includes('Bullish') || d.direction.includes('Aktif') ? 'var(--success)' :
+                      d.direction.includes('RUG') || d.direction.includes('OVEREXTENDED') ? 'var(--danger)' : 'var(--warning)'
+                    }">${d.direction}</span>
+                  </div>
+                  <div style="color: var(--text-muted); font-size: 0.75rem;">${d.note}</div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        `;
+      }
+
+    } catch (e) {
+      console.error('Failed to query DEX Token:', e);
+      if (signalBox) {
+        signalBox.innerHTML = '<div style="text-align: center; color: var(--danger);">Koneksi DexScreener terputus. Coba lagi nanti.</div>';
+      }
+    }
+  }
+
   // 4. Initial Navigation and Routing
   function navigateTo(pageId, assetSymbol = null) {
     console.log(`Navigating to page: ${pageId}`);
@@ -1128,7 +1322,9 @@ window.TradeMasterApp = (function() {
     init,
     navigateTo,
     state,
-    scanCryptoMoonshots
+    scanCryptoMoonshots,
+    setCryptoMode,
+    searchDEXToken
   };
 })();
 
