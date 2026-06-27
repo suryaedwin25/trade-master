@@ -472,8 +472,8 @@ window.TradeMasterApp = (function() {
       document.getElementById('stock-live-price').innerText = 'Data N/A';
     }
 
-    // Render Influencer Portfolios (Copy Trade)
-    renderInfluencerPortfolios();
+    // Render BEI Whale Portfolios (>5% Shareholdings)
+    renderBEIWhalePortfolios();
 
     // Calculate signals
     const signal = TradeMasterTA.generateSignals(data);
@@ -1669,40 +1669,36 @@ window.TradeMasterApp = (function() {
     `;
   }
 
-  // Render Influencer Portfolios (LKH, Timothy Ronald, Belvin, RANS)
-  function renderInfluencerPortfolios() {
-    const list = document.getElementById('influencer-portfolio-list');
+  // Render BEI/KSEI Major Shareholder (>5% Holdings) Portfolios
+  function renderBEIWhalePortfolios() {
+    const list = document.getElementById('bei-whale-portfolio-list');
     if (!list) return;
 
-    const influencers = [
-      { name: 'Lo Kheng Hong', holdings: ['GJTL', 'CFIN', 'BMTR'], style: 'Value Investing (Mercy Rp50)', status: 'HOLDING', pnl: 180 },
-      { name: 'Timothy Ronald', holdings: ['BTC', 'SOL', 'BBRI'], style: 'Growth & Aggressive Portfolio', status: 'ACCUMULATING', pnl: 42 },
-      { name: 'Belvin Tannadi', holdings: ['BRMS', 'MEDC', 'PGAS'], style: 'Swing Trade / Breakout', status: 'ACTIVE SWING', pnl: 15 },
-      { name: 'Andri Hakim', holdings: ['BBRI', 'GOTO', 'TLKM'], style: 'Tech & Growth Investment', status: 'ACCUMULATING', pnl: 12 },
-      { name: 'David Noah', holdings: ['BRMS', 'ADRO', 'MEDC'], style: 'Momentum / Volume Breakout', status: 'ACTIVE SWING', pnl: 25 },
-      { name: 'Founder Remora', holdings: ['BUMI', 'DEWA', 'BRMS'], style: 'Systematic Swing / Scalping', status: 'ACTIVE SCALPING', pnl: 35 },
-      { name: 'Leon Hartono', holdings: ['BBCA', 'BBRI', 'GOTO'], style: 'Macro Trend Following (Overpost)', status: 'HOLDING', pnl: 18 },
-      { name: 'Raffi Ahmad (RANS)', holdings: ['RANS', 'GOTO'], style: 'Speculative / Hype-Catalyst', status: 'HOLD / MONITOR', pnl: -8 }
+    const beiWhales = [
+      { name: 'Prajogo Pangestu', holdings: ['TPIA', 'BREN', 'BRPT', 'CUAN'], sector: 'Grup Barito (Energi & Petrokimia)', status: 'ACCUMULATING', pnl: 210 },
+      { name: 'Lo Kheng Hong', holdings: ['GJTL', 'CFIN', 'BMTR', 'DILD'], sector: 'Value Investing (Sektor Ritel/Finance)', status: 'HOLDING', pnl: 180 },
+      { name: 'Garibaldi Thohir', holdings: ['ADRO', 'MDKA', 'ESSA'], sector: 'Adaro & Merdeka Group (Batubara & Emas)', status: 'HOLDING', pnl: 65 },
+      { name: 'Anthoni Salim', holdings: ['BUMI', 'DNET', 'META'], sector: 'Grup Salim (Konsumer & Infrastruktur)', status: 'HOLDING', pnl: 32 },
+      { name: 'Hermanto Tanoko', holdings: ['CLEO', 'AVIA', 'PEVE'], sector: 'Tan Corp (Consumer Goods & Manufaktur)', status: 'HOLDING', pnl: 48 },
+      { name: 'Sugianto Kusuma (Aguan)', holdings: ['PANI'], sector: 'Agung Sedayu (Properti & Real Estate)', status: 'ACCUMULATING', pnl: 150 }
     ];
 
-    list.innerHTML = influencers.map(i => {
-      const pnlColor = i.pnl >= 0 ? 'var(--success)' : 'var(--danger)';
-      const pnlText = `${i.pnl >= 0 ? '+' : ''}${i.pnl}%`;
+    list.innerHTML = beiWhales.map(w => {
+      const pnlColor = w.pnl >= 0 ? 'var(--success)' : 'var(--danger)';
+      const pnlText = `${w.pnl >= 0 ? '+' : ''}${w.pnl}%`;
       return `
         <tr>
-          <td style="font-weight: 700; color: var(--text-main);">${i.name}</td>
+          <td style="font-weight: 700; color: var(--text-main);">${w.name}</td>
           <td>
             <div style="display: flex; gap: 4px; flex-wrap: wrap;">
-              ${i.holdings.map(h => {
-                const isCryptoAsset = h === 'BTC' || h === 'SOL';
-                const targetPage = isCryptoAsset ? 'crypto' : 'stocks';
-                return `<span class="badge badge-info" style="cursor: pointer; font-size: 0.65rem; padding: 2px 4px; border-radius: 4px;" onclick="TradeMasterApp.navigateTo('${targetPage}', '${h}')">${h}</span>`;
+              ${w.holdings.map(h => {
+                return `<span class="badge badge-info" style="cursor: pointer; font-size: 0.65rem; padding: 2px 4px; border-radius: 4px;" onclick="TradeMasterApp.navigateTo('stocks', '${h}')">${h}</span>`;
               }).join('')}
             </div>
           </td>
-          <td style="color: var(--text-muted); font-size: 0.7rem;">${i.style}</td>
+          <td style="color: var(--text-muted); font-size: 0.7rem;">${w.sector}</td>
           <td>
-            <span style="font-weight: bold; color: ${pnlColor};">${i.status} (${pnlText})</span>
+            <span style="font-weight: bold; color: ${pnlColor};">${w.status} (${pnlText})</span>
           </td>
         </tr>
       `;
