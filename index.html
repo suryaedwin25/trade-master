@@ -201,24 +201,23 @@
           </div>
 
           <div class="grid-layout grid-terminal">
-            <!-- Chart Pane -->
-            <div class="card" style="padding: 16px;">
-              <div id="cex-chart-controls" class="chart-indicators-bar">
-                <span style="font-size: 0.85rem; color: var(--text-muted); font-weight: 600; display: flex; align-items: center; margin-right: 10px;">Indicators:</span>
-                <button class="btn-indicator active" data-ind="EMA9">EMA 9</button>
-                <button class="btn-indicator active" data-ind="EMA21">EMA 21</button>
-                <button class="btn-indicator" data-ind="BB">Bollinger Bands</button>
-                <button class="btn-indicator" data-ind="RSI">RSI (14)</button>
+            <!-- CEX Technical Report Panel (Replaces TradingView Charts) -->
+            <div class="card" id="cex-report-pane" style="padding: 24px; min-height: 450px;">
+              <div class="card-header" style="border-bottom: 1px solid var(--card-border); padding-bottom: 12px; margin-bottom: 16px;">
+                <span class="card-title" style="font-size: 1.2rem; display: flex; align-items: center; gap: 8px;">
+                  <i data-lucide="file-text" style="color: var(--primary);"></i>
+                  Laporan Ringkasan Analisis Teknis Tertulis
+                </span>
+                <span id="cex-report-timestamp" style="font-size: 0.8rem; color: var(--text-muted);">Updated: --:--:--</span>
               </div>
-              
-              <!-- CEX Charts -->
-              <div class="chart-container" id="crypto-chart-pane"></div>
-              <div class="chart-container" id="crypto-sub-chart" style="height: 120px; margin-top: 10px; display: none;"></div>
+              <div id="crypto-written-report" style="line-height: 1.6; font-size: 0.95rem;">
+                <!-- Generated dynamically by JS -->
+              </div>
+            </div>
 
-              <!-- DEX Chart Iframe -->
-              <div class="chart-container" id="dex-chart-pane" style="display: none; height: 450px;">
-                <iframe id="dex-chart-iframe" src="" style="width: 100%; height: 100%; border: none; border-radius: 8px;"></iframe>
-              </div>
+            <!-- DEX Chart Iframe -->
+            <div class="chart-container" id="dex-chart-pane" style="display: none; height: 450px;">
+              <iframe id="dex-chart-iframe" src="" style="width: 100%; height: 100%; border: none; border-radius: 8px;"></iframe>
             </div>
 
             <!-- Terminal Sidebar (Orderbook & Signals) -->
@@ -259,18 +258,25 @@
 
           <!-- Crypto Moonshot / Breakout Scanner -->
           <div class="card" style="margin-top: 24px;">
-            <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+            <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
               <span class="card-title" style="font-size: 1.1rem; display: flex; align-items: center; gap: 8px;">
                 <i data-lucide="radar" style="color: var(--primary);"></i>
                 Crypto Moonshot / Breakout Scanner (+25% Potential)
               </span>
-              <button class="btn-indicator" onclick="TradeMasterApp.scanCryptoMoonshots()">
-                <i data-lucide="refresh-cw" style="width: 14px; height: 14px; display: inline-block; vertical-align: middle;"></i>
-                Scan Market Now
-              </button>
+              <div style="display: flex; gap: 10px; align-items: center;">
+                <select class="select-asset" id="scanner-exchange-select" style="padding: 6px 12px; font-size: 0.8rem; font-weight: normal; margin: 0;">
+                  <option value="Binance">Scan Binance Spot</option>
+                  <option value="Bybit">Scan Bybit Spot</option>
+                  <option value="Gate.io">Scan Gate.io Spot</option>
+                </select>
+                <button class="btn-indicator" style="background: var(--primary); border-color: var(--primary); color: white; margin: 0;" onclick="TradeMasterApp.scanCryptoMoonshots()">
+                  <i data-lucide="refresh-cw" style="width: 14px; height: 14px; display: inline-block; vertical-align: middle;"></i>
+                  Scan Market
+                </button>
+              </div>
             </div>
             <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 16px;">
-              Memindai seluruh 200+ pasar USDT di Binance secara live untuk mendeteksi token dengan anomali volume, RSI breakout, Bollinger squeeze, dan momentum harga sebelum melonjak >25%.
+              Memindai seluruh pasar spot USDT di bursa terpilih secara live untuk mendeteksi token dengan anomali volume, breakout rentang harga harian, dan momentum RSI 1 jam sebelum harga melonjak >25%.
             </p>
             <div class="table-container">
               <table>
@@ -316,16 +322,18 @@
           </div>
 
           <div class="grid-layout grid-terminal">
-            <!-- Chart Pane -->
-            <div class="card" style="padding: 16px;">
-              <div class="chart-indicators-bar">
-                <span style="font-size: 0.85rem; color: var(--text-muted); font-weight: 600; display: flex; align-items: center; margin-right: 10px;">Indicators:</span>
-                <button class="btn-indicator active" data-ind="SMA20">SMA 20</button>
-                <button class="btn-indicator active" data-ind="BB">Bollinger Bands</button>
-                <button class="btn-indicator" data-ind="RSI">RSI (14)</button>
+            <!-- Stock Technical Report Panel (Replaces TradingView Charts) -->
+            <div class="card" id="stock-report-pane" style="padding: 24px; min-height: 400px;">
+              <div class="card-header" style="border-bottom: 1px solid var(--card-border); padding-bottom: 12px; margin-bottom: 16px;">
+                <span class="card-title" style="font-size: 1.2rem; display: flex; align-items: center; gap: 8px;">
+                  <i data-lucide="file-text" style="color: var(--primary);"></i>
+                  Laporan Ringkasan Analisis Teknis Saham
+                </span>
+                <span id="stock-report-timestamp" style="font-size: 0.8rem; color: var(--text-muted);">Updated: --:--:--</span>
               </div>
-              <div class="chart-container" id="stock-chart-pane"></div>
-              <div class="chart-container" id="stock-sub-chart" style="height: 120px; margin-top: 10px; display: none;"></div>
+              <div id="stock-written-report" style="line-height: 1.6; font-size: 0.95rem;">
+                <!-- Generated dynamically by JS -->
+              </div>
             </div>
 
             <!-- Stock Terminal Info -->

@@ -352,20 +352,12 @@ window.TradeMasterApp = (function() {
       state.crypto.pollInterval = null;
     }
 
-    // Initialize Chart
-    const chart = initMainChart('crypto-chart-pane', 'crypto');
-    
     // Fetch Chart Data using the selected exchange
     const data = await TradeMasterAPI.getCryptoChartData(symbol, state.crypto.chartInterval, 150, exchange);
     state.crypto.chartData = data;
     
-    if (state.crypto.candlestickSeries && data.length > 0) {
-      state.crypto.candlestickSeries.setData(data);
-      state.crypto.chartInstance.timeScale().fitContent();
-    }
-
-    // Render Indicators
-    renderChartOverlays('crypto');
+    // Generate Written Analysis Report
+    generateWrittenReport(data, 'crypto');
 
     // Run TA Sinyal Engine
     const signal = TradeMasterTA.generateSignals(data);
@@ -512,17 +504,11 @@ window.TradeMasterApp = (function() {
     const select = document.getElementById('stock-select');
     if (select) select.value = symbol;
 
-    // Init Chart
-    const chart = initMainChart('stock-chart-pane', 'stocks');
-
     // Fetch stock data from Yahoo Finance
     const data = await TradeMasterAPI.getIDXChartData(symbol);
     state.stocks.chartData = data;
 
-    if (state.stocks.candlestickSeries && data.length > 0) {
-      state.stocks.candlestickSeries.setData(data);
-      state.stocks.chartInstance.timeScale().fitContent();
-      
+    if (data.length > 0) {
       const last = data[data.length - 1];
       const prev = data[data.length - 2];
       const changePct = ((last.close - prev.close) / prev.close) * 100;
@@ -531,12 +517,12 @@ window.TradeMasterApp = (function() {
       const changeEl = document.getElementById('stock-price-change');
       changeEl.innerText = `${changePct >= 0 ? '▲ +' : '▼ '}${changePct.toFixed(2)}%`;
       changeEl.className = `metric-change ${changePct >= 0 ? 'up' : 'down'}`;
+      
+      // Generate Written Analysis Report
+      generateWrittenReport(data, 'stocks');
     } else {
       document.getElementById('stock-live-price').innerText = 'Data N/A';
     }
-
-    // Render Overlays
-    renderChartOverlays('stocks');
 
     // Calculate signals
     const signal = TradeMasterTA.generateSignals(data);
@@ -975,39 +961,100 @@ window.TradeMasterApp = (function() {
     }).join('');
   }
 
-  // Crypto Moonshot Scanner Logic
+  // Crypto Moonshot Scanner Logic (Supporting Binance, Bybit, Gate.io)
   async function scanCryptoMoonshots() {
     console.log('Scanning crypto moonshots...');
     const list = document.getElementById('crypto-moonshot-list');
+    const selectExchangeEl = document.getElementById('scanner-exchange-select');
+    const scannerExchange = selectExchangeEl ? selectExchangeEl.value : 'Binance';
+    
     if (!list) return;
 
-    list.innerHTML = `<tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 24px;">Memindai seluruh pasar USDT di Binance... Mohon tunggu...</td></tr>`;
+    list.innerHTML = `<tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 24px;">Memindai seluruh pasar spot ${scannerExchange} USDT... Mohon tunggu...</td></tr>`;
 
     try {
-      const response = await fetch('https://api.binance.com/api/v3/ticker/24hr');
-      const tickers = await response.json();
+      let usdPairs = [];
       
-      const usdPairs = tickers.filter(t => {
-        const sym = t.symbol;
-        return sym.endsWith('USDT') && 
-               !sym.includes('UP') && 
-               !sym.includes('DOWN') && 
-               !sym.includes('BUSD') && 
-               !sym.includes('USDC') && 
-               !sym.includes('FDUSD') && 
-               !sym.includes('DAI') && 
-               !sym.includes('EUR') && 
-               !sym.includes('TRY') && 
-               !sym.includes('RUB') &&
-               parseFloat(t.quoteVolume) > 1000000;
-      });
+      if (scannerExchange === 'Bybit') {
+        const response = await fetch('https://api.bybit.com/v5/market/tickers?category=spot');
+        const data = await response.json();
+        const rawList = data.result?.list || [];
+        
+        usdPairs = rawList.filter(item => {
+          const sym = item.symbol;
+          return sym.endsWith('USDT') && 
+                 !sym.includes('UP') && 
+                 !sym.includes('DOWN') && 
+                 !sym.includes('BUSD') && 
+                 !sym.includes('USDC') && 
+                 !sym.includes('FDUSD') && 
+                 !sym.includes('DAI') &&
+                 parseFloat(item.volume24h) > 1000000;
+        }).map(item => ({
+          symbol: item.symbol.replace('USDT', ''),
+          pair: item.symbol,
+          lastPrice: parseFloat(item.lastPrice),
+          highPrice: parseFloat(item.highPrice24h),
+          lowPrice: parseFloat(item.lowPrice24h),
+          priceChangePercent: parseFloat(item.price24hPcnt) * 100, // Bybit returns decimal fraction e.g. 0.05
+          quoteVolume: parseFloat(item.volume24h)
+        }));
+      } 
+      else if (scannerExchange === 'Gate.io') {
+        const response = await fetch('https://api.gateio.ws/api/v4/spot/tickers');
+        const data = await response.json();
+        
+        usdPairs = data.filter(item => {
+          const sym = item.currency_pair;
+          return sym.endsWith('_USDT') && 
+                 !sym.includes('UP') && 
+                 !sym.includes('DOWN') && 
+                 !sym.includes('3L') && 
+                 !sym.includes('3S') && 
+                 parseFloat(item.quote_volume) > 1000000;
+        }).map(item => ({
+          symbol: item.currency_pair.replace('_USDT', ''),
+          pair: item.currency_pair,
+          lastPrice: parseFloat(item.last),
+          highPrice: parseFloat(item.high_24h),
+          lowPrice: parseFloat(item.low_24h),
+          priceChangePercent: parseFloat(item.change_percentage),
+          quoteVolume: parseFloat(item.quote_volume)
+        }));
+      } 
+      else {
+        // Default: Binance
+        const response = await fetch('https://api.binance.com/api/v3/ticker/24hr');
+        const tickers = await response.json();
+        
+        usdPairs = tickers.filter(t => {
+          const sym = t.symbol;
+          return sym.endsWith('USDT') && 
+                 !sym.includes('UP') && 
+                 !sym.includes('DOWN') && 
+                 !sym.includes('BUSD') && 
+                 !sym.includes('USDC') && 
+                 !sym.includes('FDUSD') && 
+                 !sym.includes('DAI') &&
+                 parseFloat(t.quoteVolume) > 1000000;
+        }).map(t => ({
+          symbol: t.symbol.replace('USDT', ''),
+          pair: t.symbol,
+          lastPrice: parseFloat(t.lastPrice),
+          highPrice: parseFloat(t.highPrice),
+          lowPrice: parseFloat(t.lowPrice),
+          priceChangePercent: parseFloat(t.priceChangePercent),
+          quoteVolume: parseFloat(t.quoteVolume)
+        }));
+      }
 
+      // Map and score breakout setup
       const scored = usdPairs.map(t => {
-        const last = parseFloat(t.lastPrice);
-        const high = parseFloat(t.highPrice);
-        const low = parseFloat(t.lowPrice);
-        const change = parseFloat(t.priceChangePercent);
-        const quoteVol = parseFloat(t.quoteVolume);
+        const last = t.lastPrice;
+        const high = t.highPrice;
+        const low = t.lowPrice;
+        const change = t.priceChangePercent;
+        const quoteVol = t.quoteVolume;
 
         const rangePos = high === low ? 0.5 : (last - low) / (high - low);
         
@@ -1028,8 +1075,8 @@ window.TradeMasterApp = (function() {
         score += volFactor;
 
         return {
-          symbol: t.symbol.replace('USDT', ''),
-          pair: t.symbol,
+          symbol: t.symbol,
+          pair: t.pair,
           price: last,
           volume: quoteVol,
           change,
@@ -1039,9 +1086,17 @@ window.TradeMasterApp = (function() {
         };
       });
 
-      const topMoonshots = scored
+      // Filter out elements with invalid NaN values
+      const validScored = scored.filter(item => !isNaN(item.price) && !isNaN(item.change) && !isNaN(item.score));
+
+      const topMoonshots = validScored
         .sort((a, b) => b.score - a.score)
         .slice(0, 6);
+
+      if (topMoonshots.length === 0) {
+        list.innerHTML = `<tr><td colspan="8" style="text-align: center; color: var(--danger);">Tidak ada token yang memenuhi kriteria likuiditas saat ini.</td></tr>`;
+        return;
+      }
 
       list.innerHTML = topMoonshots.map(m => `
         <tr id="moonshot-row-${m.symbol}">
@@ -1061,9 +1116,10 @@ window.TradeMasterApp = (function() {
         </tr>
       `).join('');
 
+      // Fetch 1h candles in parallel from the correct exchange to calculate real RSI 14
       topMoonshots.forEach(async (m) => {
         try {
-          const candles = await TradeMasterAPI.getCryptoChartData(m.symbol, '1h', 30);
+          const candles = await TradeMasterAPI.getCryptoChartData(m.symbol, '1h', 30, scannerExchange);
           if (candles && candles.length >= 14) {
             const rsiValues = TradeMasterTA.calculateRSI(candles, 14);
             const currentRsi = rsiValues[rsiValues.length - 1];
@@ -1074,17 +1130,20 @@ window.TradeMasterApp = (function() {
             if (rsiEl) rsiEl.innerText = currentRsi.toFixed(1);
 
             if (badgeEl) {
-              let rec = 'NEUTRAL';
+              let rec = 'HOLD';
               let badgeClass = 'badge-warning';
 
-              if (currentRsi >= 50 && currentRsi <= 65 && m.score >= 70) {
-                rec = 'BUY BREAKOUT';
+              if (currentRsi >= 50 && currentRsi <= 65 && m.score >= 80) {
+                rec = 'STRONG BUY';
+                badgeClass = 'badge-success';
+              } else if (currentRsi >= 45 && currentRsi <= 68 && m.score >= 65) {
+                rec = 'BUY';
                 badgeClass = 'badge-success';
               } else if (currentRsi > 70) {
-                rec = 'OVERBOUGHT';
+                rec = 'SELL';
                 badgeClass = 'badge-danger';
               } else if (currentRsi < 40) {
-                rec = 'OVERSOLD / ACCUM';
+                rec = 'HOLD / ACCUM';
                 badgeClass = 'badge-info';
               }
 
@@ -1338,6 +1397,144 @@ window.TradeMasterApp = (function() {
       if (signalBox) {
         signalBox.innerHTML = '<div style="text-align: center; color: var(--danger);">Koneksi DexScreener terputus. Coba lagi nanti.</div>';
       }
+    }
+  }
+
+  // Helper to generate dynamic, mathematical written reports for CEX & Stocks
+  function generateWrittenReport(data, type) {
+    const reportContainer = document.getElementById(type === 'crypto' ? 'crypto-written-report' : 'stock-written-report');
+    const timestampEl = document.getElementById(type === 'crypto' ? 'cex-report-timestamp' : 'stock-report-timestamp');
+    if (!reportContainer) return;
+
+    if (!data || data.length < 50) {
+      reportContainer.innerHTML = '<div style="text-align: center; color: var(--text-muted); padding: 24px;">Data tidak mencukupi untuk membuat analisis tertulis.</div>';
+      return;
+    }
+
+    const lastIdx = data.length - 1;
+    const currentPrice = data[lastIdx].close;
+
+    // Recalculate indicators for report
+    const ema9 = TradeMasterTA.calculateEMA(data, 9);
+    const ema21 = TradeMasterTA.calculateEMA(data, 21);
+    const sma20 = TradeMasterTA.calculateSMA(data, 20);
+    const bb = TradeMasterTA.calculateBB(data, 20, 2);
+    const rsi = TradeMasterTA.calculateRSI(data, 14);
+    const macd = TradeMasterTA.calculateMACD(data, 12, 26, 9);
+    const stoch = TradeMasterTA.calculateStochastic(data, 14, 3, 3);
+
+    const cEma9 = ema9[lastIdx];
+    const cEma21 = ema21[lastIdx];
+    const cSma20 = sma20[lastIdx];
+    const cBB = bb[lastIdx];
+    const cRsi = rsi[lastIdx];
+    const cMacd = macd.macdLine[lastIdx];
+    const cSignal = macd.signalLine[lastIdx];
+    const cK = stoch.k[lastIdx];
+    const cD = stoch.d[lastIdx];
+
+    // Determine signals qualitatively
+    const trendText = currentPrice > cSma20 ? 'BULLISH (Harga di atas SMA 20)' : 'BEARISH (Harga di bawah SMA 20)';
+    const emaText = cEma9 > cEma21 ? 'GOLDEN CROSS (EMA 9 > EMA 21 - Tren Naik Jangka Pendek)' : 'DEATH CROSS (EMA 9 < EMA 21 - Tren Turun Jangka Pendek)';
+    
+    let rsiText = 'NETRAL';
+    if (cRsi > 70) rsiText = 'OVERBOUGHT (Jenuh Beli - Waspada Koreksi)';
+    else if (cRsi < 30) rsiText = 'OVERSOLD (Jenuh Jual - Peluang Rebound)';
+    else if (cRsi >= 50 && cRsi <= 65) rsiText = 'BULLISH MOMENTUM (Fase Akumulasi Naik)';
+
+    let bbText = 'KONSOLIDASI (Di dalam pita)';
+    if (currentPrice >= cBB.upper) bbText = 'BREAKOUT PITA ATAS (Harga Sangat Tinggi)';
+    else if (currentPrice <= cBB.lower) bbText = 'BREAKOUT PITA BAWAH (Harga Sangat Rendah)';
+
+    // Formulate targets
+    const symbol = type === 'crypto' ? state.crypto.selected : state.stocks.selected;
+    const isCrypto = type === 'crypto';
+    const currency = isCrypto ? '$' : 'Rp';
+    
+    // Trading target setups
+    const entryMin = currentPrice * 0.985;
+    const entryMax = currentPrice * 1.005;
+    const target1 = currentPrice * 1.05;
+    const target2 = currentPrice * 1.12;
+    const stopLoss = currentPrice * 0.96;
+
+    reportContainer.innerHTML = `
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+        <div>
+          <h4 style="font-weight: 700; color: var(--primary); margin-bottom: 10px; font-size: 0.95rem;">📊 RINGKASAN METRIK TEKNIKAL</h4>
+          <table style="width: 100%; font-size: 0.85rem; border-collapse: collapse;">
+            <tr>
+              <td style="padding: 6px 0; color: var(--text-muted); border-bottom: 1px solid var(--card-border);">Tren Utama (SMA 20)</td>
+              <td style="font-weight: bold; text-align: right; border-bottom: 1px solid var(--card-border);">${trendText}</td>
+            </tr>
+            <tr>
+              <td style="padding: 6px 0; color: var(--text-muted); border-bottom: 1px solid var(--card-border);">EMA 9 vs EMA 21</td>
+              <td style="font-weight: bold; text-align: right; border-bottom: 1px solid var(--card-border);">${emaText}</td>
+            </tr>
+            <tr>
+              <td style="padding: 6px 0; color: var(--text-muted); border-bottom: 1px solid var(--card-border);">RSI (14)</td>
+              <td style="font-weight: bold; text-align: right; border-bottom: 1px solid var(--card-border);">${cRsi.toFixed(2)} — ${rsiText}</td>
+            </tr>
+            <tr>
+              <td style="padding: 6px 0; color: var(--text-muted); border-bottom: 1px solid var(--card-border);">Bollinger Bands</td>
+              <td style="font-weight: bold; text-align: right; border-bottom: 1px solid var(--card-border);">${bbText}</td>
+            </tr>
+            <tr>
+              <td style="padding: 6px 0; color: var(--text-muted); border-bottom: 1px solid var(--card-border);">MACD Line</td>
+              <td style="font-weight: bold; text-align: right; border-bottom: 1px solid var(--card-border); color: ${cMacd > cSignal ? 'var(--success)' : 'var(--danger)'}">
+                ${cMacd.toFixed(4)} (${cMacd > cSignal ? 'Bullish' : 'Bearish'})
+              </td>
+            </tr>
+            <tr>
+              <td style="padding: 6px 0; color: var(--text-muted);">Stochastic %K / %D</td>
+              <td style="font-weight: bold; text-align: right;">%K: ${cK.toFixed(1)} / %D: ${cD.toFixed(1)}</td>
+            </tr>
+          </table>
+        </div>
+
+        <div style="background: rgba(255,255,255,0.01); border-left: 3px solid var(--primary); padding: 15px; border-radius: 0 8px 8px 0; display: flex; flex-direction: column; justify-content: center;">
+          <h4 style="font-weight: 700; color: var(--primary); margin-bottom: 12px; font-size: 0.95rem;">🎯 PLAN REKOMENDASI TRADING</h4>
+          <div style="display: flex; flex-direction: column; gap: 10px; font-size: 0.9rem;">
+            <div>
+              <span style="color: var(--text-muted); font-size: 0.8rem;">Zona Entry Beli:</span>
+              <div style="font-weight: bold; font-size: 1.15rem; color: var(--success);">
+                ${currency}${Math.round(entryMin).toLocaleString()} - ${currency}${Math.round(entryMax).toLocaleString()}
+              </div>
+            </div>
+            <div style="display: flex; justify-content: space-between; gap: 10px;">
+              <div>
+                <span style="color: var(--text-muted); font-size: 0.8rem;">Target Take Profit (T1)</span>
+                <div style="font-weight: bold; color: var(--primary);">${currency}${Math.round(target1).toLocaleString()} (+5%)</div>
+              </div>
+              <div>
+                <span style="color: var(--text-muted); font-size: 0.8rem;">Target Take Profit (T2)</span>
+                <div style="font-weight: bold; color: var(--primary);">${currency}${Math.round(target2).toLocaleString()} (+12%)</div>
+              </div>
+            </div>
+            <div>
+              <span style="color: var(--text-muted); font-size: 0.8rem;">Stop Loss Level (Disiplin):</span>
+              <div style="font-weight: bold; color: var(--danger);">${currency}${Math.round(stopLoss).toLocaleString()} (-4%)</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="border-top: 1px solid var(--card-border); padding-top: 15px;">
+        <h4 style="font-weight: 700; color: var(--text-main); margin-bottom: 8px; font-size: 0.95rem;">📝 CATATAN ANALIS / OUTLOOK</h4>
+        <p style="color: var(--text-muted); font-size: 0.85rem; line-height: 1.5; margin: 0;">
+          Berdasarkan penutupan harga terakhir di level <b>${currency}${currentPrice.toLocaleString()}</b>, indikator teknis terakumulasi menunjukkan <b>${
+            cEma9 > cEma21 ? 'Kekuatan tren naik jangka pendek yang dominan.' : 'Tekanan jual jangka pendek yang membayangi.'
+          }</b> 
+          RSI berada di posisi <b>${cRsi.toFixed(1)}</b> yang mengindikasikan <b>${
+            cRsi > 65 ? 'kondisi pasar mulai panas (Overbought), tunggu pullbacks.' : cRsi < 35 ? 'kondisi pasar jenuh jual, sangat ideal diakumulasi.' : 'kondisi netral (sideways).'
+          }</b> 
+          Gunakan money management yang ketat dengan menaruh porsi cash 30% untuk antisipasi koreksi regional.
+        </p>
+      </div>
+    `;
+
+    if (timestampEl) {
+      timestampEl.innerText = `Updated: ${new Date().toLocaleTimeString()}`;
     }
   }
 
