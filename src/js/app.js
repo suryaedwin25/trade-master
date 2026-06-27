@@ -37,7 +37,31 @@ window.TradeMasterApp = (function() {
     },
     news: [],
     analyzedNews: [],
-    sentimentScorecard: null
+    sentimentScorecard: null,
+    beiWhales: (function() {
+      const cached = localStorage.getItem('bei_whales_data');
+      if (cached) {
+        try {
+          return JSON.parse(cached);
+        } catch (e) {
+          console.error('Error parsing cached bei_whales_data:', e);
+        }
+      }
+      return [
+        { name: 'Prajogo Pangestu', holdings: ['TPIA', 'BREN', 'BRPT', 'CUAN'], sector: 'Grup Barito (Energi & Petrokimia)', status: 'ACCUMULATING', pnl: 210 },
+        { name: 'Lo Kheng Hong', holdings: ['GJTL', 'CFIN', 'BMTR', 'DILD'], sector: 'Value Investing (Sektor Ritel/Finance)', status: 'HOLDING', pnl: 180 },
+        { name: 'Garibaldi Thohir', holdings: ['ADRO', 'MDKA', 'ESSA'], sector: 'Adaro & Merdeka Group (Batubara & Emas)', status: 'HOLDING', pnl: 65 },
+        { name: 'Timothy Ronald', holdings: ['BBRI', 'GOTO'], sector: 'Growth & Aggressive Allocation (>1% stake)', status: 'ACCUMULATING', pnl: 42 },
+        { name: 'Belvin Tannadi', holdings: ['BRMS', 'MEDC'], sector: 'Swing / Commodities (>1% stake swing)', status: 'ACTIVE SWING', pnl: 15 },
+        { name: 'Andri Hakim', holdings: ['BBRI', 'GOTO', 'TLKM'], sector: 'Tech & Growth (>1% blockholder)', status: 'ACCUMULATING', pnl: 12 },
+        { name: 'David Noah', holdings: ['BRMS', 'ADRO', 'MEDC'], sector: 'Momentum / Volume Breakout (>1% stake)', status: 'ACTIVE SWING', pnl: 25 },
+        { name: 'Founder Remora', holdings: ['BUMI', 'DEWA', 'BRMS'], sector: 'Systematic Swing / Scalping (>1% stake)', status: 'ACTIVE SCALPING', pnl: 35 },
+        { name: 'Leon Hartono', holdings: ['BBCA', 'BBRI', 'GOTO'], sector: 'Macro & Tech leader (>1% blockholder)', status: 'HOLDING', pnl: 18 },
+        { name: 'Anthoni Salim', holdings: ['BUMI', 'DNET', 'META'], sector: 'Grup Salim (Konsumer & Infrastruktur)', status: 'HOLDING', pnl: 32 },
+        { name: 'Hermanto Tanoko', holdings: ['CLEO', 'AVIA', 'PEVE'], sector: 'Tan Corp (Consumer Goods & Paint)', status: 'HOLDING', pnl: 48 },
+        { name: 'Sugianto Kusuma (Aguan)', holdings: ['PANI'], sector: 'Agung Sedayu (Properti & Real Estate)', status: 'ACCUMULATING', pnl: 150 }
+      ];
+    })()
   };
 
   // 1. Chart Helper Functions
@@ -672,6 +696,93 @@ window.TradeMasterApp = (function() {
     else if (combinedStockScore <= -3.0) stockCombinedRec = 'STRONG SELL';
     else if (combinedStockScore <= -1.0) stockCombinedRec = 'SELL';
 
+    // 1. Calculate Whale Activity Distribution dynamically from state.beiWhales
+    const totalWhales = state.beiWhales.length;
+    const accCount = state.beiWhales.filter(w => w.status === 'ACCUMULATING').length;
+    const holdCount = state.beiWhales.filter(w => w.status === 'HOLDING').length;
+    const tradeCount = state.beiWhales.filter(w => w.status.includes('SWING') || w.status.includes('SCALPING')).length;
+
+    const accPct = totalWhales > 0 ? Math.round((accCount / totalWhales) * 100) : 0;
+    const holdPct = totalWhales > 0 ? Math.round((holdCount / totalWhales) * 100) : 0;
+    const tradePct = totalWhales > 0 ? Math.round((tradeCount / totalWhales) * 100) : 0;
+
+    // 2. Identify Consensus Overlapping Stocks
+    const stockCounts = {};
+    state.beiWhales.forEach(w => {
+      w.holdings.forEach(h => {
+        const cleanH = h.trim().toUpperCase();
+        if (cleanH) {
+          stockCounts[cleanH] = (stockCounts[cleanH] || 0) + 1;
+        }
+      });
+    });
+
+    const consensusStocks = Object.entries(stockCounts)
+      .map(([symbol, count]) => ({ symbol, count }))
+      .filter(item => item.count >= 2)
+      .sort((a, b) => b.count - a.count);
+
+    // 3. Sector Dominance
+    const sectorCounts = {};
+    state.beiWhales.forEach(w => {
+      let sec = 'Lainnya';
+      const sText = w.sector.toLowerCase();
+      if (sText.includes('energi') || sText.includes('komoditas') || sText.includes('batubara') || sText.includes('emas') || sText.includes('pertambangan') || sText.includes('barito')) {
+        sec = 'Energi & Komoditas';
+      } else if (sText.includes('tech') || sText.includes('teknologi') || sText.includes('growth') || sText.includes('macro')) {
+        sec = 'Teknologi & Growth';
+      } else if (sText.includes('consumer') || sText.includes('ritel') || sText.includes('konsumer') || sText.includes('tan corp')) {
+        sec = 'Konsumer & Ritel';
+      } else if (sText.includes('properti') || sText.includes('estate') || sText.includes('sedayu')) {
+        sec = 'Properti & Real Estate';
+      } else if (sText.includes('finance') || sText.includes('bank') || sText.includes('perbankan')) {
+        sec = 'Perbankan & Keuangan';
+      } else if (sText.includes('value')) {
+        sec = 'Value Investing';
+      }
+      sectorCounts[sec] = (sectorCounts[sec] || 0) + 1;
+    });
+
+    const topSectors = Object.entries(sectorCounts)
+      .map(([name, count]) => ({ name, count }))
+      .sort((a, b) => b.count - a.count);
+
+    // 4. Actionable Strategy & Sentiment Rating
+    let whaleSentimentText = 'MIXED';
+    let whaleSentimentClass = 'badge-warning';
+    let whaleStrategyRec = '';
+
+    if (accPct >= 40) {
+      whaleSentimentText = 'BULLISH ACCUMULATION';
+      whaleSentimentClass = 'badge-success';
+      whaleStrategyRec = `🚀 <b>Whale Sentiment: BULLISH ACCUMULATION</b><br>
+        Sebagian besar konglomerat dan super-retailer sedang mengumpulkan barang (Accumulating: ${accPct}%). 
+        <b>Strategi Eksekusi:</b> Ikuti aksi beli whale! Prioritaskan akumulasi bertahap pada emiten konsensus terkuat seperti 
+        ${consensusStocks.length > 0 ? consensusStocks.slice(0, 3).map(s => `<b>${s.symbol}</b>`).join(', ') : 'BBRI dan GOTO'} 
+        saat terjadi koreksi teknikal di dekat level support utama. Sektor <b>${topSectors[0]?.name || 'Perbankan'}</b> menjadi penopang utama portofolio mereka saat ini.`;
+    } else if (holdPct >= 50) {
+      whaleSentimentText = 'STABLE HOLDING';
+      whaleSentimentClass = 'badge-warning';
+      whaleStrategyRec = `⚖️ <b>Whale Sentiment: STABLE HOLDING</b><br>
+        Para whale cenderung mempertahankan portofolio tanpa aktivitas beli/jual yang agresif (Holding: ${holdPct}%). 
+        <b>Strategi Eksekusi:</b> Kondisi pasar dalam mode wait-and-see. Disarankan untuk membatasi pembukaan posisi baru dalam jumlah besar. 
+        Gunakan teknik swing trading pada saham-saham konsensus, manfaatkan fluktuasi jangka pendek, dan pertahankan porsi kas RDN sebesar 30-40%.`;
+    } else if (tradePct >= 40) {
+      whaleSentimentText = 'ACTIVE SWING / VOLATILITY';
+      whaleSentimentClass = 'badge-info';
+      whaleStrategyRec = `⚡ <b>Whale Sentiment: ACTIVE SWING / SCALPING</b><br>
+        Mayoritas whale ritel super kaya sangat aktif melakukan swing atau scalping cepat (Active trading: ${tradePct}%). 
+        <b>Strategi Eksekusi:</b> Volatilitas pasar sangat tinggi. Fokus pada saham momentum dengan volume breakout yang didukung akumulasi broker top. 
+        Gunakan stop loss ketat (maksimal 3% di bawah harga entry) dan segera amankan profit jika target teknikal jangka pendek tercapai.`;
+    } else {
+      whaleSentimentText = 'NEUTRAL / DIVERGENT';
+      whaleSentimentClass = 'badge-warning';
+      whaleStrategyRec = `🔍 <b>Whale Sentiment: NEUTRAL / DIVERGENT</b><br>
+        Aktivitas portofolio para whale terbagi secara merata antara akumulasi, hold, dan trading. Tidak ada konsensus dominan.
+        <b>Strategi Eksekusi:</b> Lakukan alokasi portofolio secara defensif. Bagi alokasi dana secara berimbang antara saham perbankan big cap sebagai jangkar investasi, 
+        dan simpan sisa dana dalam bentuk kas stabil atau aset kripto utama (BTC) untuk menjaga likuiditas.`;
+    }
+
     container.innerHTML = `
       <!-- Crypto Strategy Card -->
       <div class="card">
@@ -796,6 +907,98 @@ window.TradeMasterApp = (function() {
                   `Kondisi makroekonomi seimbang. Lakukan diversifikasi moderat pada saham komoditas defensif.`
                 }
               </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Whale Portfolio Analysis Card (Full Width) -->
+      <div class="card" style="grid-column: span 2; margin-top: 10px;">
+        <div class="card-header">
+          <span class="card-title" style="display: flex; align-items: center; gap: 8px;">
+            🐳 Whale Sentiment & Copy-Trading Engine (Dynamic)
+          </span>
+          <span class="badge ${whaleSentimentClass}">${whaleSentimentText}</span>
+        </div>
+        
+        <div style="margin-bottom: 20px;">
+          <div style="font-weight:700; font-size:0.85rem; color:var(--text-muted); text-transform:uppercase; margin-bottom:10px;">Rekomendasi Strategi Whale</div>
+          <div style="background: rgba(108, 92, 231, 0.05); padding: 15px; border-radius: 8px; border: 1px solid rgba(108, 92, 231, 0.2); line-height: 1.6; font-size: 0.9rem;">
+            ${whaleStrategyRec}
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 24px;">
+          <!-- Column 1: Whale Activity Distribution -->
+          <div style="background: rgba(255,255,255,0.01); padding: 15px; border-radius: 8px; border: 1px solid var(--card-border);">
+            <div style="font-weight:700; font-size:0.8rem; color:var(--text-muted); text-transform:uppercase; margin-bottom:12px;">Distribusi Aktivitas Whale</div>
+            
+            <div style="margin-bottom: 10px;">
+              <div style="display: flex; justify-content: space-between; font-size: 0.75rem; margin-bottom: 4px;">
+                <span>Accumulating (Akumulasi):</span>
+                <span style="font-weight: bold; color: var(--success);">${accPct}% (${accCount})</span>
+              </div>
+              <div style="height: 6px; background: rgba(255,255,255,0.05); border-radius: 3px; overflow: hidden;">
+                <div style="width: ${accPct}%; height: 100%; background: var(--success);"></div>
+              </div>
+            </div>
+
+            <div style="margin-bottom: 10px;">
+              <div style="display: flex; justify-content: space-between; font-size: 0.75rem; margin-bottom: 4px;">
+                <span>Holding (Bertahan):</span>
+                <span style="font-weight: bold; color: var(--warning);">${holdPct}% (${holdCount})</span>
+              </div>
+              <div style="height: 6px; background: rgba(255,255,255,0.05); border-radius: 3px; overflow: hidden;">
+                <div style="width: ${holdPct}%; height: 100%; background: var(--warning);"></div>
+              </div>
+            </div>
+
+            <div>
+              <div style="display: flex; justify-content: space-between; font-size: 0.75rem; margin-bottom: 4px;">
+                <span>Trading / Swing:</span>
+                <span style="font-weight: bold; color: var(--primary);">${tradePct}% (${tradeCount})</span>
+              </div>
+              <div style="height: 6px; background: rgba(255,255,255,0.05); border-radius: 3px; overflow: hidden;">
+                <div style="width: ${tradePct}%; height: 100%; background: var(--primary);"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Column 2: Overlapping Consensus Holdings -->
+          <div style="background: rgba(255,255,255,0.01); padding: 15px; border-radius: 8px; border: 1px solid var(--card-border); display: flex; flex-direction: column;">
+            <div style="font-weight:700; font-size:0.8rem; color:var(--text-muted); text-transform:uppercase; margin-bottom:12px;">Saham Konsensus Terkuat (>1 Whale)</div>
+            <div style="display: flex; flex-direction: column; gap: 8px; flex-grow: 1; justify-content: flex-start;">
+              ${
+                consensusStocks.length === 0 
+                  ? '<div style="color: var(--text-muted); font-size: 0.75rem; text-align: center; margin-top: auto; margin-bottom: auto;">Belum ada saham overlap. Tambahkan beberapa data holdings yang sama!</div>'
+                  : consensusStocks.map(item => `
+                      <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.02); padding: 6px 10px; border-radius: 6px; border: 1px solid var(--card-border);">
+                        <span class="badge badge-info" style="cursor: pointer; font-size: 0.75rem; padding: 3px 6px; font-weight: bold;" onclick="TradeMasterApp.navigateTo('stocks', '${item.symbol}')" title="Klik untuk memuat analisis ${item.symbol}">
+                          ${item.symbol}
+                        </span>
+                        <span style="font-size: 0.72rem; color: var(--text-muted);">
+                          Dipegang oleh <b style="color: var(--text-main);">${item.count} Whales</b>
+                        </span>
+                      </div>
+                    `).join('')
+              }
+            </div>
+          </div>
+
+          <!-- Column 3: Sector Concentration -->
+          <div style="background: rgba(255,255,255,0.01); padding: 15px; border-radius: 8px; border: 1px solid var(--card-border);">
+            <div style="font-weight:700; font-size:0.8rem; color:var(--text-muted); text-transform:uppercase; margin-bottom:12px;">Konsentrasi Sektor Dominan</div>
+            <div style="display: flex; flex-direction: column; gap: 6px;">
+              ${
+                topSectors.length === 0
+                  ? '<div style="color: var(--text-muted); font-size: 0.75rem; text-align: center;">Data sektoral kosong.</div>'
+                  : topSectors.slice(0, 4).map((item, idx) => `
+                      <div style="display: flex; justify-content: space-between; font-size: 0.75rem; padding-bottom: 4px; border-bottom: 1px dashed rgba(255,255,255,0.05);">
+                        <span style="color: var(--text-muted);">${idx + 1}. ${item.name}</span>
+                        <span style="font-weight: bold; color: var(--primary);">${item.count} Investor</span>
+                      </div>
+                    `).join('')
+              }
             </div>
           </div>
         </div>
@@ -1674,22 +1877,7 @@ window.TradeMasterApp = (function() {
     const list = document.getElementById('bei-whale-portfolio-list');
     if (!list) return;
 
-    const beiWhales = [
-      { name: 'Prajogo Pangestu', holdings: ['TPIA', 'BREN', 'BRPT', 'CUAN'], sector: 'Grup Barito (Energi & Petrokimia)', status: 'ACCUMULATING', pnl: 210 },
-      { name: 'Lo Kheng Hong', holdings: ['GJTL', 'CFIN', 'BMTR', 'DILD'], sector: 'Value Investing (Sektor Ritel/Finance)', status: 'HOLDING', pnl: 180 },
-      { name: 'Garibaldi Thohir', holdings: ['ADRO', 'MDKA', 'ESSA'], sector: 'Adaro & Merdeka Group (Batubara & Emas)', status: 'HOLDING', pnl: 65 },
-      { name: 'Timothy Ronald', holdings: ['BBRI', 'GOTO'], sector: 'Growth & Aggressive Allocation (>1% stake)', status: 'ACCUMULATING', pnl: 42 },
-      { name: 'Belvin Tannadi', holdings: ['BRMS', 'MEDC'], sector: 'Swing / Commodities (>1% stake swing)', status: 'ACTIVE SWING', pnl: 15 },
-      { name: 'Andri Hakim', holdings: ['BBRI', 'GOTO', 'TLKM'], sector: 'Tech & Growth (>1% blockholder)', status: 'ACCUMULATING', pnl: 12 },
-      { name: 'David Noah', holdings: ['BRMS', 'ADRO', 'MEDC'], sector: 'Momentum / Volume Breakout (>1% stake)', status: 'ACTIVE SWING', pnl: 25 },
-      { name: 'Founder Remora', holdings: ['BUMI', 'DEWA', 'BRMS'], sector: 'Systematic Swing / Scalping (>1% stake)', status: 'ACTIVE SCALPING', pnl: 35 },
-      { name: 'Leon Hartono', holdings: ['BBCA', 'BBRI', 'GOTO'], sector: 'Macro & Tech leader (>1% blockholder)', status: 'HOLDING', pnl: 18 },
-      { name: 'Anthoni Salim', holdings: ['BUMI', 'DNET', 'META'], sector: 'Grup Salim (Konsumer & Infrastruktur)', status: 'HOLDING', pnl: 32 },
-      { name: 'Hermanto Tanoko', holdings: ['CLEO', 'AVIA', 'PEVE'], sector: 'Tan Corp (Consumer Goods & Paint)', status: 'HOLDING', pnl: 48 },
-      { name: 'Sugianto Kusuma (Aguan)', holdings: ['PANI'], sector: 'Agung Sedayu (Properti & Real Estate)', status: 'ACCUMULATING', pnl: 150 }
-    ];
-
-    list.innerHTML = beiWhales.map(w => {
+    list.innerHTML = state.beiWhales.map((w, index) => {
       const pnlColor = w.pnl >= 0 ? 'var(--success)' : 'var(--danger)';
       const pnlText = `${w.pnl >= 0 ? '+' : ''}${w.pnl}%`;
       return `
@@ -1706,9 +1894,113 @@ window.TradeMasterApp = (function() {
           <td>
             <span style="font-weight: bold; color: ${pnlColor};">${w.status} (${pnlText})</span>
           </td>
+          <td>
+            <div style="display: flex; gap: 4px;">
+              <button class="btn-edit" onclick="TradeMasterApp.openWhaleModal(${index})">Edit</button>
+              <button class="btn-delete" onclick="TradeMasterApp.deleteWhaleData(${index})">Hapus</button>
+            </div>
+          </td>
         </tr>
       `;
     }).join('');
+  }
+
+  // Open modal for adding or editing a whale
+  function openWhaleModal(index = null) {
+    const modal = document.getElementById('whale-modal');
+    if (!modal) return;
+
+    const titleEl = document.getElementById('whale-modal-title');
+    const editIndexInput = document.getElementById('whale-edit-index');
+    const nameInput = document.getElementById('whale-name');
+    const holdingsInput = document.getElementById('whale-holdings');
+    const sectorInput = document.getElementById('whale-sector');
+    const statusSelect = document.getElementById('whale-status');
+    const pnlInput = document.getElementById('whale-pnl');
+
+    if (index !== null && index >= 0 && index < state.beiWhales.length) {
+      // Edit mode
+      const w = state.beiWhales[index];
+      titleEl.innerText = 'Edit Data Whale';
+      editIndexInput.value = index;
+      nameInput.value = w.name;
+      holdingsInput.value = w.holdings.join(', ');
+      sectorInput.value = w.sector;
+      statusSelect.value = w.status;
+      pnlInput.value = w.pnl;
+    } else {
+      // Add mode
+      titleEl.innerText = 'Tambah Data Whale';
+      editIndexInput.value = '';
+      nameInput.value = '';
+      holdingsInput.value = '';
+      sectorInput.value = '';
+      statusSelect.value = 'ACCUMULATING';
+      pnlInput.value = '';
+    }
+
+    modal.classList.add('active');
+  }
+
+  // Close modal
+  function closeWhaleModal() {
+    const modal = document.getElementById('whale-modal');
+    if (modal) modal.classList.remove('active');
+  }
+
+  // Save whale data (Add or Edit)
+  function saveWhaleData() {
+    const editIndexVal = document.getElementById('whale-edit-index').value;
+    const name = document.getElementById('whale-name').value.trim();
+    const holdingsStr = document.getElementById('whale-holdings').value.trim();
+    const sector = document.getElementById('whale-sector').value.trim();
+    const status = document.getElementById('whale-status').value;
+    const pnlVal = document.getElementById('whale-pnl').value.trim();
+
+    if (!name || !holdingsStr || !sector || pnlVal === '') {
+      alert('Harap isi semua kolom!');
+      return;
+    }
+
+    const holdings = holdingsStr.split(',').map(h => h.trim().toUpperCase()).filter(h => h !== '');
+    const pnl = parseInt(pnlVal);
+
+    const whaleObj = { name, holdings, sector, status, pnl };
+
+    if (editIndexVal !== '') {
+      // Update existing
+      const index = parseInt(editIndexVal);
+      state.beiWhales[index] = whaleObj;
+    } else {
+      // Add new
+      state.beiWhales.push(whaleObj);
+    }
+
+    // Save to localStorage
+    localStorage.setItem('bei_whales_data', JSON.stringify(state.beiWhales));
+
+    // Refresh Dashboard UI and close modal
+    renderBEIWhalePortfolios();
+    closeWhaleModal();
+
+    // If we are currently on the strategy page, re-render it to update analysis
+    if (state.activePage === 'strategy') {
+      renderStrategyPage();
+    }
+  }
+
+  // Delete whale data
+  function deleteWhaleData(index) {
+    if (confirm('Apakah Anda yakin ingin menghapus data whale ini?')) {
+      state.beiWhales.splice(index, 1);
+      localStorage.setItem('bei_whales_data', JSON.stringify(state.beiWhales));
+      renderBEIWhalePortfolios();
+      
+      // If we are currently on the strategy page, re-render it to update analysis
+      if (state.activePage === 'strategy') {
+        renderStrategyPage();
+      }
+    }
   }
 
   // Render Broker Accumulation Tracker (Portfolio of Top Brokers)
@@ -1856,7 +2148,11 @@ window.TradeMasterApp = (function() {
     scanCryptoMoonshots,
     setCryptoMode,
     searchDEXToken,
-    selectDEXToken
+    selectDEXToken,
+    openWhaleModal,
+    closeWhaleModal,
+    saveWhaleData,
+    deleteWhaleData
   };
 })();
 

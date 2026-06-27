@@ -406,7 +406,10 @@
                   <i data-lucide="users" style="color: var(--warning); width: 14px; height: 14px;"></i>
                   Kepemilikan Efek >1% (BEI)
                 </span>
-                <span class="badge badge-warning" style="font-size: 0.65rem; padding: 2px 6px;">KSEI >1%</span>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <button class="btn btn-primary" style="font-size: 0.65rem; padding: 2px 8px; border-radius: 4px;" onclick="TradeMasterApp.openWhaleModal()">+ Tambah Whale</button>
+                  <span class="badge badge-warning" style="font-size: 0.65rem; padding: 2px 6px;">KSEI >1%</span>
+                </div>
               </div>
               <div class="table-container" style="max-height: 250px; overflow-y: auto;">
                 <table style="font-size: 0.72rem; width: 100%;">
@@ -416,6 +419,7 @@
                       <th>Holdings Resmi (>1%)</th>
                       <th>Sektor / Konglomerasi</th>
                       <th>Status PnL</th>
+                      <th>Aksi</th>
                     </tr>
                   </thead>
                   <tbody id="bei-whale-portfolio-list">
@@ -481,6 +485,48 @@
       </section>
     </main>
 
+  </div>
+
+  <!-- Modal Dialog for Whale Portfolio Management -->
+  <div id="whale-modal" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="whale-modal-title">Tambah Data Whale</h3>
+        <span class="modal-close" onclick="TradeMasterApp.closeWhaleModal()">&times;</span>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="whale-edit-index" value="">
+        <div class="form-group">
+          <label for="whale-name">Nama Investor / Trader</label>
+          <input type="text" id="whale-name" placeholder="Contoh: Prajogo Pangestu" required>
+        </div>
+        <div class="form-group">
+          <label for="whale-holdings">Holdings Saham (Pisahkan dengan koma)</label>
+          <input type="text" id="whale-holdings" placeholder="Contoh: TPIA, BREN, BRPT, CUAN" required>
+        </div>
+        <div class="form-group">
+          <label for="whale-sector">Sektor / Deskripsi Konglomerasi</label>
+          <input type="text" id="whale-sector" placeholder="Contoh: Grup Barito (Energi & Petrokimia)" required>
+        </div>
+        <div class="form-group">
+          <label for="whale-status">Status Aktivitas</label>
+          <select id="whale-status">
+            <option value="ACCUMULATING">ACCUMULATING</option>
+            <option value="HOLDING">HOLDING</option>
+            <option value="ACTIVE SWING">ACTIVE SWING</option>
+            <option value="ACTIVE SCALPING">ACTIVE SCALPING</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="whale-pnl">Rata-rata PnL (%)</label>
+          <input type="number" id="whale-pnl" placeholder="Contoh: 150" required>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="TradeMasterApp.closeWhaleModal()">Batal</button>
+        <button class="btn btn-primary" onclick="TradeMasterApp.saveWhaleData()">Simpan</button>
+      </div>
+    </div>
   </div>
 
   <!-- CDN Third-Party Libraries -->

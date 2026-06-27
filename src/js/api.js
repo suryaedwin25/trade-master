@@ -1,7 +1,7 @@
 /* C:\Users\surya\.gemini\antigravity\scratch\trademaster\src\js\api.js */
 
 window.TradeMasterAPI = (function() {
-  const CORS_PROXY = 'https://api.allorigins.win/get?url=';
+  const CORS_PROXY = 'https://corsproxy.io/?';
   const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes cache
 
   // Cache helper
@@ -35,13 +35,7 @@ window.TradeMasterAPI = (function() {
     const response = await fetch(fetchUrl);
     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
     
-    let result;
-    if (useProxy) {
-      const data = await response.json();
-      result = JSON.parse(data.contents);
-    } else {
-      result = await response.json();
-    }
+    const result = await response.json();
     
     if (!skipCache) {
       setCachedData(cacheKey, result);
