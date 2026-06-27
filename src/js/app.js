@@ -472,8 +472,8 @@ window.TradeMasterApp = (function() {
       document.getElementById('stock-live-price').innerText = 'Data N/A';
     }
 
-    // Render Speculative Stocks Watchlist & Scanner
-    renderSpeculativeStocks();
+    // Render Influencer Portfolios (Copy Trade)
+    renderInfluencerPortfolios();
 
     // Calculate signals
     const signal = TradeMasterTA.generateSignals(data);
@@ -1669,67 +1669,40 @@ window.TradeMasterApp = (function() {
     `;
   }
 
-  // Render Speculative Stock Watchlist & Scanner
-  async function renderSpeculativeStocks() {
-    const list = document.getElementById('speculative-stock-list');
+  // Render Influencer Portfolios (LKH, Timothy Ronald, Belvin, RANS)
+  function renderInfluencerPortfolios() {
+    const list = document.getElementById('influencer-portfolio-list');
     if (!list) return;
 
-    try {
-      const symbols = ['GOTO', 'BRMS', 'BUMI', 'DEWA', 'MEDC', 'TPIA'];
-      const batchTickers = symbols.map(s => `${s}.JK`).join(',');
-      const url = `https://query1.finance.yahoo.com/v7/finance/quotes?symbols=${batchTickers}`;
-      
-      const response = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(url)}`);
-      const raw = await response.json();
-      const data = JSON.parse(raw.contents);
-      const quotes = data.quoteResponse?.result || [];
+    const influencers = [
+      { name: 'Lo Kheng Hong', holdings: ['GJTL', 'CFIN', 'BMTR'], style: 'Value Investing (Mercy Rp50)', status: 'HOLDING', pnl: 180 },
+      { name: 'Timothy Ronald', holdings: ['BTC', 'SOL', 'BBRI'], style: 'Growth / Aggressive Portfolio', status: 'ACCUMULATING', pnl: 42 },
+      { name: 'Belvin Tannadi', holdings: ['BRMS', 'MEDC', 'PGAS'], style: 'Swing Trade / Breakout', status: 'ACTIVE SWING', pnl: 15 },
+      { name: 'Raffi Ahmad (RANS)', holdings: ['RANS', 'GOTO'], style: 'Speculative / Hype-Catalyst', status: 'HOLD / MONITOR', pnl: -8 }
+    ];
 
-      if (quotes.length === 0) {
-        list.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--danger);">Gagal memuat list spekulatif.</td></tr>`;
-        return;
-      }
-
-      list.innerHTML = quotes.map(q => {
-        const symbol = q.symbol.replace('.JK', '');
-        const price = q.regularMarketPrice || 0;
-        const change = q.regularMarketChangePercent || 0;
-        const high = q.regularMarketDayHigh || 0;
-        const low = q.regularMarketDayLow || 0;
-        
-        // Volatility metric: High-Low range ratio
-        const volatility = price > 0 ? ((high - low) / price) * 100 : 0;
-        
-        let rec = 'HOLD';
-        let badgeClass = 'badge-warning';
-
-        if (change >= 1.5 && change <= 6.0 && volatility > 3) {
-          rec = 'BUY SPEC';
-          badgeClass = 'badge-success';
-        } else if (change > 6.0) {
-          rec = 'SELL / TP';
-          badgeClass = 'badge-danger';
-        } else if (change < -3.0) {
-          rec = 'ACCUM BUY';
-          badgeClass = 'badge-info';
-        }
-
-        return `
-          <tr style="cursor: pointer;" onclick="TradeMasterApp.navigateTo('stocks', '${symbol}')" title="Klik untuk memuat ${symbol} ke analisis utama">
-            <td style="font-weight: 700; color: var(--primary);">${symbol}</td>
-            <td style="font-weight: bold;">Rp${price.toLocaleString()}</td>
-            <td class="metric-change ${change >= 0 ? 'up' : 'down'}">${change >= 0 ? '▲ +' : '▼ '}${change.toFixed(2)}%</td>
-            <td style="color: var(--text-muted);">${volatility.toFixed(1)}%</td>
-            <td>
-              <span class="badge ${badgeClass}">${rec}</span>
-            </td>
-          </tr>
-        `;
-      }).join('');
-
-    } catch (e) {
-      console.error('Failed to load speculative stocks:', e);
-      list.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--danger);">Koneksi API terputus.</td></tr>`;
-    }
+    list.innerHTML = influencers.map(i => {
+      const pnlColor = i.pnl >= 0 ? 'var(--success)' : 'var(--danger)';
+      const pnlText = `${i.pnl >= 0 ? '+' : ''}${i.pnl}%`;
+      return `
+        <tr>
+          <td style="font-weight: 700; color: var(--text-main);">${i.name}</td>
+          <td>
+            <div style="display: flex; gap: 4px; flex-wrap: wrap;">
+              ${i.holdings.map(h => {
+                const isCryptoAsset = h === 'BTC' || h === 'SOL';
+                const targetPage = isCryptoAsset ? 'crypto' : 'stocks';
+                return `<span class="badge badge-info" style="cursor: pointer; font-size: 0.65rem; padding: 2px 4px; border-radius: 4px;" onclick="TradeMasterApp.navigateTo('${targetPage}', '${h}')">${h}</span>`;
+              }).join('')}
+            </div>
+          </td>
+          <td style="color: var(--text-muted); font-size: 0.7rem;">${i.style}</td>
+          <td>
+            <span style="font-weight: bold; color: ${pnlColor};">${i.status} (${pnlText})</span>
+          </td>
+        </tr>
+      `;
+    }).join('');
   }
 
   // Render Broker Accumulation Tracker (Portfolio of Top Brokers)
