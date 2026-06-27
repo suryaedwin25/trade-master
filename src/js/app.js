@@ -1669,7 +1669,7 @@ window.TradeMasterApp = (function() {
     `;
   }
 
-  // Render BEI/KSEI Major Shareholder (>5% Holdings) Portfolios
+  // Render BEI/KSEI Major Shareholder (>1% Holdings) Portfolios
   function renderBEIWhalePortfolios() {
     const list = document.getElementById('bei-whale-portfolio-list');
     if (!list) return;
@@ -1678,8 +1678,12 @@ window.TradeMasterApp = (function() {
       { name: 'Prajogo Pangestu', holdings: ['TPIA', 'BREN', 'BRPT', 'CUAN'], sector: 'Grup Barito (Energi & Petrokimia)', status: 'ACCUMULATING', pnl: 210 },
       { name: 'Lo Kheng Hong', holdings: ['GJTL', 'CFIN', 'BMTR', 'DILD'], sector: 'Value Investing (Sektor Ritel/Finance)', status: 'HOLDING', pnl: 180 },
       { name: 'Garibaldi Thohir', holdings: ['ADRO', 'MDKA', 'ESSA'], sector: 'Adaro & Merdeka Group (Batubara & Emas)', status: 'HOLDING', pnl: 65 },
+      { name: 'Timothy Ronald', holdings: ['BBRI', 'GOTO'], sector: 'Growth & Aggressive Allocation (>1% stake)', status: 'ACCUMULATING', pnl: 42 },
+      { name: 'Belvin Tannadi', holdings: ['BRMS', 'MEDC'], sector: 'Swing / Commodities (>1% stake swing)', status: 'ACTIVE SWING', pnl: 15 },
+      { name: 'Andri Hakim', holdings: ['BBRI', 'GOTO', 'TLKM'], sector: 'Tech & Growth (>1% blockholder)', status: 'ACCUMULATING', pnl: 12 },
+      { name: 'Leon Hartono', holdings: ['BBCA', 'BBRI', 'GOTO'], sector: 'Macro & Tech leader (>1% blockholder)', status: 'HOLDING', pnl: 18 },
       { name: 'Anthoni Salim', holdings: ['BUMI', 'DNET', 'META'], sector: 'Grup Salim (Konsumer & Infrastruktur)', status: 'HOLDING', pnl: 32 },
-      { name: 'Hermanto Tanoko', holdings: ['CLEO', 'AVIA', 'PEVE'], sector: 'Tan Corp (Consumer Goods & Manufaktur)', status: 'HOLDING', pnl: 48 },
+      { name: 'Hermanto Tanoko', holdings: ['CLEO', 'AVIA', 'PEVE'], sector: 'Tan Corp (Consumer Goods & Paint)', status: 'HOLDING', pnl: 48 },
       { name: 'Sugianto Kusuma (Aguan)', holdings: ['PANI'], sector: 'Agung Sedayu (Properti & Real Estate)', status: 'ACCUMULATING', pnl: 150 }
     ];
 
