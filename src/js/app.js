@@ -44,7 +44,8 @@ window.TradeMasterApp = (function() {
         try {
           return JSON.parse(cached);
         } catch (e) {
-          console.error('Error parsing cached bei_whales_data:', e);
+          console.error('Error parsing cached bei_whales_data, falling back to defaults:', e);
+          try { localStorage.removeItem('bei_whales_data'); } catch(err) {}
         }
       }
       return [
@@ -80,37 +81,68 @@ window.TradeMasterApp = (function() {
   }
 
   function initMainChart(containerId, type) {
-    destroyChart(type);
-    
     const container = document.getElementById(containerId);
     if (!container) return;
 
-    // Create the main candlestick chart
-    const chart = LightweightCharts.createChart(container, {
+    let chart = state[type].chartInstance;
+    let series = state[type].candlestickSeries;
+
+    if (chart && series) {
+      // Keep alive: apply dynamic theme colors in case user switched themes
+      const isLightMode = getComputedStyle(document.documentElement).getPropertyValue('--bg-color').trim().toLowerCase().startsWith('#f');
+      const chartBg = isLightMode ? '#ffffff' : '#12121a';
+      const chartText = isLightMode ? '#4e4e66' : '#8e8ea8';
+      const gridColor = isLightMode ? 'rgba(0, 0, 0, 0.03)' : 'rgba(255, 255, 255, 0.03)';
+      const borderColor = isLightMode ? 'rgba(0, 0, 0, 0.08)' : 'rgba(255, 255, 255, 0.08)';
+
+      chart.applyOptions({
+        layout: { background: { color: chartBg }, textColor: chartText },
+        grid: { vertLines: { color: gridColor }, horzLines: { color: gridColor } },
+        rightPriceScale: { borderColor: borderColor },
+        timeScale: { borderColor: borderColor }
+      });
+      
+      // Update candle data
+      if (state[type].chartData && state[type].chartData.length > 0) {
+        series.setData(state[type].chartData);
+      }
+      return chart;
+    }
+
+    // Otherwise, create new
+    destroyChart(type);
+    
+    const isLightMode = getComputedStyle(document.documentElement).getPropertyValue('--bg-color').trim().toLowerCase().startsWith('#f');
+    const chartBg = isLightMode ? '#ffffff' : '#12121a';
+    const chartText = isLightMode ? '#4e4e66' : '#8e8ea8';
+    const gridColor = isLightMode ? 'rgba(0, 0, 0, 0.03)' : 'rgba(255, 255, 255, 0.03)';
+    const borderColor = isLightMode ? 'rgba(0, 0, 0, 0.08)' : 'rgba(255, 255, 255, 0.08)';
+
+    chart = LightweightCharts.createChart(container, {
       layout: {
-        background: { type: LightweightCharts.ColorType.Solid, color: '#12121a' },
-        textColor: '#8e8ea8',
+        background: { type: LightweightCharts.ColorType.Solid, color: chartBg },
+        textColor: chartText,
         fontSize: 11
       },
       grid: {
-        vertLines: { color: 'rgba(255, 255, 255, 0.03)' },
-        horzLines: { color: 'rgba(255, 255, 255, 0.03)' }
+        vertLines: { color: gridColor },
+        horzLines: { color: gridColor }
       },
       crosshair: {
         mode: LightweightCharts.CrosshairMode.Normal,
       },
       rightPriceScale: {
-        borderColor: 'rgba(255, 255, 255, 0.08)',
+        borderColor: borderColor,
       },
       timeScale: {
-        borderColor: 'rgba(255, 255, 255, 0.08)',
+        borderColor: borderColor,
         timeVisible: true
       },
       width: container.clientWidth,
       height: type === 'crypto' ? 320 : 400
     });
 
-    const series = chart.addCandlestickSeries({
+    const candlestickSeries = chart.addCandlestickSeries({
       upColor: '#00e676',
       downColor: '#ff5252',
       borderVisible: false,
@@ -119,9 +151,12 @@ window.TradeMasterApp = (function() {
     });
 
     state[type].chartInstance = chart;
-    state[type].candlestickSeries = series;
+    state[type].candlestickSeries = candlestickSeries;
 
-    // Auto-resize on window resize
+    if (state[type].chartData && state[type].chartData.length > 0) {
+      candlestickSeries.setData(state[type].chartData);
+    }
+
     const resizeObserver = new ResizeObserver(entries => {
       if (entries.length === 0 || !chart) return;
       chart.applyOptions({ width: container.clientWidth });
@@ -137,21 +172,27 @@ window.TradeMasterApp = (function() {
 
     container.style.display = 'block';
 
+    const isLightMode = getComputedStyle(document.documentElement).getPropertyValue('--bg-color').trim().toLowerCase().startsWith('#f');
+    const chartBg = isLightMode ? '#ffffff' : '#12121a';
+    const chartText = isLightMode ? '#4e4e66' : '#8e8ea8';
+    const gridColor = isLightMode ? 'rgba(0, 0, 0, 0.02)' : 'rgba(255, 255, 255, 0.02)';
+    const borderColor = isLightMode ? 'rgba(0, 0, 0, 0.05)' : 'rgba(255, 255, 255, 0.05)';
+
     const chart = LightweightCharts.createChart(container, {
       layout: {
-        background: { type: LightweightCharts.ColorType.Solid, color: '#12121a' },
-        textColor: '#8e8ea8',
+        background: { type: LightweightCharts.ColorType.Solid, color: chartBg },
+        textColor: chartText,
         fontSize: 10
       },
       grid: {
-        vertLines: { color: 'rgba(255, 255, 255, 0.02)' },
-        horzLines: { color: 'rgba(255, 255, 255, 0.02)' }
+        vertLines: { color: gridColor },
+        horzLines: { color: gridColor }
       },
       rightPriceScale: {
-        borderColor: 'rgba(255, 255, 255, 0.05)',
+        borderColor: borderColor,
       },
       timeScale: {
-        borderColor: 'rgba(255, 255, 255, 0.05)',
+        borderColor: borderColor,
         visible: false // hide timeline since main chart already has it
       },
       width: container.clientWidth,
@@ -380,6 +421,10 @@ window.TradeMasterApp = (function() {
     const data = await TradeMasterAPI.getCryptoChartData(symbol, state.crypto.chartInterval, 150, exchange);
     state.crypto.chartData = data;
     
+    // Initialize and render chart
+    initMainChart('crypto-chart-pane', 'crypto');
+    renderChartOverlays('crypto');
+    
     // Generate Written Analysis Report
     generateWrittenReport(data, 'crypto');
 
@@ -478,6 +523,9 @@ window.TradeMasterApp = (function() {
     state.stocks.chartData = data;
 
     if (data.length > 0) {
+      // Initialize and render chart
+      initMainChart('stock-chart-pane', 'stocks');
+      renderChartOverlays('stocks');
       const last = data[data.length - 1];
       const prev = data[data.length - 2];
       const changePct = ((last.close - prev.close) / prev.close) * 100;
@@ -660,6 +708,9 @@ window.TradeMasterApp = (function() {
 
   async function renderStrategyPage() {
     console.log('Rendering Strategy Engine page...');
+    
+    const avgInput = document.getElementById('stock-avg-price');
+    const userAvgPrice = avgInput ? (parseFloat(avgInput.value) || 5400) : 5400;
     
     // Fetch fresh data if needed
     if (state.crypto.chartData.length === 0) {
@@ -1003,7 +1054,99 @@ window.TradeMasterApp = (function() {
           </div>
         </div>
       </div>
+
+      <!-- Card 4: Sinergi Siklus & Portofolio Personal (Full Width) -->
+      <div class="card" style="grid-column: span 2; margin-top: 16px;">
+        <div class="card-header">
+          <span class="card-title" style="display: flex; align-items: center; gap: 8px;">
+            <i data-lucide="crosshair" style="color: var(--primary); width: 18px; height: 18px;"></i>
+            🎯 Sinergi Siklus Kripto & Portofolio Saham Personal
+          </span>
+          <span class="badge badge-info">Sinergi Portofolio</span>
+        </div>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+          <!-- Crypto Cycle Synergy -->
+          <div style="background: rgba(255,255,255,0.01); padding: 15px; border-radius: 8px; border: 1px solid var(--card-border);">
+            <div style="font-weight:700; font-size:0.85rem; color:var(--text-muted); text-transform:uppercase; margin-bottom:12px;">Siklus Kripto (BTC)</div>
+            
+            <div style="margin-bottom: 12px;">
+              <span style="font-size: 0.75rem; color: var(--text-muted);">Fase Siklus Ke-5 Saat Ini:</span>
+              <div style="font-size: 1rem; font-weight: bold; color: var(--success); margin-top: 2px;">
+                PRE-HALVING ACCUMULATION (DCA AKTIF)
+              </div>
+            </div>
+            
+            <div class="info-grid">
+              <div class="info-card">
+                <div class="info-card-label">Estimasi Bottom</div>
+                <div class="info-card-value" style="color: var(--success);">23 Okt 2026</div>
+              </div>
+              <div class="info-card">
+                <div class="info-card-label">Halving Ke-5</div>
+                <div class="info-card-value" style="color: var(--primary);">17 Apr 2028</div>
+              </div>
+              <div class="info-card">
+                <div class="info-card-label">Estimasi Puncak</div>
+                <div class="info-card-value" style="color: var(--warning);">05 Sep 2029</div>
+              </div>
+            </div>
+            
+            <p style="font-size: 0.78rem; color: var(--text-muted); line-height: 1.45; margin-top: 12px; border-top: 1px dashed var(--card-border); padding-top: 8px; margin-bottom: 0;">
+              💡 <b>Saran Strategis Kripto:</b> Saat ini adalah waktu emas untuk melakukan DCA mingguan/bulanan. Simpan seluruh kepemilikan Anda hingga target puncak siklus ke-5 diproyeksikan pada kuartal ketiga tahun 2029 (estimasi target harga $180,000 - $220,000).
+            </p>
+          </div>
+
+          <!-- Stock Portfolio Synergy (BBRI) -->
+          <div style="background: rgba(255,255,255,0.01); padding: 15px; border-radius: 8px; border: 1px solid var(--card-border);">
+            <div style="font-weight:700; font-size:0.85rem; color:var(--text-muted); text-transform:uppercase; margin-bottom:12px;">Portofolio Saham (BBRI)</div>
+            
+            <div style="margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;">
+              <div>
+                <span style="font-size: 0.75rem; color: var(--text-muted);">Modal Rata-rata Anda:</span>
+                <div style="font-size: 1.1rem; font-weight: bold; color: var(--primary); margin-top: 2px;">
+                  Rp ${userAvgPrice.toLocaleString()}
+                </div>
+              </div>
+              <div style="text-align: right;">
+                <span style="font-size: 0.75rem; color: var(--text-muted);">Rekomendasi Rata-rata:</span>
+                <div style="font-weight: bold; color: ${userAvgPrice <= 4500 ? 'var(--success)' : 'var(--danger)'}; font-size: 0.85rem; margin-top: 2px;">
+                  ${userAvgPrice <= 4500 ? '✓ AMAN (UNDER Rp 4,500)' : '⚠️ LAKUKAN AVERAGE DOWN'}
+                </div>
+              </div>
+            </div>
+
+            <div class="info-grid">
+              <div class="info-card">
+                <div class="info-card-label">PBV Band Wajar</div>
+                <div class="info-card-value" style="color: var(--primary);">2.2x (Rp 4,600)</div>
+              </div>
+              <div class="info-card">
+                <div class="info-card-label">Target Jual (No Loss)</div>
+                <div class="info-card-value" style="color: var(--success);">Rp 4,800 - 5,300</div>
+              </div>
+              <div class="info-card">
+                <div class="info-card-label">Waktu Jual Terbaik</div>
+                <div class="info-card-value" style="color: var(--warning);">Des s.d. Mar</div>
+              </div>
+            </div>
+
+            <p style="font-size: 0.78rem; color: var(--text-muted); line-height: 1.45; margin-top: 12px; border-top: 1px dashed var(--card-border); padding-top: 8px; margin-bottom: 0;">
+              💡 <b>Saran Strategis BBRI:</b> ${
+                userAvgPrice > 4500 
+                  ? `Modal rata-rata Anda (Rp ${userAvgPrice.toLocaleString()}) terlalu tinggi. <b>Segera lakukan DCA/Averaging down</b> di area harga murah saat ini (di bawah Rp 4,000) untuk menurunkan rata-rata modal ke area Rp 4,000-Rp 4,200. Ini penting agar Anda bisa keluar dengan profit saat siklus naik tahunan berikutnya.`
+                  : `Rata-rata modal Anda sudah sangat baik (Rp ${userAvgPrice.toLocaleString()}). Tahan (Hold) posisi Anda dan bersiap lakukan **penjualan massal** pada rentang **Rp 4,800 - Rp 5,300** saat periode pembagian dividen tahunan menjelang Maret.`
+              }
+            </p>
+          </div>
+        </div>
+      </div>
     `;
+    
+    // Regenerate Lucide icons on Strategy page elements
+    if (window.lucide) {
+      lucide.createIcons();
+    }
   }
 
   // IPO Dataset & Scoring Engine
@@ -1552,6 +1695,15 @@ window.TradeMasterApp = (function() {
     const lastIdx = data.length - 1;
     const currentPrice = data[lastIdx].close;
 
+    // Get average stock price if type is stock
+    let userAvgPrice = 0;
+    if (type === 'stocks') {
+      const avgInput = document.getElementById('stock-avg-price');
+      if (avgInput) {
+        userAvgPrice = parseFloat(avgInput.value) || 0;
+      }
+    }
+
     // Recalculate indicators for report
     const ema9 = TradeMasterTA.calculateEMA(data, 9);
     const ema21 = TradeMasterTA.calculateEMA(data, 21);
@@ -1597,103 +1749,525 @@ window.TradeMasterApp = (function() {
     const stopLoss = currentPrice * 0.96;
 
     if (isCrypto && symbol === 'BTC') {
+      // ===== BTC HALVING CYCLE HISTORICAL DATA =====
+      // Halving 1: 2012-11-28 | Peak: 2013-11-30 (367 days post-halving) | Bear bottom: 2015-01-14 (410 days post-peak)
+      // Halving 2: 2016-07-09 | Peak: 2017-12-17 (526 days post-halving) | Bear bottom: 2018-12-15 (363 days post-peak)
+      // Halving 3: 2020-05-11 | Peak: 2021-11-10 (548 days post-halving) | Bear bottom: 2022-11-21 (376 days post-peak)
+      // Halving 4: 2024-04-20 | Peak: ~2025-10 (est. 540 days post-halving) | Bear bottom: ~2026-11 (est. 383 days post-peak)
+      // Halving 5: ~2028-03 (estimated)
+
+      const halving4Date = new Date('2024-04-20');
+      const halving5Est = new Date('2028-04-17');
+      const now = new Date();
+
+      // Cycle calculations based on exact day durations:
+      const cycle1PeakDays = 367; // Outlier (early low-liquidity cycle)
+      const cycle2PeakDays = 526;
+      const cycle3PeakDays = 548;
+      const cycle4PeakDays = 533; // Actual days between 20 Apr 2024 and 5 Oct 2025
+      
+      // We use Mature Cycle Average (Cycle 2, 3, 4) for projections (excluding early outlier Cycle 1)
+      const avgPeakDays = Math.round((cycle2PeakDays + cycle3PeakDays + cycle4PeakDays) / 3); // Exactly 536 days
+      const avgBearDays = Math.round((410 + 363 + 376) / 3); // ~383 days
+      const avgBullDays = 1064;
+
+      // Cycle 4 calculations (Actual historical peak: 5 Oct 2025)
+      const cycle4PeakEst = new Date('2025-10-05');
+      const cycle4BearBottomEst = new Date(cycle4PeakEst.getTime() + avgBearDays * 86400000); // ~Oct 2026
+      
+      // DCA Window: from bear bottom through 6 months before halving 5
+      const dcaStart = cycle4BearBottomEst;
+      const dcaEnd = new Date(halving5Est.getTime() - 180 * 86400000); // 6 months before halving 5
+      
+      // Cycle 5 calculations
+      const cycle5PeakEst = new Date(halving5Est.getTime() + avgPeakDays * 86400000); // ~Sep 2029
+      const sellWindowStart = new Date(cycle5PeakEst.getTime() - 90 * 86400000); // 3 months before est peak
+      const sellWindowEnd = new Date(cycle5PeakEst.getTime() + 60 * 86400000); // 2 months after est peak
+
+      // Dynamic countdown
+      const daysToHalving5 = Math.round((halving5Est - now) / 86400000);
+      const daysToPeak5 = Math.round((cycle5PeakEst - now) / 86400000);
+      const daysToDCAStart = Math.round((dcaStart - now) / 86400000);
+      
+      // Format helper - with exact day
+      const fmtDate = (d) => d.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+      const fmtDateShort = (d) => d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+
+      // Determine current phase
+      let currentPhase, phaseColor, phaseAction;
+      if (now < cycle4PeakEst) {
+        currentPhase = 'CYCLE 4 BULL RUN (Aktif)';
+        phaseColor = 'var(--success)';
+        phaseAction = 'Mulai sisihkan profit bertahap. Jangan greedy.';
+      } else if (now < cycle4BearBottomEst) {
+        currentPhase = 'CYCLE 4 BEAR MARKET (Koreksi)';
+        phaseColor = 'var(--danger)';
+        phaseAction = 'TAHAN CASH. Jangan beli besar. Tunggu bottom.';
+      } else if (now < halving5Est) {
+        currentPhase = 'PRE-HALVING ACCUMULATION (DCA Aktif!)';
+        phaseColor = 'var(--success)';
+        phaseAction = 'FASE EMAS! DCA agresif setiap minggu/bulan.';
+      } else if (now < cycle5PeakEst) {
+        currentPhase = 'CYCLE 5 BULL RUN (Post-Halving)';
+        phaseColor = 'var(--warning)';
+        phaseAction = 'HOLD & mulai pasang target jual bertahap.';
+      } else {
+        currentPhase = 'CYCLE 5 DISTRIBUTION (Waspada Peak)';
+        phaseColor = 'var(--danger)';
+        phaseAction = 'JUAL BERTAHAP. Amankan profit ke stablecoin.';
+      }
+
       const entryFloorMin = 55000;
       const entryFloorMax = 62000;
       const entryOptimalMin = 75000;
       const entryOptimalMax = 82000;
       const entryAggressiveMin = 88000;
       const entryAggressiveMax = 92000;
-      
-      const target2026 = "115,000 - 130,000";
-      const target2027 = "95,000 - 110,000";
-      const target2028 = "145,000 - 160,000";
-      const target2029 = "180,000 - 220,000";
 
       reportContainer.innerHTML = `
-        <div style="display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 20px; margin-bottom: 20px;">
+        <div style="margin-bottom: 16px; padding: 14px; border-radius: 10px; background: linear-gradient(135deg, rgba(108,92,231,0.08), rgba(0,230,118,0.05)); border: 1px solid rgba(108,92,231,0.2);">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <div>
+              <div style="font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;">Fase Siklus Saat Ini</div>
+              <div style="font-size: 1.05rem; font-weight: 800; color: ${phaseColor}; margin-top: 2px;">${currentPhase}</div>
+            </div>
+            <div style="text-align: right;">
+              <div style="font-size: 0.72rem; color: var(--text-muted);">Halving 5 Countdown</div>
+              <div style="font-size: 1.1rem; font-weight: 800; color: var(--primary);">${daysToHalving5 > 0 ? daysToHalving5 + ' Hari' : 'SUDAH TERJADI'}</div>
+            </div>
+          </div>
+          <div style="background: rgba(0,0,0,0.2); padding: 8px 12px; border-radius: 6px; font-size: 0.8rem; color: var(--warning); font-weight: 600;">
+            ⚡ Aksi Sekarang: ${phaseAction}
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 16px;">
           <div>
-            <h4 style="font-weight: 700; color: var(--primary); margin-bottom: 10px; font-size: 0.95rem;">📊 RINGKASAN METRIK SIKLUS (BTC)</h4>
-            <table style="width: 100%; font-size: 0.85rem; border-collapse: collapse;">
-              <tr>
-                <td style="padding: 6px 0; color: var(--text-muted); border-bottom: 1px solid var(--card-border);">Fase Siklus Makro</td>
-                <td style="font-weight: bold; text-align: right; border-bottom: 1px solid var(--card-border); color: var(--success);">AKUMULASI / PRE-BULL RUN</td>
-              </tr>
-              <tr>
-                <td style="padding: 6px 0; color: var(--text-muted); border-bottom: 1px solid var(--card-border);">Halving Berikutnya (Cycle 5)</td>
-                <td style="font-weight: bold; text-align: right; border-bottom: 1px solid var(--card-border);">Maret 2028 (~21 Bulan Lagi)</td>
-              </tr>
-              <tr>
-                <td style="padding: 6px 0; color: var(--text-muted); border-bottom: 1px solid var(--card-border);">RSI Bulanan (Monthly RSI)</td>
-                <td style="font-weight: bold; text-align: right; border-bottom: 1px solid var(--card-border);">${cRsi.toFixed(2)} (Netral-Bullish)</td>
-              </tr>
-              <tr>
-                <td style="padding: 6px 0; color: var(--text-muted); border-bottom: 1px solid var(--card-border);">Support MA-20 Mingguan</td>
-                <td style="font-weight: bold; text-align: right; border-bottom: 1px solid var(--card-border);">$${Math.round(currentPrice * 0.85).toLocaleString()}</td>
-              </tr>
-              <tr>
-                <td style="padding: 6px 0; color: var(--text-muted); border-bottom: 1px solid var(--card-border);">MACD Cycle Divergence</td>
-                <td style="font-weight: bold; text-align: right; border-bottom: 1px solid var(--card-border); color: var(--success);">Bullish Convergence (L/T)</td>
-              </tr>
-              <tr>
-                <td style="padding: 6px 0; color: var(--text-muted);">Akurasi Proyeksi TA</td>
-                <td style="font-weight: bold; text-align: right; color: var(--success);">99.2% (Terkonfirmasi Halving Cycle)</td>
-              </tr>
+            <h4 style="font-weight: 700; color: var(--primary); margin-bottom: 8px; font-size: 0.88rem;">📊 DATA HISTORIS SIKLUS BTC</h4>
+            <table style="width: 100%; font-size: 0.72rem; border-collapse: collapse;">
+              <thead>
+                <tr style="border-bottom: 2px solid var(--card-border);">
+                  <th style="text-align: left; padding: 4px 2px; color: var(--text-muted); font-weight: 600;">Siklus</th>
+                  <th style="text-align: center; padding: 4px 2px; color: var(--text-muted); font-weight: 600;">Halving</th>
+                  <th style="text-align: center; padding: 4px 2px; color: var(--success); font-weight: 600;">Puncak</th>
+                  <th style="text-align: right; padding: 4px 2px; color: var(--success); font-weight: 600;">Harga Puncak</th>
+                  <th style="text-align: center; padding: 4px 2px; color: var(--text-muted); font-weight: 600;">Hari</th>
+                  <th style="text-align: right; padding: 4px 2px; color: var(--danger); font-weight: 600;">Harga Bottom</th>
+                  <th style="text-align: center; padding: 4px 2px; color: var(--danger); font-weight: 600;">Bear</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr style="border-bottom: 1px solid var(--card-border);">
+                  <td style="padding: 4px 2px;">Cycle 1</td>
+                  <td style="text-align: center; padding: 4px 2px;">28 Nov 2012</td>
+                  <td style="text-align: center; padding: 4px 2px; color: var(--success);">30 Nov 2013</td>
+                  <td style="text-align: right; padding: 4px 2px; font-weight: bold; color: var(--success);">$1,163</td>
+                  <td style="text-align: center; padding: 4px 2px; font-weight: bold;">367</td>
+                  <td style="text-align: right; padding: 4px 2px; font-weight: bold; color: var(--danger);">$152</td>
+                  <td style="text-align: center; padding: 4px 2px; color: var(--danger); font-weight: bold;">410</td>
+                </tr>
+                <tr style="border-bottom: 1px solid var(--card-border);">
+                  <td style="padding: 4px 2px;">Cycle 2</td>
+                  <td style="text-align: center; padding: 4px 2px;">9 Jul 2016</td>
+                  <td style="text-align: center; padding: 4px 2px; color: var(--success);">17 Des 2017</td>
+                  <td style="text-align: right; padding: 4px 2px; font-weight: bold; color: var(--success);">$19,783</td>
+                  <td style="text-align: center; padding: 4px 2px; font-weight: bold;">526</td>
+                  <td style="text-align: right; padding: 4px 2px; font-weight: bold; color: var(--danger);">$3,122</td>
+                  <td style="text-align: center; padding: 4px 2px; color: var(--danger); font-weight: bold;">363</td>
+                </tr>
+                <tr style="border-bottom: 1px solid var(--card-border);">
+                  <td style="padding: 4px 2px;">Cycle 3</td>
+                  <td style="text-align: center; padding: 4px 2px;">11 Mei 2020</td>
+                  <td style="text-align: center; padding: 4px 2px; color: var(--success);">10 Nov 2021</td>
+                  <td style="text-align: right; padding: 4px 2px; font-weight: bold; color: var(--success);">$69,044</td>
+                  <td style="text-align: center; padding: 4px 2px; font-weight: bold;">548</td>
+                  <td style="text-align: right; padding: 4px 2px; font-weight: bold; color: var(--danger);">$15,476</td>
+                  <td style="text-align: center; padding: 4px 2px; color: var(--danger); font-weight: bold;">376</td>
+                </tr>
+                <tr style="border-bottom: 1px solid var(--card-border);">
+                  <td style="padding: 4px 2px;">Cycle 4</td>
+                  <td style="text-align: center; padding: 4px 2px;">20 Apr 2024</td>
+                  <td style="text-align: center; padding: 4px 2px; color: var(--success);">${fmtDateShort(cycle4PeakEst)}</td>
+                  <td style="text-align: right; padding: 4px 2px; font-weight: bold; color: var(--success);">$126,300</td>
+                  <td style="text-align: center; padding: 4px 2px; font-weight: bold;">533</td>
+                  <td style="text-align: right; padding: 4px 2px; font-weight: bold; color: var(--danger);">~$49,000</td>
+                  <td style="text-align: center; padding: 4px 2px; color: var(--danger); font-weight: bold;">~383</td>
+                </tr>
+                <tr>
+                  <td style="padding: 4px 2px; font-weight: bold; color: var(--primary);">Cycle 5</td>
+                  <td style="text-align: center; padding: 4px 2px; font-weight: bold; color: var(--primary);">~${fmtDateShort(halving5Est)}</td>
+                  <td style="text-align: center; padding: 4px 2px; color: var(--warning); font-weight: bold;">~${fmtDateShort(cycle5PeakEst)}</td>
+                  <td style="text-align: right; padding: 4px 2px; font-weight: bold; color: var(--warning);">$180k-220k</td>
+                  <td style="text-align: center; padding: 4px 2px; font-weight: bold;">~${avgPeakDays}</td>
+                  <td style="text-align: right; padding: 4px 2px; font-weight: bold; color: var(--text-muted);">TBD</td>
+                  <td style="text-align: center; padding: 4px 2px; color: var(--text-muted);">TBD</td>
+                </tr>
+              </tbody>
             </table>
+            <div style="margin-top: 6px; font-size: 0.68rem; color: var(--text-dark); font-style: italic;">
+              Pola: Bear bottom turun ~77-87% dari puncak | Puncak ~480-548 hari post-halving | Bear ~363-410 hari post-peak
+            </div>
           </div>
 
-          <div style="background: rgba(255,255,255,0.01); border-left: 3px solid var(--warning); padding: 15px; border-radius: 0 8px 8px 0; display: flex; flex-direction: column; justify-content: center;">
-            <h4 style="font-weight: 700; color: var(--warning); margin-bottom: 12px; font-size: 0.95rem;">🎯 TARGET HARGA & SUPPORT 4 TAHUN (2026-2030)</h4>
-            <div style="display: flex; flex-direction: column; gap: 8px; font-size: 0.85rem;">
-              <div>
-                <span style="color: var(--text-muted); font-size: 0.78rem; font-weight: 600;">Zona Entry Akumulasi (Supports):</span>
-                <div style="margin-top: 3px; display: flex; flex-direction: column; gap: 3px;">
-                  <div style="display: flex; justify-content: space-between; background: rgba(255,255,255,0.02); padding: 3px 6px; border-radius: 4px;">
-                    <span>1. Agresif (Harga Saat Ini)</span>
-                    <span style="font-weight: bold; color: var(--warning);">$${entryAggressiveMin.toLocaleString()} - $${entryAggressiveMax.toLocaleString()}</span>
-                  </div>
-                  <div style="display: flex; justify-content: space-between; background: rgba(255,255,255,0.02); padding: 3px 6px; border-radius: 4px;">
-                    <span>2. Optimal (Support EMA-50)</span>
-                    <span style="font-weight: bold; color: var(--success);">$${entryOptimalMin.toLocaleString()} - $${entryOptimalMax.toLocaleString()}</span>
-                  </div>
-                  <div style="display: flex; justify-content: space-between; background: rgba(255,255,255,0.02); padding: 3px 6px; border-radius: 4px;">
-                    <span>3. Floor Support (Macro Bottom)</span>
-                    <span style="font-weight: bold; color: var(--success);">$${entryFloorMin.toLocaleString()} - $${entryFloorMax.toLocaleString()}</span>
-                  </div>
-                </div>
+          <div>
+            <h4 style="font-weight: 700; color: var(--warning); margin-bottom: 8px; font-size: 0.88rem;">🎯 TARGET HARGA & SUPPORT</h4>
+            <div style="display: flex; flex-direction: column; gap: 4px; font-size: 0.78rem;">
+              <div style="font-size: 0.72rem; font-weight: 600; color: var(--text-muted); margin-bottom: 2px;">Zona Entry Akumulasi:</div>
+              <div style="display: flex; justify-content: space-between; background: rgba(255,255,255,0.02); padding: 3px 6px; border-radius: 4px;">
+                <span>1. Agresif (Current)</span>
+                <span style="font-weight: bold; color: var(--warning);">$${entryAggressiveMin.toLocaleString()} - $${entryAggressiveMax.toLocaleString()}</span>
               </div>
-              <div style="margin-top: 5px;">
-                <span style="color: var(--text-muted); font-size: 0.78rem; font-weight: 600;">Target Proyeksi Bull Run:</span>
-                <div style="margin-top: 3px; display: grid; grid-template-columns: 1fr 1fr; gap: 4px;">
-                  <div style="background: rgba(255,255,255,0.02); padding: 4px; border-radius: 4px; text-align: center;">
-                    <div style="color: var(--text-muted); font-size: 0.7rem;">Target 2026</div>
-                    <div style="font-weight: bold; color: var(--primary);">$${target2026}</div>
-                  </div>
-                  <div style="background: rgba(255,255,255,0.02); padding: 4px; border-radius: 4px; text-align: center;">
-                    <div style="color: var(--text-muted); font-size: 0.7rem;">Target 2027</div>
-                    <div style="font-weight: bold; color: var(--primary);">$${target2027}</div>
-                  </div>
-                  <div style="background: rgba(255,255,255,0.02); padding: 4px; border-radius: 4px; text-align: center;">
-                    <div style="color: var(--text-muted); font-size: 0.7rem;">Target 2028 (Halving)</div>
-                    <div style="font-weight: bold; color: var(--primary);">$${target2028}</div>
-                  </div>
-                  <div style="background: rgba(255,255,255,0.02); padding: 4px; border-radius: 4px; text-align: center;">
-                    <div style="color: var(--text-muted); font-size: 0.7rem;">Target 2029/30</div>
-                    <div style="font-weight: bold; color: var(--primary);">$${target2029}</div>
-                  </div>
+              <div style="display: flex; justify-content: space-between; background: rgba(255,255,255,0.02); padding: 3px 6px; border-radius: 4px;">
+                <span>2. Optimal (EMA-50)</span>
+                <span style="font-weight: bold; color: var(--success);">$${entryOptimalMin.toLocaleString()} - $${entryOptimalMax.toLocaleString()}</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; background: rgba(255,255,255,0.02); padding: 3px 6px; border-radius: 4px;">
+                <span>3. Floor Support</span>
+                <span style="font-weight: bold; color: var(--success);">$${entryFloorMin.toLocaleString()} - $${entryFloorMax.toLocaleString()}</span>
+              </div>
+              <div style="font-size: 0.72rem; font-weight: 600; color: var(--text-muted); margin-top: 4px;">Target Bull Run Cycle 5:</div>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 3px;">
+                <div style="background: rgba(255,255,255,0.02); padding: 3px; border-radius: 4px; text-align: center;">
+                  <div style="color: var(--text-muted); font-size: 0.65rem;">2027</div>
+                  <div style="font-weight: bold; color: var(--primary); font-size: 0.8rem;">$95k-110k</div>
+                </div>
+                <div style="background: rgba(255,255,255,0.02); padding: 3px; border-radius: 4px; text-align: center;">
+                  <div style="color: var(--text-muted); font-size: 0.65rem;">2028 Halving</div>
+                  <div style="font-weight: bold; color: var(--primary); font-size: 0.8rem;">$145k-160k</div>
+                </div>
+                <div style="background: rgba(255,255,255,0.02); padding: 3px; border-radius: 4px; text-align: center;">
+                  <div style="color: var(--text-muted); font-size: 0.65rem;">2029 Peak</div>
+                  <div style="font-weight: bold; color: var(--warning); font-size: 0.8rem;">$180k-220k</div>
+                </div>
+                <div style="background: rgba(255,255,255,0.02); padding: 3px; border-radius: 4px; text-align: center;">
+                  <div style="color: var(--text-muted); font-size: 0.65rem;">RSI Saat Ini</div>
+                  <div style="font-weight: bold; color: ${cRsi > 65 ? 'var(--danger)' : cRsi < 35 ? 'var(--success)' : 'var(--text-main)'}; font-size: 0.8rem;">${cRsi.toFixed(1)}</div>
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        <div style="border-top: 1px solid var(--card-border); padding-top: 15px;">
-          <h4 style="font-weight: 700; color: var(--text-main); margin-bottom: 8px; font-size: 0.95rem;">📝 OUTLOOK & STRATEGI DCA 4 TAHUN (2026-2030)</h4>
-          <p style="color: var(--text-muted); font-size: 0.85rem; line-height: 1.5; margin: 0;">
-            Berdasarkan data on-chain dan analisis siklus halving 4 tahunan, BTC saat ini berada dalam fase <b>Pre-Halving Accumulation</b>. 
-            Membeli secara bertahap menggunakan metode <b>Dollar-Cost Average (DCA)</b> di area <b>Support Optimal ($75k-$82k)</b> adalah strategi dengan risk-to-reward terbaik. 
-            Target puncak siklus 5 (Cycle 5 Peak) diproyeksikan berkisar antara <b>$180,000 - $220,000</b> pada akhir 2029/awal 2030. Disiplin menyisihkan cash cadangan untuk serok jika terjadi koreksi makro ke arah Floor Support.
-          </p>
+        <div style="border-top: 1px solid var(--card-border); padding-top: 16px; display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+          <!-- DCA Timeline -->
+          <div class="cycle-card">
+            <h4 style="font-weight: 700; color: var(--success); margin-bottom: 12px; font-size: 0.9rem; display: flex; align-items: center; gap: 8px;">
+              <span style="display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 50%; background: var(--success-glow); color: var(--success); font-size: 0.75rem;">✔</span>
+              Peta Jalan Akumulasi DCA (Cycle 4 s.d. 5)
+            </h4>
+            <div class="timeline-wrapper">
+              <div class="timeline-item active">
+                <div class="timeline-node"></div>
+                <div class="timeline-title">Fase 1: Bear Bottom (Mulai Akumulasi)</div>
+                <div class="timeline-date">${fmtDate(dcaStart)}</div>
+                <div class="timeline-desc">Estimasi dasar koreksi terendah pasar beruang. Hari terbaik untuk melakukan order beli awal yang besar.</div>
+              </div>
+              <div class="timeline-item">
+                <div class="timeline-node"></div>
+                <div class="timeline-title">Fase 2: Rentang DCA Emas</div>
+                <div class="timeline-date">${fmtDate(dcaStart)} s.d. ${fmtDate(dcaEnd)}</div>
+                <div class="timeline-desc">Periode pengumpulan terbaik. Lakukan investasi mingguan/bulanan secara disiplin tanpa melihat volatilitas jangka pendek.</div>
+              </div>
+              <div class="timeline-item">
+                <div class="timeline-node"></div>
+                <div class="timeline-title">Fase 3: Selesai Akumulasi (Hold)</div>
+                <div class="timeline-date">${fmtDate(dcaEnd)}</div>
+                <div class="timeline-desc">DCA selesai tepat 6 bulan sebelum Halving ke-5. Hentikan pembelian baru, simpan aset Anda untuk persiapan bull run.</div>
+              </div>
+            </div>
+            <div style="margin-top: 12px; display: flex; justify-content: space-between; align-items: center; background: var(--bg-color); padding: 8px 12px; border-radius: 6px; font-size: 0.76rem;">
+              <span style="color: var(--text-muted);">Status Akumulasi:</span>
+              <span style="font-weight: 800; color: ${now >= dcaStart && now <= dcaEnd ? 'var(--success)' : daysToDCAStart > 0 ? 'var(--warning)' : 'var(--text-muted)'};">
+                ${now >= dcaStart && now <= dcaEnd ? '🔥 AKUMULASI AKTIF' : daysToDCAStart > 0 ? 'Menunggu Bottom (' + daysToDCAStart + ' Hari Lagi)' : 'Sudah Lewat'}
+              </span>
+            </div>
+          </div>
+
+          <!-- Exit Timeline -->
+          <div class="cycle-card">
+            <h4 style="font-weight: 700; color: var(--danger); margin-bottom: 12px; font-size: 0.9rem; display: flex; align-items: center; gap: 8px;">
+              <span style="display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 50%; background: var(--danger-glow); color: var(--danger); font-size: 0.75rem;">▲</span>
+              Peta Jalan Penjualan (Exit Strategy Cycle 5)
+            </h4>
+            <div class="timeline-wrapper">
+              <div class="timeline-item warning">
+                <div class="timeline-node"></div>
+                <div class="timeline-title">Fase 1: Cicil Jual (Pre-Peak)</div>
+                <div class="timeline-date">${fmtDate(sellWindowStart)}</div>
+                <div class="timeline-desc">Memasuki zona rawan (3 bulan sebelum puncak). Mulai jual 30% dari total kepemilikan Anda secara bertahap.</div>
+              </div>
+              <div class="timeline-item danger">
+                <div class="timeline-node"></div>
+                <div class="timeline-title">Fase 2: Puncak Siklus (Exit Utama)</div>
+                <div class="timeline-date">${fmtDate(cycle5PeakEst)}</div>
+                <div class="timeline-desc">Hari puncak siklus ke-5. Jual 50% aset Anda. Target harga optimasi berada pada kisaran $180,000 - $220,000.</div>
+              </div>
+              <div class="timeline-item">
+                <div class="timeline-node"></div>
+                <div class="timeline-title">Fase 3: Distribusi Terakhir (Deadline)</div>
+                <div class="timeline-date">${fmtDate(sellWindowEnd)}</div>
+                <div class="timeline-desc">Amankan sisa 20% kepemilikan Anda. Keluar total ke stablecoin sebelum pasar beruang berikutnya dimulai.</div>
+              </div>
+            </div>
+            <div style="margin-top: 12px; display: flex; justify-content: space-between; align-items: center; background: var(--bg-color); padding: 8px 12px; border-radius: 6px; font-size: 0.76rem;">
+              <span style="color: var(--text-muted);">Sisa Waktu ke Puncak:</span>
+              <span style="font-weight: 800; color: var(--primary);">${daysToPeak5 > 0 ? daysToPeak5 + ' Hari Lagi' : 'WASPADA PEAK!'}</span>
+            </div>
+          </div>
         </div>
+      `;
+    } else if (!isCrypto && symbol === 'BBRI') {
+      // Dynamic Portfolio Advisor calculations for BBRI
+      let portfolioHtml = '';
+      if (userAvgPrice > 0) {
+        const floatPnl = ((currentPrice - userAvgPrice) / userAvgPrice) * 100;
+        const pnlColor = floatPnl >= 0 ? 'var(--success)' : 'var(--danger)';
+        const pnlSign = floatPnl >= 0 ? '+' : '';
+        
+        let advisorTitle = 'HOLD / MONITOR';
+        let advisorColor = 'var(--warning)';
+        let advisorText = '';
+        
+        if (currentPrice < 4500) {
+          if (floatPnl < -10) {
+            advisorTitle = '🟢 ACCUMULATE / DCA (AVERAGING DOWN)';
+            advisorColor = 'var(--success)';
+            advisorText = `Harga rata-rata Anda (Rp ${userAvgPrice.toLocaleString()}) saat ini berada jauh di atas harga pasar, menghasilkan floating loss sebesar <b>${pnlSign}${floatPnl.toFixed(1)}%</b>. Namun, harga saat ini (Rp ${currentPrice.toLocaleString()}) sudah sangat murah (PBV ${(currentPrice / 2100).toFixed(2)}x - di bawah batas -2 Std Dev). <b style="color: var(--success);">JANGAN CUT LOSS</b> di sini karena ini adalah area dasar siklus historis (Crisis Discount). Sangat disarankan untuk melakukan <b>Averaging Down (DCA)</b> di area ini untuk menekan rata-rata modal Anda menuju zona aman di bawah Rp 4,500 agar cepat breakeven & profit saat siklus berbalik naik.`;
+            
+            if (userAvgPrice <= 4500) {
+              advisorText += `<br><br>🎯 <b>PROYEKSI EXIT AMAN (Avg Rp ${userAvgPrice.toLocaleString()}):</b> Jika Anda berhasil menurunkan rata-rata ke Rp ${userAvgPrice.toLocaleString()}, target keluar terbaik tanpa loss adalah pada rentang harga **Rp 4,800 - Rp 5,300** (+20% s.d +32% Profit). Waktu terbaik untuk menjual adalah pada periode **Desember s.d. Maret** (saat sentimen Window Dressing Q4 dan Pre-RUPS Dividen tahun berikutnya sedang memuncak).`;
+            } else {
+              advisorText += `<br><br>🎯 <b>Target Rata-rata Ideal:</b> Teruskan DCA di harga murah saat ini hingga rata-rata Anda terseret turun ke level **Rp 4,000 - Rp 4,200** (area aman valuasi -1 Std Dev).`;
+            }
+          } else {
+            advisorTitle = '🟢 ACCUMULATE (Beli Cicil)';
+            advisorColor = 'var(--success)';
+            advisorText = `BBRI saat ini berada di zona undervalued (PBV &lt; 2.0x). Sangat baik untuk terus melakukan akumulasi DCA berkala.`;
+            
+            if (userAvgPrice <= 4500) {
+              advisorText += `<br><br>🎯 <b>PROYEKSI EXIT AMAN (Avg Rp ${userAvgPrice.toLocaleString()}):</b> Dengan rata-rata modal yang sangat aman di Rp ${userAvgPrice.toLocaleString()}, Anda memiliki peluang keluar dengan profit optimal pada rentang harga **Rp 4,800 - Rp 5,300** (+20% s.d +32% Profit) pada periode **Desember s.d. Maret** (Window Dressing / Pre-RUPS Dividen).`;
+            }
+          }
+        } else if (currentPrice >= 5800) {
+          if (floatPnl > 5) {
+            advisorTitle = '🔴 PARTIAL TAKE PROFIT (Jual Sebagian)';
+            advisorColor = 'var(--danger)';
+            advisorText = `Posisi Anda untung <b>${pnlSign}${floatPnl.toFixed(1)}%</b> dan harga saham berada di zona premium (PBV &gt; 2.8x). Disarankan melakukan profit-taking minimal 50% sebelum RUPS selesai untuk mengamankan keuntungan dari koreksi pasca-dividen.`;
+          } else {
+            advisorTitle = '🔴 REDUCE PORTION / HOLD';
+            advisorColor = 'var(--danger)';
+            advisorText = `Harga berada di zona premium. Hindari melakukan pembelian baru di area ini karena resiko koreksi tinggi.`;
+          }
+        } else {
+          advisorTitle = '🟡 HOLD / MONITOR';
+          advisorColor = 'var(--warning)';
+          advisorText = `Valuasi mendekati nilai wajar (PBV ~2.2x). Pertahankan kepemilikan Anda (Hold) dan pantau perubahan akumulasi asing.`;
+        }
+        
+        portfolioHtml = `
+          <div style="margin-top: 14px; padding: 12px; border-radius: 8px; background: rgba(255,255,255,0.02); border: 1px solid var(--card-border);">
+            <h4 style="font-weight: 700; color: var(--text-main); margin-bottom: 8px; font-size: 0.88rem; display: flex; justify-content: space-between; align-items: center; margin-top: 0;">
+              <span>💼 REKOMENDASI PORTFOLIO PERSONAL</span>
+              <span style="font-size: 0.72rem; color: var(--text-muted);">Avg Cost: Rp ${userAvgPrice.toLocaleString()}</span>
+            </h4>
+            <div style="display: flex; gap: 15px; align-items: center; margin-bottom: 8px;">
+              <div style="background: rgba(0,0,0,0.2); padding: 8px 12px; border-radius: 6px; text-align: center; min-width: 100px;">
+                <div style="font-size: 0.65rem; color: var(--text-muted);">Estimasi PnL</div>
+                <div style="font-size: 1.05rem; font-weight: bold; color: ${pnlColor};">${pnlSign}${floatPnl.toFixed(1)}%</div>
+              </div>
+              <div style="flex: 1;">
+                <div style="font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase;">Aksi Rekomendasi</div>
+                <div style="font-size: 0.9rem; font-weight: bold; color: ${advisorColor};">${advisorTitle}</div>
+              </div>
+            </div>
+            <p style="color: var(--text-muted); font-size: 0.78rem; line-height: 1.45; margin: 0;">
+              ${advisorText}
+            </p>
+          </div>
+        `;
+      } else {
+        portfolioHtml = `
+          <div style="margin-top: 14px; padding: 12px; border-radius: 8px; background: rgba(255,255,255,0.02); border: 1px solid var(--card-border); text-align: center;">
+            <p style="color: var(--text-muted); font-size: 0.78rem; margin: 0;">
+              💡 <i>Masukkan harga beli rata-rata Anda pada kolom "Avg Buy Price (Cost)" di bagian atas halaman untuk mendapatkan analisis & rekomendasi portofolio personal.</i>
+            </p>
+          </div>
+        `;
+      }
+
+      reportContainer.innerHTML = `
+        <div style="margin-bottom: 16px; padding: 14px; border-radius: 10px; background: linear-gradient(135deg, rgba(0,230,118,0.08), rgba(108,92,231,0.05)); border: 1px solid rgba(0,230,118,0.2);">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <div>
+              <div style="font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;">Siklus Valuasi BBRI</div>
+              <div style="font-size: 1.05rem; font-weight: 800; color: var(--success); margin-top: 2px;">Fase Akumulasi Nilai (PBV Histori)</div>
+            </div>
+            <div style="text-align: right;">
+              <div style="font-size: 0.72rem; color: var(--text-muted);">Hasil Dividen (Yield) Est.</div>
+              <div style="font-size: 1.1rem; font-weight: 800; color: var(--primary);">~6.5% - 7.2% per Tahun</div>
+            </div>
+          </div>
+          <div style="background: rgba(0,0,0,0.2); padding: 8px 12px; border-radius: 6px; font-size: 0.8rem; color: var(--warning); font-weight: 600;">
+            ⚡ Rekomendasi Siklus: Akumulasi DCA pada area PBV historis murah di bawah Rp 4,500.
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 16px;">
+          <div>
+            <h4 style="font-weight: 700; color: var(--primary); margin-bottom: 8px; font-size: 0.88rem;">📊 BAND VALUASI PBV HISTORIS BBRI</h4>
+            <table style="width: 100%; font-size: 0.72rem; border-collapse: collapse;">
+              <thead>
+                <tr style="border-bottom: 2px solid var(--card-border);">
+                  <th style="text-align: left; padding: 4px 2px; color: var(--text-muted); font-weight: 600;">Band PBV</th>
+                  <th style="text-align: center; padding: 4px 2px; color: var(--text-muted); font-weight: 600;">Rasio PBV</th>
+                  <th style="text-align: right; padding: 4px 2px; color: var(--text-muted); font-weight: 600;">Harga Ekuivalen</th>
+                  <th style="text-align: center; padding: 4px 2px; color: var(--text-muted); font-weight: 600;">Aksi Siklus</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr style="border-bottom: 1px solid var(--card-border);">
+                  <td style="padding: 4px 2px; color: var(--danger); font-weight: bold;">+2 Std Dev (Overvalued)</td>
+                  <td style="text-align: center; padding: 4px 2px; font-weight: bold;">3.0x</td>
+                  <td style="text-align: right; padding: 4px 2px; font-weight: bold; color: var(--danger);">Rp 6,200</td>
+                  <td style="text-align: center; padding: 4px 2px; color: var(--danger); font-weight: bold;">Exit/Jual</td>
+                </tr>
+                <tr style="border-bottom: 1px solid var(--card-border);">
+                  <td style="padding: 4px 2px; color: var(--warning);">+1 Std Dev (Premium)</td>
+                  <td style="text-align: center; padding: 4px 2px;">2.6x</td>
+                  <td style="text-align: right; padding: 4px 2px;">Rp 5,400</td>
+                  <td style="text-align: center; padding: 4px 2px; color: var(--warning);">Cicil Jual</td>
+                </tr>
+                <tr style="border-bottom: 1px solid var(--card-border);">
+                  <td style="padding: 4px 2px; color: var(--text-main);">Rata-rata PBV 5 Tahun</td>
+                  <td style="text-align: center; padding: 4px 2px;">2.2x</td>
+                  <td style="text-align: right; padding: 4px 2px;">Rp 4,600</td>
+                  <td style="text-align: center; padding: 4px 2px; color: var(--text-muted);">Hold/Netral</td>
+                </tr>
+                <tr style="border-bottom: 1px solid var(--card-border);">
+                  <td style="padding: 4px 2px; color: var(--success);">-1 Std Dev (Undervalued)</td>
+                  <td style="text-align: center; padding: 4px 2px; font-weight: bold;">1.8x</td>
+                  <td style="text-align: right; padding: 4px 2px; font-weight: bold; color: var(--success);">Rp 4,100</td>
+                  <td style="text-align: center; padding: 4px 2px; color: var(--success); font-weight: bold;">DCA Agresif</td>
+                </tr>
+                <tr>
+                  <td style="padding: 4px 2px; color: var(--success); font-weight: bold;">-2 Std Dev (Crisis Discount)</td>
+                  <td style="text-align: center; padding: 4px 2px; font-weight: bold;">1.5x</td>
+                  <td style="text-align: right; padding: 4px 2px; font-weight: bold; color: var(--success);">Rp 3,400</td>
+                  <td style="text-align: center; padding: 4px 2px; color: var(--success); font-weight: bold;">All-In Buy</td>
+                </tr>
+              </tbody>
+            </table>
+            <div style="margin-top: 6px; font-size: 0.68rem; color: var(--text-dark); font-style: italic;">
+              *PBV saat ini sekitar ${(currentPrice / 2100).toFixed(2)}x (berdasarkan harga penutupan terakhir Rp ${currentPrice.toLocaleString()}).
+            </div>
+          </div>
+
+          <div>
+            <h4 style="font-weight: 700; color: var(--warning); margin-bottom: 8px; font-size: 0.88rem;">🎯 TARGET HARGA & SUPPORT TEKNIKAL</h4>
+            <div style="display: flex; flex-direction: column; gap: 4px; font-size: 0.78rem;">
+              <div style="font-size: 0.72rem; font-weight: 600; color: var(--text-muted); margin-bottom: 2px;">Zona Entry Akumulasi:</div>
+              <div style="display: flex; justify-content: space-between; background: rgba(255,255,255,0.02); padding: 3px 6px; border-radius: 4px;">
+                <span>1. Agresif (Current)</span>
+                <span style="font-weight: bold; color: var(--warning);">Rp ${Math.round(entryMin).toLocaleString()} - Rp ${Math.round(entryMax).toLocaleString()}</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; background: rgba(255,255,255,0.02); padding: 3px 6px; border-radius: 4px;">
+                <span>2. Optimal Support</span>
+                <span style="font-weight: bold; color: var(--success);">Rp ${Math.round(currentPrice * 0.95).toLocaleString()} - Rp ${Math.round(currentPrice * 0.97).toLocaleString()}</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; background: rgba(255,255,255,0.02); padding: 3px 6px; border-radius: 4px;">
+                <span>3. Floor Support</span>
+                <span style="font-weight: bold; color: var(--success);">Rp 4,100 (PBV 1.8x)</span>
+              </div>
+              <div style="font-size: 0.72rem; font-weight: 600; color: var(--text-muted); margin-top: 4px;">Target Jual Jangka Pendek/Menengah:</div>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 3px;">
+                <div style="background: rgba(255,255,255,0.02); padding: 3px; border-radius: 4px; text-align: center;">
+                  <div style="color: var(--text-muted); font-size: 0.65rem;">Target T1</div>
+                  <div style="font-weight: bold; color: var(--primary); font-size: 0.8rem;">Rp ${Math.round(target1).toLocaleString()}</div>
+                </div>
+                <div style="background: rgba(255,255,255,0.02); padding: 3px; border-radius: 4px; text-align: center;">
+                  <div style="color: var(--text-muted); font-size: 0.65rem;">Target T2</div>
+                  <div style="font-weight: bold; color: var(--primary); font-size: 0.8rem;">Rp ${Math.round(target2).toLocaleString()}</div>
+                </div>
+                <div style="background: rgba(255,255,255,0.02); padding: 3px; border-radius: 4px; text-align: center;">
+                  <div style="color: var(--text-muted); font-size: 0.65rem;">RSI 14 Hari</div>
+                  <div style="font-weight: bold; color: ${cRsi > 65 ? 'var(--danger)' : cRsi < 35 ? 'var(--success)' : 'var(--text-main)'}; font-size: 0.8rem;">${cRsi.toFixed(1)}</div>
+                </div>
+                <div style="background: rgba(255,255,255,0.02); padding: 3px; border-radius: 4px; text-align: center;">
+                  <div style="color: var(--text-muted); font-size: 0.65rem;">Sinyal MACD</div>
+                  <div style="font-weight: bold; color: ${cMacd > cSignal ? 'var(--success)' : 'var(--danger)'}; font-size: 0.8rem;">${cMacd > cSignal ? 'Bullish' : 'Bearish'}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style="border-top: 1px solid var(--card-border); padding-top: 16px; display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+          <!-- DCA Timeline for BBRI -->
+          <div class="cycle-card">
+            <h4 style="font-weight: 700; color: var(--success); margin-bottom: 12px; font-size: 0.9rem; display: flex; align-items: center; gap: 8px;">
+              <span style="display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 50%; background: var(--success-glow); color: var(--success); font-size: 0.75rem;">✔</span>
+              Peta Jalan Akumulasi DCA Saham BBRI
+            </h4>
+            <div class="timeline-wrapper">
+              <div class="timeline-item active">
+                <div class="timeline-node"></div>
+                <div class="timeline-title">Fase 1: Koreksi Pasca Dividen (Ex-Date)</div>
+                <div class="timeline-date">April s.d. Juni (Tiap Tahun)</div>
+                <div class="timeline-desc">Peluang masuk pertama saat harga saham terkoreksi akibat efek 'dividend trap' setelah tanggal Cum-Date terlewati.</div>
+              </div>
+              <div class="timeline-item">
+                <div class="timeline-node"></div>
+                <div class="timeline-title">Fase 2: Koreksi Tekanan Asing (Outflow)</div>
+                <div class="timeline-date">Juli s.d. Oktober (Tiap Tahun)</div>
+                <div class="timeline-desc">Periode terbaik akumulasi. Manfaatkan aksi jual bersih asing (foreign outflow) musiman untuk mempertebal lot.</div>
+              </div>
+              <div class="timeline-item">
+                <div class="timeline-node"></div>
+                <div class="timeline-title">Fase 3: Selesai Akumulasi (Hold)</div>
+                <div class="timeline-date">November</div>
+                <div class="timeline-desc">Batasi pembelian baru. Evaluasi harga rata-rata portofolio Anda sebelum dimulainya momentum Window Dressing.</div>
+              </div>
+            </div>
+            <div style="margin-top: 12px; display: flex; justify-content: space-between; align-items: center; background: var(--bg-color); padding: 8px 12px; border-radius: 6px; font-size: 0.76rem;">
+              <span style="color: var(--text-muted);">Saran Akumulasi:</span>
+              <span style="font-weight: 800; color: var(--success);">DCA Aktif jika PBV &lt; 2.0x (Harga &lt; Rp 4,400)</span>
+            </div>
+          </div>
+
+          <!-- Exit Timeline for BBRI -->
+          <div class="cycle-card">
+            <h4 style="font-weight: 700; color: var(--danger); margin-bottom: 12px; font-size: 0.9rem; display: flex; align-items: center; gap: 8px;">
+              <span style="display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 50%; background: var(--danger-glow); color: var(--danger); font-size: 0.75rem;">▲</span>
+              Peta Jalan Penjualan (Exit Strategy BBRI)
+            </h4>
+            <div class="timeline-wrapper">
+              <div class="timeline-item warning">
+                <div class="timeline-node"></div>
+                <div class="timeline-title">Fase 1: Kenaikan Window Dressing</div>
+                <div class="timeline-date">Desember s.d. Januari</div>
+                <div class="timeline-desc">Manfaatkan penguatan akhir tahun untuk menahan (hold) posisi atau melakukan profit taking parsial di target T1.</div>
+              </div>
+              <div class="timeline-item danger">
+                <div class="timeline-node"></div>
+                <div class="timeline-title">Fase 2: Puncak Spekulasi (Pre-RUPS)</div>
+                <div class="timeline-date">Akhir Februari s.d. Awal Maret</div>
+                <div class="timeline-desc">Periode Cum-Date Dividen. Lakukan penjualan masif (50-70%) saat pembeli retail memompa harga menjelang pembagian dividen.</div>
+              </div>
+              <div class="timeline-item">
+                <div class="timeline-node"></div>
+                <div class="timeline-title">Fase 3: Keluar Total (Ex-Date)</div>
+                <div class="timeline-date">Akhir Maret</div>
+                <div class="timeline-desc">Jual sisa kepemilikan Anda. Amankan modal tunai sepenuhnya ke RDPU sebelum siklus koreksi pasca-dividen dimulai kembali.</div>
+              </div>
+            </div>
+            <div style="margin-top: 12px; display: flex; justify-content: space-between; align-items: center; background: var(--bg-color); padding: 8px 12px; border-radius: 6px; font-size: 0.76rem;">
+              <span style="color: var(--text-muted);">Saran Penjualan:</span>
+              <span style="font-weight: 800; color: var(--danger);">Take Profit jika PBV &gt; 2.8x (Harga &gt; Rp 5,800)</span>
+            </div>
+          </div>
+        </div>
+
+        ${portfolioHtml}
       `;
     } else {
       reportContainer.innerHTML = `
@@ -1771,7 +2345,6 @@ window.TradeMasterApp = (function() {
         </div>
       `;
     }
-    `;
 
     if (timestampEl) {
       timestampEl.innerText = `Updated: ${new Date().toLocaleTimeString()}`;
