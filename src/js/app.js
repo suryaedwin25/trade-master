@@ -62,6 +62,24 @@ window.TradeMasterApp = (function() {
         { name: 'Hermanto Tanoko', holdings: ['CLEO', 'AVIA', 'PEVE'], sector: 'Tan Corp (Consumer Goods & Paint)', status: 'HOLDING', pnl: 48 },
         { name: 'Sugianto Kusuma (Aguan)', holdings: ['PANI'], sector: 'Agung Sedayu (Properti & Real Estate)', status: 'ACCUMULATING', pnl: 150 }
       ];
+    })(),
+    cryptoWhales: (function() {
+      const cached = localStorage.getItem('crypto_whales_data');
+      if (cached) {
+        try {
+          return JSON.parse(cached);
+        } catch (e) {
+          console.error('Error parsing cached crypto_whales_data, falling back to defaults:', e);
+          try { localStorage.removeItem('crypto_whales_data'); } catch(err) {}
+        }
+      }
+      return [
+        { address: '0x71a... Whale-Alpha', label: 'Solana Whale Alpha', token: 'SOL', entry: 138.50, amount: 2450000 },
+        { address: 'bc1q9... Whale-Beta', label: 'Bitcoin Whale Beta', token: 'BTC', entry: 91400.00, amount: 8900000 },
+        { address: '0x88f... FatCat', label: 'Ethereum FatCat', token: 'ETH', entry: 2980.00, amount: 3120000 },
+        { address: '0x32e... Gigachad', label: 'Base Gigachad', token: 'BRETT', entry: 0.122, amount: 850000 },
+        { address: 'SOL-5... DogeKing', label: 'Solana Meme DogeKing', token: 'POPCAT', entry: 0.82, amount: 1100000 }
+      ];
     })()
   };
 
@@ -334,6 +352,56 @@ window.TradeMasterApp = (function() {
       `).join('');
     }
 
+    // Calculate dynamic Fear & Greed based on watchlist performance
+    let cryptoChangeSum = 0;
+    if (cryptos && cryptos.length > 0) {
+      cryptos.forEach(c => { cryptoChangeSum += c.change; });
+      const avgCryptoChange = cryptoChangeSum / cryptos.length;
+      
+      let fgValue = Math.round(55 + (avgCryptoChange * 2.5) + (state.sentimentScorecard ? state.sentimentScorecard.score * 5 : 0));
+      fgValue = Math.max(10, Math.min(95, fgValue));
+      
+      let fgLabel = 'NEUTRAL';
+      let fgBadge = 'badge-warning';
+      let fgColor = 'var(--warning)';
+      let fgAdv = 'DCA: Hold / Akumulasi Lemah';
+      
+      if (fgValue >= 75) {
+        fgLabel = 'EXTREME GREED';
+        fgBadge = 'badge-danger';
+        fgColor = 'var(--danger)';
+        fgAdv = 'DCA: Tunda / Amankan Profit';
+      } else if (fgValue >= 55) {
+        fgLabel = 'GREED';
+        fgBadge = 'badge-warning';
+        fgColor = 'var(--warning)';
+        fgAdv = 'DCA: Hold / Pasang Target Jual';
+      } else if (fgValue <= 25) {
+        fgLabel = 'EXTREME FEAR';
+        fgBadge = 'badge-success';
+        fgColor = 'var(--success)';
+        fgAdv = 'DCA: AGRESIF / SEROK AKUMULASI';
+      } else if (fgValue <= 45) {
+        fgLabel = 'FEAR';
+        fgBadge = 'badge-info';
+        fgColor = 'var(--primary)';
+        fgAdv = 'DCA: Beli Cicil Bertahap';
+      }
+
+      const fgValEl = document.getElementById('crypto-fear-greed-val');
+      const fgLabelEl = document.getElementById('crypto-fear-greed-label');
+      if (fgValEl) {
+        fgValEl.innerText = fgValue;
+        fgValEl.style.color = fgColor;
+      }
+      if (fgLabelEl) {
+        fgLabelEl.innerText = fgLabel;
+        fgLabelEl.className = `badge ${fgBadge}`;
+        const advEl = fgLabelEl.parentElement.querySelector('div:last-child');
+        if (advEl) advEl.innerText = fgAdv;
+      }
+    }
+
     // Load static Indonesian Stocks for Watchlist
     const stocks = ['BBCA', 'TLKM', 'ASII', 'GOTO', 'BMRI'];
     const stockContainer = document.getElementById('dashboard-stock-list');
@@ -356,6 +424,62 @@ window.TradeMasterApp = (function() {
               <td id="ta-acc-${q.symbol}" style="color: var(--text-muted); font-size: 0.8rem;">Menghitung...</td>
             </tr>
           `).join('');
+
+          // Calculate dynamic IDX Temperature based on stock valuation bands
+          let idxTemp = 28;
+          let idxLabel = 'UNDERVALUED';
+          let idxBadge = 'badge-success';
+          let idxColor = 'var(--success)';
+          let idxAdv = 'DCA: Sangat Layak Beli';
+
+          const bbriQuote = quotes.find(q => q.symbol === 'BBRI');
+          if (bbriQuote) {
+            const price = bbriQuote.price;
+            if (price < 4000) {
+              idxTemp = 18;
+              idxLabel = 'CRISIS DISCOUNT';
+              idxBadge = 'badge-success';
+              idxColor = 'var(--success)';
+              idxAdv = 'RDN: ALL-IN BUY';
+            } else if (price < 4500) {
+              idxTemp = 28;
+              idxLabel = 'UNDERVALUED';
+              idxBadge = 'badge-success';
+              idxColor = 'var(--success)';
+              idxAdv = 'RDN: Akumulasi Agresif';
+            } else if (price >= 5800) {
+              idxTemp = 82;
+              idxLabel = 'OVERVALUED';
+              idxBadge = 'badge-danger';
+              idxColor = 'var(--danger)';
+              idxAdv = 'RDN: Jual / Amankan Cash';
+            } else if (price >= 5200) {
+              idxTemp = 65;
+              idxLabel = 'PREMIUM / FAIR';
+              idxBadge = 'badge-warning';
+              idxColor = 'var(--warning)';
+              idxAdv = 'RDN: Hold / Cicil Jual';
+            } else {
+              idxTemp = 42;
+              idxLabel = 'FAIR VALUE';
+              idxBadge = 'badge-info';
+              idxColor = 'var(--primary)';
+              idxAdv = 'RDN: Hold / Monitor';
+            }
+          }
+
+          const tempValEl = document.getElementById('idx-temp-val');
+          const tempLabelEl = document.getElementById('idx-temp-label');
+          if (tempValEl) {
+            tempValEl.innerText = `${idxLabel === 'CRISIS DISCOUNT' || idxLabel === 'UNDERVALUED' ? 'Cold' : idxLabel === 'OVERVALUED' ? 'Hot' : 'Warm'} (${idxTemp}°C)`;
+            tempValEl.style.color = idxColor;
+          }
+          if (tempLabelEl) {
+            tempLabelEl.innerText = idxLabel;
+            tempLabelEl.className = `badge ${idxBadge}`;
+            const advEl = tempLabelEl.parentElement.querySelector('div:last-child');
+            if (advEl) advEl.innerText = idxAdv;
+          }
 
           // Load TA signals asynchronously in the background one by one
           quotes.forEach(async (q) => {
@@ -1141,7 +1265,113 @@ window.TradeMasterApp = (function() {
           </div>
         </div>
       </div>
+
+      <!-- Card 5: Kalkulator Trading & Average Down Simulator (Full Width) -->
+      <div class="card" style="grid-column: span 2; margin-top: 16px; padding: 20px;">
+        <div class="card-header" style="padding: 0; margin-bottom: 16px; border: none;">
+          <span class="card-title" style="display: flex; align-items: center; gap: 8px;">
+            <i data-lucide="calculator" style="color: var(--primary); width: 18px; height: 18px;"></i>
+            📊 Kalkulator Trading & Average Down Simulator
+          </span>
+          <span class="badge badge-info">Risk & Capital Manager</span>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+          
+          <!-- Position Sizing Calculator -->
+          <div style="background: rgba(0,0,0,0.01); border: 1px solid var(--card-border); border-radius: 8px; padding: 16px;">
+            <div style="font-weight: 700; font-size: 0.9rem; color: var(--text-main); margin-bottom: 12px; border-bottom: 1px solid var(--card-border); padding-bottom: 8px;">
+              🛡️ Kalkulator Manajemen Risiko (Position Sizing)
+            </div>
+            
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <label style="font-size: 0.78rem; color: var(--text-muted);">Total Modal RDN / Dompet ($ / Rp):</label>
+                <input type="number" id="calc-modal" value="10000000" class="select-asset" style="width: 130px; text-align: right; margin: 0; font-size: 0.8rem;" oninput="TradeMasterApp.calcPositionSize()">
+              </div>
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <label style="font-size: 0.78rem; color: var(--text-muted);">Risiko Toleransi (% dari modal):</label>
+                <select id="calc-risk" class="select-asset" style="width: 130px; text-align: right; margin: 0; font-size: 0.8rem;" onchange="TradeMasterApp.calcPositionSize()">
+                  <option value="1">1% (Konservatif)</option>
+                  <option value="2" selected>2% (Sedang)</option>
+                  <option value="5">5% (Agresif / Degen)</option>
+                </select>
+              </div>
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <label style="font-size: 0.78rem; color: var(--text-muted);">Harga Entry / Beli:</label>
+                <input type="number" id="calc-entry" value="4000" class="select-asset" style="width: 130px; text-align: right; margin: 0; font-size: 0.8rem;" oninput="TradeMasterApp.calcPositionSize()">
+              </div>
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <label style="font-size: 0.78rem; color: var(--text-muted);">Harga Stop Loss (SL):</label>
+                <input type="number" id="calc-sl" value="3800" class="select-asset" style="width: 130px; text-align: right; margin: 0; font-size: 0.8rem;" oninput="TradeMasterApp.calcPositionSize()">
+              </div>
+            </div>
+
+            <div style="background: rgba(108, 92, 231, 0.04); border: 1px dashed rgba(108, 92, 231, 0.3); border-radius: 6px; padding: 12px; margin-top: 14px; font-size: 0.8rem; display: flex; flex-direction: column; gap: 6px;">
+              <div style="display: flex; justify-content: space-between;">
+                <span>Maksimum Uang yang Boleh Hilang:</span>
+                <span id="res-risk-val" style="font-weight: bold; color: var(--danger);">Rp 200,000</span>
+              </div>
+              <div style="display: flex; justify-content: space-between;">
+                <span>Ukuran Posisi Maksimal (Capital Allocation):</span>
+                <span id="res-size-val" style="font-weight: bold; color: var(--primary);">Rp 4,000,000</span>
+              </div>
+              <div style="display: flex; justify-content: space-between;">
+                <span>Jumlah yang Boleh Dibeli:</span>
+                <span id="res-units-val" style="font-weight: bold; color: var(--success);">1,000 Unit (10 Lot)</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Average Down Simulator -->
+          <div style="background: rgba(0,0,0,0.01); border: 1px solid var(--card-border); border-radius: 8px; padding: 16px;">
+            <div style="font-weight: 700; font-size: 0.9rem; color: var(--text-main); margin-bottom: 12px; border-bottom: 1px solid var(--card-border); padding-bottom: 8px;">
+              📉 Simulator Target Average Down (Penurunan Modal Rata-rata)
+            </div>
+            
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <label style="font-size: 0.78rem; color: var(--text-muted);">Harga Rata-rata Saat Ini:</label>
+                <input type="number" id="avg-current-price" value="5400" class="select-asset" style="width: 130px; text-align: right; margin: 0; font-size: 0.8rem;" oninput="TradeMasterApp.calcAverageDown()">
+              </div>
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <label style="font-size: 0.78rem; color: var(--text-muted);">Jumlah Kepemilikan Saat Ini (Unit/Lembar):</label>
+                <input type="number" id="avg-current-qty" value="1000" class="select-asset" style="width: 130px; text-align: right; margin: 0; font-size: 0.8rem;" oninput="TradeMasterApp.calcAverageDown()">
+              </div>
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <label style="font-size: 0.78rem; color: var(--text-muted);">Target Rata-rata Baru:</label>
+                <input type="number" id="avg-target-price" value="4000" class="select-asset" style="width: 130px; text-align: right; margin: 0; font-size: 0.8rem;" oninput="TradeMasterApp.calcAverageDown()">
+              </div>
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <label style="font-size: 0.78rem; color: var(--text-muted);">Harga Pasar Saat Ini (Harga Serokan):</label>
+                <input type="number" id="avg-market-price" value="3800" class="select-asset" style="width: 130px; text-align: right; margin: 0; font-size: 0.8rem;" oninput="TradeMasterApp.calcAverageDown()">
+              </div>
+            </div>
+
+            <div style="background: rgba(46, 204, 113, 0.04); border: 1px dashed rgba(46, 204, 113, 0.3); border-radius: 6px; padding: 12px; margin-top: 14px; font-size: 0.8rem; display: flex; flex-direction: column; gap: 6px;">
+              <div style="display: flex; justify-content: space-between;">
+                <span>Tambahan Lembar yang Harus Dibeli:</span>
+                <span id="res-avg-qty" style="font-weight: bold; color: var(--success);">7,000 Unit (70 Lot)</span>
+              </div>
+              <div style="display: flex; justify-content: space-between;">
+                <span>Tambahan Dana Serokan yang Dibutuhkan:</span>
+                <span id="res-avg-dana" style="font-weight: bold; color: var(--primary);">Rp 26,600,000</span>
+              </div>
+              <div style="display: flex; justify-content: space-between;">
+                <span>Total Kepemilikan Setelah Serok:</span>
+                <span id="res-avg-total" style="font-weight: bold; color: var(--text-main);">8,000 Unit (80 Lot) @ Rp 4,000</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     `;
+
+    // Trigger initial calculation
+    setTimeout(() => {
+      calcPositionSize();
+      calcAverageDown();
+    }, 50);
     
     // Regenerate Lucide icons on Strategy page elements
     if (window.lucide) {
@@ -1472,6 +1702,9 @@ window.TradeMasterApp = (function() {
     const titleEl = document.getElementById('crypto-title');
     const subtitleEl = document.getElementById('crypto-subtitle');
 
+    // Keep wallet watcher card always visible for both CEX & DEX
+    if (cexTradesCard) cexTradesCard.style.display = 'block';
+
     if (mode === 'CEX') {
       if (cexBtn) cexBtn.classList.add('active');
       if (dexBtn) dexBtn.classList.remove('active');
@@ -1480,7 +1713,6 @@ window.TradeMasterApp = (function() {
       if (cexChartControls) cexChartControls.style.display = 'flex';
       if (cexChartPane) cexChartPane.style.display = 'block';
       if (dexChartPane) dexChartPane.style.display = 'none';
-      if (cexTradesCard) cexTradesCard.style.display = 'block';
       if (dexWatchlistCard) dexWatchlistCard.style.display = 'none';
       
       titleEl.innerText = `${state.crypto.selected}/USDT (${state.crypto.exchange})`;
@@ -1497,7 +1729,6 @@ window.TradeMasterApp = (function() {
       if (cexChartPane) cexChartPane.style.display = 'none';
       if (subChartPane) subChartPane.style.display = 'none';
       if (dexChartPane) dexChartPane.style.display = 'block';
-      if (cexTradesCard) cexTradesCard.style.display = 'none';
       if (dexWatchlistCard) dexWatchlistCard.style.display = 'block';
 
       titleEl.innerText = 'DEX Token Scanner';
@@ -2463,22 +2694,14 @@ window.TradeMasterApp = (function() {
     if (!trackerContainer) return;
 
     const activeSymbol = symbol || 'BTC';
-    
-    // List of active individual whales (rich retail)
-    const individualWhales = [
-      { id: '0x71a... Whale-Alpha', token: 'SOL', entry: 138.50, holdDays: 45, amount: 2450000 },
-      { id: 'bc1q9... Whale-Beta', token: 'BTC', entry: 91400.00, holdDays: 82, amount: 8900000 },
-      { id: '0x88f... FatCat', token: 'ETH', entry: 2980.00, holdDays: 60, amount: 3120000 },
-      { id: '0x32e... Gigachad', token: 'BRETT', entry: 0.122, holdDays: 14, amount: 850000 },
-      { id: 'SOL-5... DogeKing', token: 'POPCAT', entry: 0.82, holdDays: 18, amount: 1100000 }
-    ];
+    const whales = state.cryptoWhales || [];
 
     trackerContainer.innerHTML = `
       <p style="color: var(--text-muted); font-size: 0.72rem; margin-bottom: 12px; line-height: 1.4;">
-        Pemantauan berkala wallet ritel super kaya (Individual Whales) secara live. Klik baris token untuk melacak & mengkopi posisi entry mereka:
+        Pemantauan dompet ritel super kaya (Smart Money) secara live. Klik baris token untuk memuat analisanya:
       </p>
       <div style="display: flex; flex-direction: column; gap: 8px;">
-        ${individualWhales.map(w => {
+        ${whales.map((w, index) => {
           // If the whale token matches the active symbol, we lock its price calculation to the live price feed
           const isCurrent = w.token === activeSymbol;
           const livePrice = isCurrent ? currentPrice : (
@@ -2505,21 +2728,27 @@ window.TradeMasterApp = (function() {
             badgeClass = 'badge-info';
           }
 
+          const shortAddress = w.address.length > 15 ? `${w.address.substring(0, 6)}...${w.address.substring(w.address.length - 4)}` : w.address;
+
           return `
-            <div style="background: rgba(255,255,255,0.01); border: 1px solid ${isCurrent ? 'var(--primary)' : 'var(--card-border)'}; border-radius: 6px; padding: 10px; cursor: pointer; transition: all 0.2s; box-shadow: ${isCurrent ? '0 0 10px rgba(108, 92, 231, 0.15)' : 'none'};" 
+            <div style="background: rgba(255,255,255,0.01); border: 1px solid ${isCurrent ? 'var(--primary)' : 'var(--card-border)'}; border-radius: 6px; padding: 10px; cursor: pointer; transition: all 0.2s; box-shadow: ${isCurrent ? '0 0 10px rgba(95, 39, 205, 0.15)' : 'none'};" 
                  onclick="TradeMasterApp.navigateTo('crypto', '${w.token}')"
                  title="Klik untuk memuat ${w.token} ke analisis utama">
-              <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
-                <span style="font-family: monospace; font-weight: bold; font-size: 0.75rem; color: var(--text-main);">${w.id}</span>
+              <div style="display: flex; justify-content: space-between; margin-bottom: 4px; align-items: center;">
+                <span style="font-weight: bold; font-size: 0.8rem; color: var(--text-main);">${w.label}</span>
                 <span class="badge ${badgeClass}" style="font-size: 0.65rem; padding: 2px 6px;">${rec}</span>
               </div>
+              <div style="font-family: monospace; font-size: 0.7rem; color: var(--text-muted); margin-bottom: 4px;">Addr: ${shortAddress}</div>
               <div style="display: flex; justify-content: space-between; font-size: 0.72rem; color: var(--text-muted);">
-                <span>Aset: <b style="color:var(--primary); font-size:0.8rem;">${w.token}</b></span>
-                <span>Jumlah: <b>$${(w.amount / 1000000).toFixed(2)}M</b></span>
+                <span>Aset: <b style="color:var(--primary); font-size:0.78rem;">${w.token}</b></span>
+                <span>Value: <b>$${(w.amount / 1000000).toFixed(2)}M</b></span>
               </div>
-              <div style="display: flex; justify-content: space-between; font-size: 0.72rem; color: var(--text-muted); margin-top: 4px; border-top: 1px dashed rgba(255,255,255,0.05); padding-top: 4px;">
-                <span>Entry: $${w.entry.toLocaleString()} (${w.holdDays}d hold)</span>
-                <span>PnL: <b style="color: ${pnlColor}; font-weight: bold;">${pnlText}</b></span>
+              <div style="display: flex; justify-content: space-between; font-size: 0.72rem; color: var(--text-muted); margin-top: 4px; border-top: 1px dashed rgba(255,255,255,0.05); padding-top: 4px; align-items: center;">
+                <span>Entry: $${w.entry.toLocaleString()} | PnL: <b style="color: ${pnlColor}; font-weight: bold;">${pnlText}</b></span>
+                <div style="display: flex; gap: 4px;">
+                  <button class="btn-edit" style="font-size: 0.6rem; padding: 1px 4px; border-radius: 3px;" onclick="event.stopPropagation(); TradeMasterApp.openCryptoWhaleModal(${index})">Edit</button>
+                  <button class="btn-delete" style="font-size: 0.6rem; padding: 1px 4px; border-radius: 3px;" onclick="event.stopPropagation(); TradeMasterApp.deleteCryptoWhaleData(${index})">Del</button>
+                </div>
               </div>
             </div>
           `;
@@ -2656,6 +2885,180 @@ window.TradeMasterApp = (function() {
       if (state.activePage === 'strategy') {
         renderStrategyPage();
       }
+    }
+  }
+
+  // Open crypto whale modal
+  function openCryptoWhaleModal(index = null) {
+    const modal = document.getElementById('crypto-whale-modal');
+    if (!modal) return;
+
+    const titleEl = document.getElementById('crypto-whale-modal-title');
+    const editIndexInput = document.getElementById('crypto-whale-edit-index');
+    const addressInput = document.getElementById('crypto-whale-address');
+    const labelInput = document.getElementById('crypto-whale-label');
+    const tokenInput = document.getElementById('crypto-whale-token');
+    const entryInput = document.getElementById('crypto-whale-entry');
+    const amountInput = document.getElementById('crypto-whale-amount');
+
+    if (index !== null && index >= 0 && index < state.cryptoWhales.length) {
+      const w = state.cryptoWhales[index];
+      titleEl.innerText = 'Edit Smart Money Wallet';
+      editIndexInput.value = index;
+      addressInput.value = w.address;
+      labelInput.value = w.label;
+      tokenInput.value = w.token;
+      entryInput.value = w.entry;
+      amountInput.value = w.amount;
+    } else {
+      titleEl.innerText = 'Tambah Smart Money Wallet';
+      editIndexInput.value = '';
+      addressInput.value = '';
+      labelInput.value = '';
+      tokenInput.value = '';
+      entryInput.value = '';
+      amountInput.value = '';
+    }
+
+    modal.classList.add('active');
+  }
+
+  // Close crypto whale modal
+  function closeCryptoWhaleModal() {
+    const modal = document.getElementById('crypto-whale-modal');
+    if (modal) modal.classList.remove('active');
+  }
+
+  // Save crypto whale data
+  function saveCryptoWhaleData() {
+    const editIndexVal = document.getElementById('crypto-whale-edit-index').value;
+    const address = document.getElementById('crypto-whale-address').value.trim();
+    const label = document.getElementById('crypto-whale-label').value.trim();
+    const token = document.getElementById('crypto-whale-token').value.trim().toUpperCase();
+    const entryVal = document.getElementById('crypto-whale-entry').value.trim();
+    const amountVal = document.getElementById('crypto-whale-amount').value.trim();
+
+    if (!address || !label || !token || entryVal === '' || amountVal === '') {
+      alert('Harap isi semua kolom!');
+      return;
+    }
+
+    const entry = parseFloat(entryVal);
+    const amount = parseFloat(amountVal);
+    const whaleObj = { address, label, token, entry, amount };
+
+    if (editIndexVal !== '') {
+      const index = parseInt(editIndexVal);
+      state.cryptoWhales[index] = whaleObj;
+    } else {
+      state.cryptoWhales.push(whaleObj);
+    }
+
+    localStorage.setItem('crypto_whales_data', JSON.stringify(state.cryptoWhales));
+    
+    // Re-render
+    renderCryptoWhaleFlow(state.crypto.selected, state.crypto.livePrice);
+    closeCryptoWhaleModal();
+    
+    if (state.activePage === 'strategy') {
+      renderStrategyPage();
+    }
+  }
+
+  // Delete crypto whale data
+  function deleteCryptoWhaleData(index) {
+    if (confirm('Apakah Anda yakin ingin menghapus dompet smart money ini?')) {
+      state.cryptoWhales.splice(index, 1);
+      localStorage.setItem('crypto_whales_data', JSON.stringify(state.cryptoWhales));
+      renderCryptoWhaleFlow(state.crypto.selected, state.crypto.livePrice);
+      
+      if (state.activePage === 'strategy') {
+        renderStrategyPage();
+      }
+    }
+  }
+
+  function calcPositionSize() {
+    const modalInput = document.getElementById('calc-modal');
+    const riskSelect = document.getElementById('calc-risk');
+    const entryInput = document.getElementById('calc-entry');
+    const slInput = document.getElementById('calc-sl');
+
+    if (!modalInput || !riskSelect || !entryInput || !slInput) return;
+
+    const modal = parseFloat(modalInput.value) || 0;
+    const riskPct = parseFloat(riskSelect.value) || 0;
+    const entry = parseFloat(entryInput.value) || 0;
+    const sl = parseFloat(slInput.value) || 0;
+
+    const resRiskVal = document.getElementById('res-risk-val');
+    const resSizeVal = document.getElementById('res-size-val');
+    const resUnitsVal = document.getElementById('res-units-val');
+
+    if (modal <= 0 || entry <= 0 || entry <= sl) {
+      if (resRiskVal) resRiskVal.innerText = 'Rp 0';
+      if (resSizeVal) resSizeVal.innerText = 'Rp 0';
+      if (resUnitsVal) resUnitsVal.innerText = '0 Unit';
+      return;
+    }
+
+    const riskAmount = modal * (riskPct / 100);
+    const riskPerUnit = entry - sl;
+    const units = Math.floor(riskAmount / riskPerUnit);
+    const positionSize = units * entry;
+
+    const isCrypto = entry < 500;
+    const prefix = isCrypto ? '$' : 'Rp ';
+
+    if (resRiskVal) resRiskVal.innerText = prefix + riskAmount.toLocaleString(undefined, { maximumFractionDigits: isCrypto ? 2 : 0 });
+    if (resSizeVal) resSizeVal.innerText = prefix + positionSize.toLocaleString(undefined, { maximumFractionDigits: isCrypto ? 2 : 0 });
+    if (resUnitsVal) {
+      const lotText = !isCrypto ? ` (${Math.floor(units / 100)} Lot)` : '';
+      resUnitsVal.innerText = `${units.toLocaleString()} Unit${lotText}`;
+    }
+  }
+
+  function calcAverageDown() {
+    const curPriceInput = document.getElementById('avg-current-price');
+    const curQtyInput = document.getElementById('avg-current-qty');
+    const targetPriceInput = document.getElementById('avg-target-price');
+    const mktPriceInput = document.getElementById('avg-market-price');
+
+    if (!curPriceInput || !curQtyInput || !targetPriceInput || !mktPriceInput) return;
+
+    const curAvg = parseFloat(curPriceInput.value) || 0;
+    const curQty = parseFloat(curQtyInput.value) || 0;
+    const targetAvg = parseFloat(targetPriceInput.value) || 0;
+    const mktPrice = parseFloat(mktPriceInput.value) || 0;
+
+    const resQtyEl = document.getElementById('res-avg-qty');
+    const resDanaEl = document.getElementById('res-avg-dana');
+    const resTotalEl = document.getElementById('res-avg-total');
+
+    if (curAvg <= targetAvg || targetAvg <= mktPrice || curQty <= 0) {
+      if (resQtyEl) resQtyEl.innerText = 'N/A (Target tidak valid)';
+      if (resDanaEl) resDanaEl.innerText = 'Rp 0';
+      if (resTotalEl) resTotalEl.innerText = 'Pastikan: Serokan < Target < Rata-rata saat ini';
+      return;
+    }
+
+    const additionalQty = Math.ceil(curQty * (curAvg - targetAvg) / (targetAvg - mktPrice));
+    const additionalDana = additionalQty * mktPrice;
+    const totalQty = curQty + additionalQty;
+
+    const isCrypto = curAvg < 500;
+    const prefix = isCrypto ? '$' : 'Rp ';
+
+    if (resQtyEl) {
+      const lotText = !isCrypto ? ` (${Math.floor(additionalQty / 100)} Lot)` : '';
+      resQtyEl.innerText = `${additionalQty.toLocaleString()} Unit${lotText}`;
+    }
+    if (resDanaEl) {
+      resDanaEl.innerText = prefix + additionalDana.toLocaleString(undefined, { maximumFractionDigits: isCrypto ? 2 : 0 });
+    }
+    if (resTotalEl) {
+      const lotText = !isCrypto ? ` (${Math.floor(totalQty / 100)} Lot)` : '';
+      resTotalEl.innerText = `${totalQty.toLocaleString()} Unit${lotText} @ ${prefix}${targetAvg.toLocaleString()}`;
     }
   }
 
@@ -2808,7 +3211,13 @@ window.TradeMasterApp = (function() {
     openWhaleModal,
     closeWhaleModal,
     saveWhaleData,
-    deleteWhaleData
+    deleteWhaleData,
+    openCryptoWhaleModal,
+    closeCryptoWhaleModal,
+    saveCryptoWhaleData,
+    deleteCryptoWhaleData,
+    calcPositionSize,
+    calcAverageDown
   };
 })();
 
