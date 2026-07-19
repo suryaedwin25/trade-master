@@ -2083,6 +2083,7 @@ window.TradeMasterApp = (function() {
                   <th style="text-align: center; padding: 4px 2px; color: var(--success); font-weight: 600;">Puncak</th>
                   <th style="text-align: right; padding: 4px 2px; color: var(--success); font-weight: 600;">Harga Puncak</th>
                   <th style="text-align: center; padding: 4px 2px; color: var(--text-muted); font-weight: 600;">Hari</th>
+                  <th style="text-align: center; padding: 4px 2px; color: var(--danger); font-weight: 600;">Tgl Bottom</th>
                   <th style="text-align: right; padding: 4px 2px; color: var(--danger); font-weight: 600;">Harga Bottom</th>
                   <th style="text-align: center; padding: 4px 2px; color: var(--danger); font-weight: 600;">Bear</th>
                 </tr>
@@ -2094,6 +2095,7 @@ window.TradeMasterApp = (function() {
                   <td style="text-align: center; padding: 4px 2px; color: var(--success);">30 Nov 2013</td>
                   <td style="text-align: right; padding: 4px 2px; font-weight: bold; color: var(--success);">$1,163</td>
                   <td style="text-align: center; padding: 4px 2px; font-weight: bold;">367</td>
+                  <td style="text-align: center; padding: 4px 2px; color: var(--danger);">14 Jan 2015</td>
                   <td style="text-align: right; padding: 4px 2px; font-weight: bold; color: var(--danger);">$152</td>
                   <td style="text-align: center; padding: 4px 2px; color: var(--danger); font-weight: bold;">410</td>
                 </tr>
@@ -2103,6 +2105,7 @@ window.TradeMasterApp = (function() {
                   <td style="text-align: center; padding: 4px 2px; color: var(--success);">17 Des 2017</td>
                   <td style="text-align: right; padding: 4px 2px; font-weight: bold; color: var(--success);">$19,783</td>
                   <td style="text-align: center; padding: 4px 2px; font-weight: bold;">526</td>
+                  <td style="text-align: center; padding: 4px 2px; color: var(--danger);">15 Des 2018</td>
                   <td style="text-align: right; padding: 4px 2px; font-weight: bold; color: var(--danger);">$3,122</td>
                   <td style="text-align: center; padding: 4px 2px; color: var(--danger); font-weight: bold;">363</td>
                 </tr>
@@ -2112,6 +2115,7 @@ window.TradeMasterApp = (function() {
                   <td style="text-align: center; padding: 4px 2px; color: var(--success);">10 Nov 2021</td>
                   <td style="text-align: right; padding: 4px 2px; font-weight: bold; color: var(--success);">$69,044</td>
                   <td style="text-align: center; padding: 4px 2px; font-weight: bold;">548</td>
+                  <td style="text-align: center; padding: 4px 2px; color: var(--danger);">21 Nov 2022</td>
                   <td style="text-align: right; padding: 4px 2px; font-weight: bold; color: var(--danger);">$15,476</td>
                   <td style="text-align: center; padding: 4px 2px; color: var(--danger); font-weight: bold;">376</td>
                 </tr>
@@ -2121,6 +2125,7 @@ window.TradeMasterApp = (function() {
                   <td style="text-align: center; padding: 4px 2px; color: var(--success);">${fmtDateShort(cycle4PeakEst)}</td>
                   <td style="text-align: right; padding: 4px 2px; font-weight: bold; color: var(--success);">$126,300</td>
                   <td style="text-align: center; padding: 4px 2px; font-weight: bold;">533</td>
+                  <td style="text-align: center; padding: 4px 2px; color: var(--danger); font-weight: bold;">~${fmtDateShort(cycle4BearBottomEst)}</td>
                   <td style="text-align: right; padding: 4px 2px; font-weight: bold; color: var(--danger);">~$49,000</td>
                   <td style="text-align: center; padding: 4px 2px; color: var(--danger); font-weight: bold;">~383</td>
                 </tr>
@@ -2130,6 +2135,7 @@ window.TradeMasterApp = (function() {
                   <td style="text-align: center; padding: 4px 2px; color: var(--warning); font-weight: bold;">~${fmtDateShort(cycle5PeakEst)}</td>
                   <td style="text-align: right; padding: 4px 2px; font-weight: bold; color: var(--warning);">$180k-220k</td>
                   <td style="text-align: center; padding: 4px 2px; font-weight: bold;">~${avgPeakDays}</td>
+                  <td style="text-align: center; padding: 4px 2px; color: var(--text-muted);">TBD</td>
                   <td style="text-align: right; padding: 4px 2px; font-weight: bold; color: var(--text-muted);">TBD</td>
                   <td style="text-align: center; padding: 4px 2px; color: var(--text-muted);">TBD</td>
                 </tr>
