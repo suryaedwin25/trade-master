@@ -2406,38 +2406,52 @@ window.TradeMasterApp = (function() {
           </div>
 
           <div>
-            <h4 style="font-weight: 700; color: var(--warning); margin-bottom: 8px; font-size: 0.88rem;">🎯 TARGET HARGA & SUPPORT TEKNIKAL</h4>
-            <div style="display: flex; flex-direction: column; gap: 4px; font-size: 0.78rem;">
-              <div style="font-size: 0.72rem; font-weight: 600; color: var(--text-muted); margin-bottom: 2px;">Zona Entry Akumulasi:</div>
-              <div style="display: flex; justify-content: space-between; background: rgba(255,255,255,0.02); padding: 3px 6px; border-radius: 4px;">
+            <h4 style="font-weight: 700; color: var(--warning); margin-bottom: 8px; font-size: 0.88rem;">🎯 TARGET TEKNIKAL & ESTIMASI PEAK SIKLUS</h4>
+            <div style="display: flex; flex-direction: column; gap: 6px; font-size: 0.76rem;">
+              
+              <!-- Zona Beli Akumulasi -->
+              <div style="font-size: 0.7rem; font-weight: 600; color: var(--text-muted); margin-bottom: 2px; text-transform: uppercase;">Zona Beli Akumulasi:</div>
+              <div style="display: flex; justify-content: space-between; background: rgba(255,255,255,0.02); padding: 4px 8px; border-radius: 4px; border-left: 2px solid var(--warning);">
                 <span>1. Agresif (Current)</span>
                 <span style="font-weight: bold; color: var(--warning);">Rp ${Math.round(entryMin).toLocaleString()} - Rp ${Math.round(entryMax).toLocaleString()}</span>
               </div>
-              <div style="display: flex; justify-content: space-between; background: rgba(255,255,255,0.02); padding: 3px 6px; border-radius: 4px;">
+              <div style="display: flex; justify-content: space-between; background: rgba(255,255,255,0.02); padding: 4px 8px; border-radius: 4px; border-left: 2px solid var(--success);">
                 <span>2. Optimal Support</span>
                 <span style="font-weight: bold; color: var(--success);">Rp ${Math.round(currentPrice * 0.95).toLocaleString()} - Rp ${Math.round(currentPrice * 0.97).toLocaleString()}</span>
               </div>
-              <div style="display: flex; justify-content: space-between; background: rgba(255,255,255,0.02); padding: 3px 6px; border-radius: 4px;">
-                <span>3. Floor Support</span>
-                <span style="font-weight: bold; color: var(--success);">Rp 4,100 (PBV 1.8x)</span>
+              
+              <!-- Proyeksi Peak Price -->
+              <div style="font-size: 0.7rem; font-weight: 600; color: var(--text-muted); margin-top: 6px; margin-bottom: 2px; text-transform: uppercase;">Estimasi Peak Price (Siklus Emas):</div>
+              <div style="background: rgba(108, 92, 231, 0.05); padding: 10px; border-radius: 6px; border: 1px solid rgba(108, 92, 231, 0.2);">
+                <div style="display: flex; justify-content: space-between; font-weight: bold; margin-bottom: 4px; font-size: 0.8rem;">
+                  <span style="color: var(--primary);">Peak Target (PBV 3.0x - 3.2x)</span>
+                  <span style="color: var(--success); font-size: 0.85rem;">Rp 6,150 - Rp 6,600</span>
+                </div>
+                
+                <div style="font-size: 0.68rem; color: var(--text-muted); line-height: 1.45;">
+                  <b>Pendorong Makro:</b> Siklus pemangkasan suku bunga global (BI & Fed Rate Cut) menurunkan Cost of Funds (CoF) perbankan dan memicu <i>foreign capital inflow</i> masif ke saham blue-chip.<br>
+                  <b>Pendorong Mikro:</b> Pertumbuhan kredit mikro (Kupedes & PNM Mekaar) mendorong ROE tetap tinggi di ~18-20% dengan estimasi BVPS bertumbuh ke Rp 2,200 pada akhir 2025/2026.
+                </div>
               </div>
-              <div style="font-size: 0.72rem; font-weight: 600; color: var(--text-muted); margin-top: 4px;">Target Jual Jangka Pendek/Menengah:</div>
-              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 3px;">
-                <div style="background: rgba(255,255,255,0.02); padding: 3px; border-radius: 4px; text-align: center;">
+
+              <!-- Jangka Pendek Target -->
+              <div style="font-size: 0.7rem; font-weight: 600; color: var(--text-muted); margin-top: 6px;">Target Jual Jangka Pendek/Menengah:</div>
+              <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 4px;">
+                <div style="background: rgba(255,255,255,0.02); padding: 4px; border-radius: 4px; text-align: center;">
                   <div style="color: var(--text-muted); font-size: 0.65rem;">Target T1</div>
-                  <div style="font-weight: bold; color: var(--primary); font-size: 0.8rem;">Rp ${Math.round(target1).toLocaleString()}</div>
+                  <div style="font-weight: bold; color: var(--primary); font-size: 0.78rem;">Rp ${Math.round(target1).toLocaleString()}</div>
                 </div>
-                <div style="background: rgba(255,255,255,0.02); padding: 3px; border-radius: 4px; text-align: center;">
+                <div style="background: rgba(255,255,255,0.02); padding: 4px; border-radius: 4px; text-align: center;">
                   <div style="color: var(--text-muted); font-size: 0.65rem;">Target T2</div>
-                  <div style="font-weight: bold; color: var(--primary); font-size: 0.8rem;">Rp ${Math.round(target2).toLocaleString()}</div>
+                  <div style="font-weight: bold; color: var(--primary); font-size: 0.78rem;">Rp ${Math.round(target2).toLocaleString()}</div>
                 </div>
-                <div style="background: rgba(255,255,255,0.02); padding: 3px; border-radius: 4px; text-align: center;">
+                <div style="background: rgba(255,255,255,0.02); padding: 4px; border-radius: 4px; text-align: center;">
                   <div style="color: var(--text-muted); font-size: 0.65rem;">RSI 14 Hari</div>
-                  <div style="font-weight: bold; color: ${cRsi > 65 ? 'var(--danger)' : cRsi < 35 ? 'var(--success)' : 'var(--text-main)'}; font-size: 0.8rem;">${cRsi.toFixed(1)}</div>
+                  <div style="font-weight: bold; color: ${cRsi > 65 ? 'var(--danger)' : cRsi < 35 ? 'var(--success)' : 'var(--text-main)'}; font-size: 0.78rem;">${cRsi.toFixed(1)}</div>
                 </div>
-                <div style="background: rgba(255,255,255,0.02); padding: 3px; border-radius: 4px; text-align: center;">
+                <div style="background: rgba(255,255,255,0.02); padding: 4px; border-radius: 4px; text-align: center;">
                   <div style="color: var(--text-muted); font-size: 0.65rem;">Sinyal MACD</div>
-                  <div style="font-weight: bold; color: ${cMacd > cSignal ? 'var(--success)' : 'var(--danger)'}; font-size: 0.8rem;">${cMacd > cSignal ? 'Bullish' : 'Bearish'}</div>
+                  <div style="font-weight: bold; color: ${cMacd > cSignal ? 'var(--success)' : 'var(--danger)'}; font-size: 0.78rem;">${cMacd > cSignal ? 'Bullish' : 'Bearish'}</div>
                 </div>
               </div>
             </div>
