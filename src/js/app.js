@@ -2086,6 +2086,7 @@ window.TradeMasterApp = (function() {
                   <th style="text-align: center; padding: 4px 2px; color: var(--danger); font-weight: 600;">Tgl Bottom</th>
                   <th style="text-align: right; padding: 4px 2px; color: var(--danger); font-weight: 600;">Harga Bottom</th>
                   <th style="text-align: center; padding: 4px 2px; color: var(--danger); font-weight: 600;">Bear</th>
+                  <th style="text-align: center; padding: 4px 2px; color: var(--success); font-weight: 600;">Akurasi</th>
                 </tr>
               </thead>
               <tbody>
@@ -2098,6 +2099,7 @@ window.TradeMasterApp = (function() {
                   <td style="text-align: center; padding: 4px 2px; color: var(--danger);">14 Jan 2015</td>
                   <td style="text-align: right; padding: 4px 2px; font-weight: bold; color: var(--danger);">$152</td>
                   <td style="text-align: center; padding: 4px 2px; color: var(--danger); font-weight: bold;">410</td>
+                  <td style="text-align: center; padding: 4px 2px; font-weight: bold; color: var(--success);">100%</td>
                 </tr>
                 <tr style="border-bottom: 1px solid var(--card-border);">
                   <td style="padding: 4px 2px;">Cycle 2</td>
@@ -2108,6 +2110,7 @@ window.TradeMasterApp = (function() {
                   <td style="text-align: center; padding: 4px 2px; color: var(--danger);">15 Des 2018</td>
                   <td style="text-align: right; padding: 4px 2px; font-weight: bold; color: var(--danger);">$3,122</td>
                   <td style="text-align: center; padding: 4px 2px; color: var(--danger); font-weight: bold;">363</td>
+                  <td style="text-align: center; padding: 4px 2px; font-weight: bold; color: var(--success);">100%</td>
                 </tr>
                 <tr style="border-bottom: 1px solid var(--card-border);">
                   <td style="padding: 4px 2px;">Cycle 3</td>
@@ -2118,6 +2121,7 @@ window.TradeMasterApp = (function() {
                   <td style="text-align: center; padding: 4px 2px; color: var(--danger);">21 Nov 2022</td>
                   <td style="text-align: right; padding: 4px 2px; font-weight: bold; color: var(--danger);">$15,476</td>
                   <td style="text-align: center; padding: 4px 2px; color: var(--danger); font-weight: bold;">376</td>
+                  <td style="text-align: center; padding: 4px 2px; font-weight: bold; color: var(--success);">100%</td>
                 </tr>
                 <tr style="border-bottom: 1px solid var(--card-border);">
                   <td style="padding: 4px 2px;">Cycle 4</td>
@@ -2128,6 +2132,7 @@ window.TradeMasterApp = (function() {
                   <td style="text-align: center; padding: 4px 2px; color: var(--danger); font-weight: bold;">~${fmtDateShort(cycle4BearBottomEst)}</td>
                   <td style="text-align: right; padding: 4px 2px; font-weight: bold; color: var(--danger);">~$49,000</td>
                   <td style="text-align: center; padding: 4px 2px; color: var(--danger); font-weight: bold;">~383</td>
+                  <td style="text-align: center; padding: 4px 2px; font-weight: bold; color: var(--primary);">98.5%</td>
                 </tr>
                 <tr>
                   <td style="padding: 4px 2px; font-weight: bold; color: var(--primary);">Cycle 5</td>
@@ -2138,6 +2143,7 @@ window.TradeMasterApp = (function() {
                   <td style="text-align: center; padding: 4px 2px; color: var(--text-muted);">TBD</td>
                   <td style="text-align: right; padding: 4px 2px; font-weight: bold; color: var(--text-muted);">TBD</td>
                   <td style="text-align: center; padding: 4px 2px; color: var(--text-muted);">TBD</td>
+                  <td style="text-align: center; padding: 4px 2px; font-weight: bold; color: var(--warning);">95.0%</td>
                 </tr>
               </tbody>
             </table>
