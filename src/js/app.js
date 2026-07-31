@@ -1625,7 +1625,7 @@ window.TradeMasterApp = (function() {
 
       const topMoonshots = validScored
         .sort((a, b) => b.score - a.score)
-        .slice(0, 50); // Slice top 50 list!
+        .slice(0, 10); // Slice Top 10 most potential tokens!
 
       if (topMoonshots.length === 0) {
         list.innerHTML = `<tr><td colspan="8" style="text-align: center; color: var(--danger);">Tidak ada token yang memenuhi kriteria likuiditas saat ini.</td></tr>`;
