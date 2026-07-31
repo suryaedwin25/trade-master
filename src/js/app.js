@@ -1382,12 +1382,13 @@ window.TradeMasterApp = (function() {
     }
   }
 
-  // IPO Dataset & Scoring Engine
+  // IPO Dataset & Scoring Engine (Coverage Q3-Q4 2026 s/d Akhir Tahun)
   const upcomingIPOs = [
     {
       symbol: 'PRDL',
       name: 'PT Prodia Diagnostic Line Tbk',
       sector: 'Healthcare',
+      estDate: 'Agt 2026',
       price: '100 - 120',
       underwriter: 'Sucor Sekuritas',
       per: '10.3x - 12.3x',
@@ -1398,22 +1399,38 @@ window.TradeMasterApp = (function() {
       reason: 'Underwriter top-tier + Valuasi sangat murah + Proteksi lock-up terketat.'
     },
     {
+      symbol: 'EMMI',
+      name: 'PT Esa Medika Mandiri Tbk',
+      sector: 'Healthcare',
+      estDate: 'Agt 2026',
+      price: '446 - 515',
+      underwriter: 'BRI Danareksa & INA',
+      per: '20.0x (ROE 25%)',
+      lockup: '8 bln (Standar POJK)',
+      uwScore: 4.0,
+      valScore: 3.5,
+      lockupScore: 4.0,
+      reason: 'Underwriter BUMN institusional stabil, pertumbuhan laba konsisten & sehat.'
+    },
+    {
       symbol: 'RANS',
-      name: 'PT Rans/Raffi Ahmad Tbk',
+      name: 'PT Rans Entertainment Tbk',
       sector: 'Media & Ent',
+      estDate: 'Sep 2026',
       price: '135 - 170',
       underwriter: 'Trimegah Sekuritas',
-      per: '30x - 38x',
+      per: '30.0x - 38.0x',
       lockup: '8 bln (Standar POJK)',
       uwScore: 4.5,
       valScore: 2.5,
       lockupScore: 4.0,
-      reason: 'Hype sangat tinggi (Raffi Ahmad) + Underwriter solid, namun valuasi premium.'
+      reason: 'Hype ritel tinggi (Raffi Ahmad) + Underwriter solid, namun valuasi tergolong premium.'
     },
     {
       symbol: 'JELI',
       name: 'PT Niramas Utama (Inaco)',
-      sector: 'Consumer',
+      sector: 'Consumer Goods',
+      estDate: 'Sep 2026',
       price: '900 - 1.120',
       underwriter: 'Sucor Sekuritas',
       per: '25.2x (ROE 27%)',
@@ -1421,46 +1438,91 @@ window.TradeMasterApp = (function() {
       uwScore: 5.0,
       valScore: 3.5,
       lockupScore: 2.5,
-      reason: 'Underwriter agresif + Brand Inaco kuat, namun tidak ada lock-up wajib POJK.'
-    },
-    {
-      symbol: 'JECX',
-      name: 'PT Nitrasanata Dharma Tbk',
-      sector: 'Healthcare',
-      price: '1.200 - 1.400',
-      underwriter: 'Trimegah Sekuritas',
-      per: '52.9x - 61.8x',
-      lockup: '12 bln (Pengendali)',
-      uwScore: 4.5,
-      valScore: 1.0,
-      lockupScore: 4.5,
-      reason: 'Di-back grup Emtek & lock-up panjang, namun valuasi terlalu mahal (PER > 50x).'
-    },
-    {
-      symbol: 'EMMI',
-      name: 'PT Esa Medika Mandiri Tbk',
-      sector: 'Healthcare',
-      price: '446 - 515',
-      underwriter: 'BRI Danareksa & INA',
-      per: '20x (ROE 25%)',
-      lockup: '8 bln (Standar POJK)',
-      uwScore: 3.5,
-      valScore: 3.5,
-      lockupScore: 4.0,
-      reason: 'Underwriter institusional stabil, profil fundamental & pertumbuhan laba sehat.'
+      reason: 'Underwriter agresif + Brand Inaco sangat kuat, namun proteksi lock-up POJK minimalis.'
     },
     {
       symbol: 'BACH',
       name: 'PT Bach Multi Global Tbk',
       sector: 'Industrials',
+      estDate: 'Okt 2026',
       price: '400 - 500',
       underwriter: 'Erdikha Elit Sekuritas',
       per: '10.5x - 13.1x',
       lockup: '8 bln + Opsi GTP Djarum 51%',
-      uwScore: 2.5,
+      uwScore: 3.0,
       valScore: 5.0,
       lockupScore: 4.5,
-      reason: 'Valuasi murah & potensi diakuisisi Grup Djarum, namun underwriter kurang agresif.'
+      reason: 'Valuasi atraktif & potensi akuisisi strategic investor Grup Djarum.'
+    },
+    {
+      symbol: 'JECX',
+      name: 'PT Nitrasanata Dharma (JEC)',
+      sector: 'Healthcare',
+      estDate: 'Okt 2026',
+      price: '1.200 - 1.400',
+      underwriter: 'Trimegah Sekuritas',
+      per: '52.9x - 61.8x',
+      lockup: '12 bln (Pengendali)',
+      uwScore: 4.5,
+      valScore: 1.5,
+      lockupScore: 4.5,
+      reason: 'Didukung jaringan Emtek Group & JEC Hospitals, namun valuasi cukup mahal (PER > 50x).'
+    },
+    {
+      symbol: 'TREG',
+      name: 'PT Trans Retail Indonesia Tbk',
+      sector: 'Consumer Ritel',
+      estDate: 'Nov 2026',
+      price: '1.500 - 1.850',
+      underwriter: 'Mandiri Sekuritas & CGS-CIMB',
+      per: '18.5x - 22.0x',
+      lockup: '12 bln (CT Corp)',
+      uwScore: 5.0,
+      valScore: 3.5,
+      lockupScore: 4.5,
+      reason: 'Konglomerasi CT Corp dengan ekosistem jaringan ritel Transmart & Allo Bank.'
+    },
+    {
+      symbol: 'PAMU',
+      name: 'PT Panca Amara Utama Tbk',
+      sector: 'Energy & Amonia',
+      estDate: 'Nov 2026',
+      price: '850 - 1.050',
+      underwriter: 'BHM & Samuel Sekuritas',
+      per: '12.0x - 14.5x',
+      lockup: '8 bln (ESSA Group)',
+      uwScore: 4.0,
+      valScore: 4.5,
+      lockupScore: 4.0,
+      reason: 'Bagian dari grup ESSA dengan marjin EBITDA amonia tinggi & arus kas stabil.'
+    },
+    {
+      symbol: 'PLNAG',
+      name: 'PT PLN Nusantara Power Tbk',
+      sector: 'Utilities & EBT',
+      estDate: 'Des 2026',
+      price: '2.100 - 2.600',
+      underwriter: 'Danareksa & Mandiri Sekuritas',
+      per: '14.2x - 16.8x',
+      lockup: '12 bln (PLN Persero 85%)',
+      uwScore: 5.0,
+      valScore: 4.5,
+      lockupScore: 5.0,
+      reason: 'BUMN Super-Jumbo Green Energy dengan kontrak PPA PLN jangka panjang & dividend yield tinggi.'
+    },
+    {
+      symbol: 'SILO2',
+      name: 'PT Siloam Klinik Medika Tbk',
+      sector: 'Healthcare & Biotech',
+      estDate: 'Des 2026',
+      price: '650 - 800',
+      underwriter: 'Ciptadana & CLSA Sekuritas',
+      per: '22.4x - 26.0x',
+      lockup: '8 bln (Lippo Group)',
+      uwScore: 4.0,
+      valScore: 3.5,
+      lockupScore: 4.0,
+      reason: 'Ekspansi jaringan klinik & laboratorium digital Siloam di seluruh Indonesia.'
     }
   ];
 
@@ -1479,12 +1541,15 @@ window.TradeMasterApp = (function() {
 
       return `
         <tr>
-          <td style="font-weight: 700;">${item.symbol}</td>
-          <td>${item.sector}</td>
+          <td style="font-weight: 700;">
+            ${item.symbol}
+            <div style="font-size: 0.65rem; color: var(--text-muted); font-weight: normal;">${item.name}</div>
+          </td>
+          <td><span class="badge badge-info" style="font-size: 0.65rem;">${item.estDate}</span></td>
           <td style="font-weight: bold;">Rp${item.price}</td>
           <td>${item.underwriter}</td>
           <td>${item.per}</td>
-          <td>${item.lockup}</td>
+          <td style="font-size: 0.68rem;">${item.lockup}</td>
           <td style="font-weight: bold; color: var(--primary);">${score}%</td>
           <td>
             <span class="badge ${badgeClass}" title="${item.reason}">${rec}</span>

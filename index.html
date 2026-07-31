@@ -348,13 +348,17 @@
                 <select class="select-asset" id="stock-select" style="margin: 0;">
                   <option value="BBRI" selected>Bank Rakyat Indonesia (BBRI)</option>
                   <option value="BBCA">Bank Central Asia (BBCA)</option>
+                  <option value="BMRI">Bank Mandiri (BMRI)</option>
+                  <option value="BBNI">Bank Negara Indonesia (BBNI)</option>
                   <option value="TLKM">Telkom Indonesia (TLKM)</option>
                   <option value="ASII">Astra International (ASII)</option>
                   <option value="GOTO">GoTo Gojek Tokopedia (GOTO)</option>
-                  <option value="BMRI">Bank Mandiri (BMRI)</option>
-                  <option value="BBNI">Bank Negara Indonesia (BBNI)</option>
-                  <option value="UNVR">Unilever Indonesia (UNVR)</option>
+                  <option value="BREN">Barito Renewables (BREN)</option>
+                  <option value="AMMN">Amman Mineral (AMMN)</option>
+                  <option value="BRMS">Bumi Resources Minerals (BRMS)</option>
+                  <option value="CUAN">Petrindo Jaya Kreasi (CUAN)</option>
                   <option value="ADRO">Adaro Energy (ADRO)</option>
+                  <option value="UNVR">Unilever Indonesia (UNVR)</option>
                 </select>
               </div>
             </div>
@@ -405,26 +409,29 @@
           </div>
 
           <!-- Bottom Row: IPO Tracker, Speculative Trading List, and Whale Stock Accumulation -->
-          <div style="display: grid; grid-template-columns: 1.1fr 1.05fr 1.05fr; gap: 20px; margin-top: 24px;">
+          <div style="display: grid; grid-template-columns: 1.2fr 1fr 1fr; gap: 20px; margin-top: 24px;">
             
             <!-- Upcoming IPO Tracker & Analyzer -->
             <div class="card" style="margin: 0; padding: 16px;">
               <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 6px; border-bottom: 1px solid var(--card-border); margin-bottom: 10px;">
                 <span class="card-title" style="font-size: 0.9rem; display: flex; align-items: center; gap: 6px;">
                   <i data-lucide="rocket" style="color: var(--primary); width: 14px; height: 14px;"></i>
-                  Upcoming IPO Tracker
+                  Upcoming IPO Tracker (BEI 2026)
                 </span>
-                <span class="badge badge-info" style="font-size: 0.65rem; padding: 2px 6px;">Jul 2026</span>
+                <span class="badge badge-info" style="font-size: 0.65rem; padding: 2px 6px;">Agt - Des 2026 (Q3-Q4)</span>
               </div>
-              <div class="table-container" style="max-height: 250px; overflow-y: auto;">
+              <div class="table-container" style="max-height: 280px; overflow-y: auto;">
                 <table style="font-size: 0.72rem; width: 100%;">
                   <thead>
                     <tr>
-                      <th>Emiten</th>
+                      <th>Emiten & Kode</th>
+                      <th>Est. IPO</th>
+                      <th>Harga Offer (Rp)</th>
                       <th>Underwriter</th>
-                      <th>Valuasi</th>
+                      <th>PER / Valuasi</th>
+                      <th>Lock-up</th>
                       <th>Score</th>
-                      <th>Sinyal</th>
+                      <th>Sinyal Rekomendasi</th>
                     </tr>
                   </thead>
                   <tbody id="stock-ipo-list">
