@@ -605,6 +605,9 @@ window.TradeMasterApp = (function() {
       renderCryptoWhaleFlow(symbol, initialTicker.price);
     }
 
+    // Auto scan top 10 moonshot potential tokens
+    scanCryptoMoonshots();
+
     // Polling loop (every 3 seconds) to pull live price ticks and update Whale Tracker
     state.crypto.pollInterval = setInterval(async () => {
       const ticker = await TradeMasterAPI.getCryptoLiveTicker(symbol, exchange);
@@ -1500,7 +1503,7 @@ window.TradeMasterApp = (function() {
     
     if (!list) return;
 
-    list.innerHTML = `<tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 24px;">Memindai seluruh pasar spot ${scannerExchange} USDT... Mohon tunggu...</td></tr>`;
+    list.innerHTML = `<tr><td colspan="9" style="text-align: center; color: var(--text-muted); padding: 24px;">Memindai seluruh pasar spot ${scannerExchange} USDT... Mohon tunggu...</td></tr>`;
 
     try {
       let usdPairs = [];
@@ -1623,16 +1626,17 @@ window.TradeMasterApp = (function() {
       // Filter out elements with invalid NaN values
       const validScored = scored.filter(item => !isNaN(item.price) && !isNaN(item.change) && !isNaN(item.score));
 
+      // Strictly top 10 potential tokens
       const topMoonshots = validScored
         .sort((a, b) => b.score - a.score)
         .slice(0, 10); // Slice Top 10 most potential tokens!
 
       if (topMoonshots.length === 0) {
-        list.innerHTML = `<tr><td colspan="8" style="text-align: center; color: var(--danger);">Tidak ada token yang memenuhi kriteria likuiditas saat ini.</td></tr>`;
+        list.innerHTML = `<tr><td colspan="9" style="text-align: center; color: var(--danger);">Tidak ada token yang memenuhi kriteria likuiditas saat ini.</td></tr>`;
         return;
       }
 
-      list.innerHTML = topMoonshots.map(m => {
+      list.innerHTML = topMoonshots.map((m, index) => {
         let rec = 'HOLD';
         let badgeClass = 'badge-warning';
 
@@ -1654,6 +1658,7 @@ window.TradeMasterApp = (function() {
 
         return `
           <tr id="moonshot-row-${m.symbol}" style="cursor: pointer;" onclick="TradeMasterApp.navigateTo('crypto', '${m.symbol}')" title="Klik untuk menganalisis ${m.symbol} secara detail">
+            <td style="font-weight: 800; color: var(--primary); font-size: 0.85rem;">#${index + 1}</td>
             <td style="font-weight: 700; display: flex; align-items: center; gap: 8px;">
               <span class="logo-icon" style="width: 20px; height: 20px; font-size: 0.75rem; box-shadow: none;">${m.symbol[0]}</span>
               ${m.symbol} <span style="font-size: 0.75rem; color: var(--text-muted);">/USDT</span>
@@ -1673,7 +1678,7 @@ window.TradeMasterApp = (function() {
 
     } catch (err) {
       console.error('Failed to run moonshot scanner:', err);
-      list.innerHTML = `<tr><td colspan="8" style="text-align: center; color: var(--danger);">Gagal memindai pasar. Periksa koneksi internet Anda.</td></tr>`;
+      list.innerHTML = `<tr><td colspan="9" style="text-align: center; color: var(--danger);">Gagal memindai pasar. Periksa koneksi internet Anda.</td></tr>`;
     }
   }
 
