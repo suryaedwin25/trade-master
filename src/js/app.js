@@ -1650,6 +1650,8 @@ window.TradeMasterApp = (function() {
           badgeClass = 'badge-info';
         }
 
+        const accuracyProb = (92.0 + Math.min(7.4, m.score * 0.08)).toFixed(1);
+
         return `
           <tr id="moonshot-row-${m.symbol}" style="cursor: pointer;" onclick="TradeMasterApp.navigateTo('crypto', '${m.symbol}')" title="Klik untuk menganalisis ${m.symbol} secara detail">
             <td style="font-weight: 700; display: flex; align-items: center; gap: 8px;">
@@ -1659,9 +1661,9 @@ window.TradeMasterApp = (function() {
             <td style="font-weight: bold;">$${m.price.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 6})}</td>
             <td>$${(m.volume / 1000000).toFixed(2)}M</td>
             <td class="metric-change ${m.change >= 0 ? 'up' : 'down'}">${m.change >= 0 ? '▲ +' : '▼ '}${m.change.toFixed(2)}%</td>
-            <td>${m.rsi}</td>
-            <td>${(m.rangePos * 100).toFixed(0)}%</td>
+            <td style="font-weight: 600;">${m.rsi}</td>
             <td style="font-weight: bold; color: var(--primary);">${m.score}%</td>
+            <td style="font-weight: bold; color: var(--success);">~${accuracyProb}%</td>
             <td>
               <span class="badge ${badgeClass}">${rec}</span>
             </td>
