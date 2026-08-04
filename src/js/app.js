@@ -2067,15 +2067,15 @@ window.TradeMasterApp = (function() {
       const cycle1PeakDays = 367; // Outlier (early low-liquidity cycle)
       const cycle2PeakDays = 526;
       const cycle3PeakDays = 548;
-      const cycle4PeakDays = 533; // Actual days between 20 Apr 2024 and 5 Oct 2025
+      const cycle4PeakDays = 534; // Actual days between 20 Apr 2024 and 6 Oct 2025
       
       // We use Mature Cycle Average (Cycle 2, 3, 4) for projections (excluding early outlier Cycle 1)
       const avgPeakDays = Math.round((cycle2PeakDays + cycle3PeakDays + cycle4PeakDays) / 3); // Exactly 536 days
       const avgBearDays = Math.round((410 + 363 + 376) / 3); // ~383 days
       const avgBullDays = 1064;
 
-      // Cycle 4 calculations (Actual historical peak: 5 Oct 2025)
-      const cycle4PeakEst = new Date('2025-10-05');
+      // Cycle 4 calculations (Actual historical peak: 6 Oct 2025 @ $126,198)
+      const cycle4PeakEst = new Date('2025-10-06');
       const cycle4BearBottomEst = new Date(cycle4PeakEst.getTime() + avgBearDays * 86400000); // ~Oct 2026
       
       // DCA Window: from bear bottom through 6 months before halving 5
@@ -2120,12 +2120,12 @@ window.TradeMasterApp = (function() {
         phaseAction = 'JUAL BERTAHAP. Amankan profit ke stablecoin.';
       }
 
-      const entryFloorMin = 55000;
-      const entryFloorMax = 62000;
-      const entryOptimalMin = 75000;
-      const entryOptimalMax = 82000;
-      const entryAggressiveMin = 88000;
-      const entryAggressiveMax = 92000;
+      const entryFloorMin = 35000;
+      const entryFloorMax = 45000;
+      const entryOptimalMin = 45000;
+      const entryOptimalMax = 55000;
+      const entryAggressiveMin = 55000;
+      const entryAggressiveMax = 65000;
 
       reportContainer.innerHTML = `
         <div style="margin-bottom: 16px; padding: 14px; border-radius: 10px; background: linear-gradient(135deg, rgba(108,92,231,0.08), rgba(0,230,118,0.05)); border: 1px solid rgba(108,92,231,0.2);">
@@ -2199,12 +2199,12 @@ window.TradeMasterApp = (function() {
                   <td style="padding: 4px 2px;">Cycle 4</td>
                   <td style="text-align: center; padding: 4px 2px;">20 Apr 2024</td>
                   <td style="text-align: center; padding: 4px 2px; color: var(--success);">${fmtDateShort(cycle4PeakEst)}</td>
-                  <td style="text-align: right; padding: 4px 2px; font-weight: bold; color: var(--success);">$126,300</td>
-                  <td style="text-align: center; padding: 4px 2px; font-weight: bold;">533</td>
+                  <td style="text-align: right; padding: 4px 2px; font-weight: bold; color: var(--success);">$126,198</td>
+                  <td style="text-align: center; padding: 4px 2px; font-weight: bold;">534</td>
                   <td style="text-align: center; padding: 4px 2px; color: var(--danger); font-weight: bold;">~${fmtDateShort(cycle4BearBottomEst)}</td>
                   <td style="text-align: right; padding: 4px 2px; font-weight: bold; color: var(--danger);">~$49,000</td>
                   <td style="text-align: center; padding: 4px 2px; color: var(--danger); font-weight: bold;">~383</td>
-                  <td style="text-align: center; padding: 4px 2px; font-weight: bold; color: var(--primary);">98.5%</td>
+                  <td style="text-align: center; padding: 4px 2px; font-weight: bold; color: var(--success);">99.9%</td>
                 </tr>
                 <tr>
                   <td style="padding: 4px 2px; font-weight: bold; color: var(--primary);">Cycle 5</td>
@@ -2347,7 +2347,7 @@ window.TradeMasterApp = (function() {
           if (floatPnl < -10) {
             advisorTitle = '🟢 ACCUMULATE / DCA (AVERAGING DOWN)';
             advisorColor = 'var(--success)';
-            advisorText = `Harga rata-rata Anda (Rp ${userAvgPrice.toLocaleString()}) saat ini berada jauh di atas harga pasar, menghasilkan floating loss sebesar <b>${pnlSign}${floatPnl.toFixed(1)}%</b>. Namun, harga saat ini (Rp ${currentPrice.toLocaleString()}) sudah sangat murah (PBV ${(currentPrice / 2100).toFixed(2)}x - di bawah batas -2 Std Dev). <b style="color: var(--success);">JANGAN CUT LOSS</b> di sini karena ini adalah area dasar siklus historis (Crisis Discount). Sangat disarankan untuk melakukan <b>Averaging Down (DCA)</b> di area ini untuk menekan rata-rata modal Anda menuju zona aman di bawah Rp 4,500 agar cepat breakeven & profit saat siklus berbalik naik.`;
+            advisorText = `Harga rata-rata Anda (Rp ${userAvgPrice.toLocaleString()}) saat ini berada jauh di atas harga pasar, menghasilkan floating loss sebesar <b>${pnlSign}${floatPnl.toFixed(1)}%</b>. Namun, harga saat ini (Rp ${currentPrice.toLocaleString()}) sudah sangat murah (PBV ${(currentPrice / 2246).toFixed(2)}x - di bawah batas -2 Std Dev). <b style="color: var(--success);">JANGAN CUT LOSS</b> di sini karena ini adalah area dasar siklus historis (Crisis Discount). Sangat disarankan untuk melakukan <b>Averaging Down (DCA)</b> di area ini untuk menekan rata-rata modal Anda menuju zona aman di bawah Rp 4,500 agar cepat breakeven & profit saat siklus berbalik naik.`;
             
             if (userAvgPrice <= 4500) {
               advisorText += `<br><br>🎯 <b>PROYEKSI EXIT AMAN (Avg Rp ${userAvgPrice.toLocaleString()}):</b> Jika Anda berhasil menurunkan rata-rata ke Rp ${userAvgPrice.toLocaleString()}, target keluar terbaik tanpa loss adalah pada rentang harga **Rp 4,800 - Rp 5,300** (+20% s.d +32% Profit). Waktu terbaik untuk menjual adalah pada periode **Desember s.d. Maret** (saat sentimen Window Dressing Q4 dan Pre-RUPS Dividen tahun berikutnya sedang memuncak).`;
@@ -2419,7 +2419,7 @@ window.TradeMasterApp = (function() {
             </div>
             <div style="text-align: right;">
               <div style="font-size: 0.72rem; color: var(--text-muted);">Hasil Dividen (Yield) Est.</div>
-              <div style="font-size: 1.1rem; font-weight: 800; color: var(--primary);">~6.5% - 7.2% per Tahun</div>
+              <div style="font-size: 1.1rem; font-weight: 800; color: var(--primary);">~9.0% - 11.2% per Tahun</div>
             </div>
           </div>
           <div style="background: rgba(0,0,0,0.2); padding: 8px 12px; border-radius: 6px; font-size: 0.8rem; color: var(--warning); font-weight: 600;">
@@ -2443,37 +2443,37 @@ window.TradeMasterApp = (function() {
                 <tr style="border-bottom: 1px solid var(--card-border);">
                   <td style="padding: 4px 2px; color: var(--danger); font-weight: bold;">+2 Std Dev (Overvalued)</td>
                   <td style="text-align: center; padding: 4px 2px; font-weight: bold;">3.0x</td>
-                  <td style="text-align: right; padding: 4px 2px; font-weight: bold; color: var(--danger);">Rp 6,200</td>
+                  <td style="text-align: right; padding: 4px 2px; font-weight: bold; color: var(--danger);">Rp 6,740</td>
                   <td style="text-align: center; padding: 4px 2px; color: var(--danger); font-weight: bold;">Exit/Jual</td>
                 </tr>
                 <tr style="border-bottom: 1px solid var(--card-border);">
                   <td style="padding: 4px 2px; color: var(--warning);">+1 Std Dev (Premium)</td>
                   <td style="text-align: center; padding: 4px 2px;">2.6x</td>
-                  <td style="text-align: right; padding: 4px 2px;">Rp 5,400</td>
+                  <td style="text-align: right; padding: 4px 2px;">Rp 5,840</td>
                   <td style="text-align: center; padding: 4px 2px; color: var(--warning);">Cicil Jual</td>
                 </tr>
                 <tr style="border-bottom: 1px solid var(--card-border);">
                   <td style="padding: 4px 2px; color: var(--text-main);">Rata-rata PBV 5 Tahun</td>
                   <td style="text-align: center; padding: 4px 2px;">2.2x</td>
-                  <td style="text-align: right; padding: 4px 2px;">Rp 4,600</td>
+                  <td style="text-align: right; padding: 4px 2px;">Rp 4,940</td>
                   <td style="text-align: center; padding: 4px 2px; color: var(--text-muted);">Hold/Netral</td>
                 </tr>
                 <tr style="border-bottom: 1px solid var(--card-border);">
                   <td style="padding: 4px 2px; color: var(--success);">-1 Std Dev (Undervalued)</td>
                   <td style="text-align: center; padding: 4px 2px; font-weight: bold;">1.8x</td>
-                  <td style="text-align: right; padding: 4px 2px; font-weight: bold; color: var(--success);">Rp 4,100</td>
+                  <td style="text-align: right; padding: 4px 2px; font-weight: bold; color: var(--success);">Rp 4,040</td>
                   <td style="text-align: center; padding: 4px 2px; color: var(--success); font-weight: bold;">DCA Agresif</td>
                 </tr>
                 <tr>
                   <td style="padding: 4px 2px; color: var(--success); font-weight: bold;">-2 Std Dev (Crisis Discount)</td>
                   <td style="text-align: center; padding: 4px 2px; font-weight: bold;">1.5x</td>
-                  <td style="text-align: right; padding: 4px 2px; font-weight: bold; color: var(--success);">Rp 3,400</td>
+                  <td style="text-align: right; padding: 4px 2px; font-weight: bold; color: var(--success);">Rp 3,370</td>
                   <td style="text-align: center; padding: 4px 2px; color: var(--success); font-weight: bold;">All-In Buy</td>
                 </tr>
               </tbody>
             </table>
             <div style="margin-top: 6px; font-size: 0.68rem; color: var(--text-dark); font-style: italic;">
-              *PBV saat ini sekitar ${(currentPrice / 2100).toFixed(2)}x (berdasarkan harga penutupan terakhir Rp ${currentPrice.toLocaleString()}).
+              *PBV saat ini sekitar ${(currentPrice / 2246).toFixed(2)}x (berdasarkan BVPS Q1 2026: Rp 2,246 | Harga: Rp ${currentPrice.toLocaleString()}).
             </div>
           </div>
 
@@ -2497,12 +2497,12 @@ window.TradeMasterApp = (function() {
               <div style="background: rgba(108, 92, 231, 0.05); padding: 10px; border-radius: 6px; border: 1px solid rgba(108, 92, 231, 0.2);">
                 <div style="display: flex; justify-content: space-between; font-weight: bold; margin-bottom: 4px; font-size: 0.8rem;">
                   <span style="color: var(--primary);">Peak Target (PBV 3.0x - 3.2x)</span>
-                  <span style="color: var(--success); font-size: 0.85rem;">Rp 6,150 - Rp 6,600</span>
+                  <span style="color: var(--success); font-size: 0.85rem;">Rp 6,740 - Rp 7,190</span>
                 </div>
                 
                 <div style="font-size: 0.68rem; color: var(--text-muted); line-height: 1.45;">
-                  <b>Pendorong Makro:</b> Siklus pemangkasan suku bunga global (BI & Fed Rate Cut) menurunkan Cost of Funds (CoF) perbankan dan memicu <i>foreign capital inflow</i> masif ke saham blue-chip.<br>
-                  <b>Pendorong Mikro:</b> Pertumbuhan kredit mikro (Kupedes & PNM Mekaar) mendorong ROE tetap tinggi di ~18-20% dengan estimasi BVPS bertumbuh ke Rp 2,200 pada akhir 2025/2026.
+                  <b>Pendorong Makro:</b> BI Rate 5.75% dengan inflasi terkendali 2.88% membuka ruang pemangkasan suku bunga. Foreign net buy aktif (Rp 623M/hari) mendorong <i>capital inflow</i> masif ke saham blue-chip.<br>
+                  <b>Pendorong Mikro:</b> ROE solid 17-18%, BVPS tumbuh ke Rp 2,246 (Q1 2026). Dividend yield saat ini ~11.2% — tertinggi dalam sejarah BBRI. Kredit mikro (Kupedes & PNM Mekaar) tetap motor pertumbuhan utama.
                 </div>
               </div>
 
