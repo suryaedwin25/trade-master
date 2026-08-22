@@ -3243,7 +3243,13 @@ window.TradeMasterApp = (function() {
     if (pageId === 'dashboard') {
       renderDashboard();
     } else if (pageId === 'crypto') {
-      if (assetSymbol) state.crypto.selected = assetSymbol;
+      if (assetSymbol) {
+        state.crypto.selected = assetSymbol;
+        const reportPane = document.getElementById('cex-report-pane') || document.getElementById('page-crypto');
+        if (reportPane) {
+          reportPane.scrollIntoView({ behavior: 'smooth' });
+        }
+      }
       renderCryptoPage();
     } else if (pageId === 'stocks') {
       if (assetSymbol) state.stocks.selected = assetSymbol;
