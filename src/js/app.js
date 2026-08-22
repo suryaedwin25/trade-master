@@ -530,7 +530,16 @@ window.TradeMasterApp = (function() {
     
     // Set up selectors
     const select = document.getElementById('crypto-select');
-    if (select) select.value = symbol;
+    if (select) {
+      let optionExists = Array.from(select.options).some(opt => opt.value === symbol);
+      if (!optionExists) {
+        const newOpt = document.createElement('option');
+        newOpt.value = symbol;
+        newOpt.innerText = `${symbol} (Custom)`;
+        select.appendChild(newOpt);
+      }
+      select.value = symbol;
+    }
 
     const exchangeSelect = document.getElementById('exchange-select');
     if (exchangeSelect) exchangeSelect.value = exchange;
@@ -2051,6 +2060,14 @@ window.TradeMasterApp = (function() {
     const target2 = currentPrice * 1.12;
     const stopLoss = currentPrice * 0.96;
 
+    const formatPriceVal = (val) => {
+      if (!isCrypto) return Math.round(val).toLocaleString();
+      if (val >= 1000) return val.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      if (val >= 1) return val.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 });
+      if (val >= 0.0001) return val.toLocaleString(undefined, { minimumFractionDigits: 4, maximumFractionDigits: 6 });
+      return val.toLocaleString(undefined, { minimumFractionDigits: 6, maximumFractionDigits: 8 });
+    };
+
     if (isCrypto && symbol === 'BTC') {
       // ===== BTC HALVING CYCLE HISTORICAL DATA =====
       // Halving 1: 2012-11-28 | Peak: 2013-11-30 (367 days post-halving) | Bear bottom: 2015-01-14 (410 days post-peak)
@@ -2639,22 +2656,22 @@ window.TradeMasterApp = (function() {
               <div>
                 <span style="color: var(--text-muted); font-size: 0.8rem;">Zona Entry Beli:</span>
                 <div style="font-weight: bold; font-size: 1.15rem; color: var(--success);">
-                  ${currency}${Math.round(entryMin).toLocaleString()} - ${currency}${Math.round(entryMax).toLocaleString()}
+                  ${currency}${formatPriceVal(entryMin)} - ${currency}${formatPriceVal(entryMax)}
                 </div>
               </div>
               <div style="display: flex; justify-content: space-between; gap: 10px;">
                 <div>
                   <span style="color: var(--text-muted); font-size: 0.8rem;">Target Take Profit (T1)</span>
-                  <div style="font-weight: bold; color: var(--primary);">${currency}${Math.round(target1).toLocaleString()} (+5%)</div>
+                  <div style="font-weight: bold; color: var(--primary);">${currency}${formatPriceVal(target1)} (+5%)</div>
                 </div>
                 <div>
                   <span style="color: var(--text-muted); font-size: 0.8rem;">Target Take Profit (T2)</span>
-                  <div style="font-weight: bold; color: var(--primary);">${currency}${Math.round(target2).toLocaleString()} (+12%)</div>
+                  <div style="font-weight: bold; color: var(--primary);">${currency}${formatPriceVal(target2)} (+12%)</div>
                 </div>
               </div>
               <div>
                 <span style="color: var(--text-muted); font-size: 0.8rem;">Stop Loss Level (Disiplin):</span>
-                <div style="font-weight: bold; color: var(--danger);">${currency}${Math.round(stopLoss).toLocaleString()} (-4%)</div>
+                <div style="font-weight: bold; color: var(--danger);">${currency}${formatPriceVal(stopLoss)} (-4%)</div>
               </div>
             </div>
           </div>
@@ -2663,7 +2680,7 @@ window.TradeMasterApp = (function() {
         <div style="border-top: 1px solid var(--card-border); padding-top: 15px;">
           <h4 style="font-weight: 700; color: var(--text-main); margin-bottom: 8px; font-size: 0.95rem;">📝 CATATAN ANALIS / OUTLOOK</h4>
           <p style="color: var(--text-muted); font-size: 0.85rem; line-height: 1.5; margin: 0;">
-            Berdasarkan penutupan harga terakhir di level <b>${currency}${currentPrice.toLocaleString()}</b>, indikator teknis terakumulasi menunjukkan <b>${
+            Berdasarkan penutupan harga terakhir di level <b>${currency}${formatPriceVal(currentPrice)}</b>, indikator teknis terakumulasi menunjukkan <b>${
               cEma9 > cEma21 ? 'Kekuatan tren naik jangka pendek yang dominan.' : 'Tekanan jual jangka pendek yang membayangi.'
             }</b> 
             RSI berada di posisi <b>${cRsi.toFixed(1)}</b> yang mengindikasikan <b>${

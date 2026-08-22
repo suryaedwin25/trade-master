@@ -113,10 +113,10 @@ window.TradeMasterAPI = (function() {
       
       if (exchange === 'Bybit') {
         const bybitInterval = interval === '1d' ? 'D' : '60';
-        const url = `https://api.bybit.com/v5/market/kline?category=linear&symbol=${pair}&interval=${bybitInterval}&limit=${limit}`;
+        const url = `https://api.bybit.com/v5/market/kline?category=spot&symbol=${pair}&interval=${bybitInterval}&limit=${limit}`;
         try {
           const data = await fetchJSON(url);
-          const rawList = data.result.list || [];
+          const rawList = data.result?.list || [];
           // Bybit returns newest first, reverse it for charting
           return [...rawList].reverse().map(item => ({
             time: parseInt(item[0]) / 1000,
@@ -174,10 +174,11 @@ window.TradeMasterAPI = (function() {
       const pair = symbol.toUpperCase() + 'USDT';
       
       if (exchange === 'Bybit') {
-        const url = `https://api.bybit.com/v5/market/tickers?category=linear&symbol=${pair}`;
+        const url = `https://api.bybit.com/v5/market/tickers?category=spot&symbol=${pair}`;
         try {
           const data = await fetchJSON(url);
-          const item = data.result.list[0];
+          const item = data.result?.list?.[0];
+          if (!item) return null;
           return {
             price: parseFloat(item.lastPrice),
             change: parseFloat(item.price24hPcnt) * 100 // Bybit returns fraction e.g. 0.02
