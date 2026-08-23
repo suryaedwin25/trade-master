@@ -68,7 +68,7 @@ window.TradeMasterAPI = (function() {
         return symbols.map(sym => ({
           symbol: sym.replace('USDT', ''),
           pair: sym,
-          price: sym === 'BTCUSDT' ? 95000 : sym === 'ETHUSDT' ? 3200 : 150,
+          price: sym === 'BTCUSDT' ? 97000 : sym === 'ETHUSDT' ? 2700 : sym === 'SOLUSDT' ? 175 : sym === 'BNBUSDT' ? 600 : 150,
           change: 1.5,
           high: 160,
           low: 140,
@@ -187,7 +187,7 @@ window.TradeMasterAPI = (function() {
       console.warn(`All crypto APIs failed/blocked for ${symbol}. Generating synthetic candle dataset.`);
       const nowSec = Math.floor(Date.now() / 1000);
       const step = interval === '1d' ? 86400 : 3600;
-      let basePrice = symbol === 'BTC' ? 63600 : symbol === 'ETH' ? 2650 : symbol === 'SOL' ? 145 : symbol === 'BNB' ? 570 : 2.5;
+      let basePrice = symbol === 'BTC' ? 97000 : symbol === 'ETH' ? 2700 : symbol === 'SOL' ? 175 : symbol === 'BNB' ? 600 : 2.5;
       const synth = [];
       for (let i = limit; i >= 0; i--) {
         const time = nowSec - (i * step);

@@ -2492,12 +2492,45 @@ window.TradeMasterApp = (function() {
         phaseAction = 'JUAL BERTAHAP. Amankan profit ke stablecoin.';
       }
 
-      const entryFloorMin = 35000;
-      const entryFloorMax = 45000;
-      const entryOptimalMin = 45000;
-      const entryOptimalMax = 55000;
+      const entryEarlyMin = 70000;
+      const entryEarlyMax = 80000;
       const entryAggressiveMin = 55000;
       const entryAggressiveMax = 65000;
+      const entryOptimalMin = 45000;
+      const entryOptimalMax = 55000;
+      const entryFloorMin = 35000;
+      const entryFloorMax = 45000;
+      const entryRecoveryMin = 45000;
+      const entryRecoveryMax = 60000;
+
+      // Dynamic zone detection
+      let currentZone, zoneColor, zoneAdvice, zoneCashPct;
+      if (currentPrice >= entryEarlyMin) {
+        currentZone = '⚡ EARLY ENTRY (Cicil Awal)';
+        zoneColor = 'var(--warning)';
+        zoneAdvice = 'Beli KECIL 15% cash saja. Harga masih bisa turun. Sisakan 85% untuk zona lebih murah.';
+        zoneCashPct = '15%';
+      } else if (currentPrice >= entryAggressiveMin) {
+        currentZone = '🟡 AGGRESSIVE ENTRY';
+        zoneColor = 'var(--warning)';
+        zoneAdvice = 'Mulai DCA lebih besar. Deploy 20% cash. Harga sudah diskon signifikan dari ATH.';
+        zoneCashPct = '20%';
+      } else if (currentPrice >= entryOptimalMin) {
+        currentZone = '🟢 OPTIMAL ENTRY (Sweet Spot)';
+        zoneColor = 'var(--success)';
+        zoneAdvice = 'Zona IDEAL! Deploy 25% cash agresif. Risk/reward ratio sangat menguntungkan.';
+        zoneCashPct = '25%';
+      } else if (currentPrice >= entryFloorMin) {
+        currentZone = '💎 ALL-IN ZONE (Floor Support)';
+        zoneColor = 'var(--success)';
+        zoneAdvice = '🚨 SINYAL ALL-IN! Deploy 30% cash MASIF. Ini area crisis discount terendah siklus. Peluang langka!';
+        zoneCashPct = '30%';
+      } else {
+        currentZone = '🔥 EXTREME DISCOUNT (Generational Buy)';
+        zoneColor = 'var(--success)';
+        zoneAdvice = '🚨🚨 ULTRA ALL-IN! Beli sebanyak mungkin. Harga di bawah semua model historis. Peluang seumur hidup!';
+        zoneCashPct = '40%+';
+      }
 
       reportContainer.innerHTML = `
         <div style="margin-bottom: 16px; padding: 14px; border-radius: 10px; background: linear-gradient(135deg, rgba(108,92,231,0.08), rgba(0,230,118,0.05)); border: 1px solid rgba(108,92,231,0.2);">
@@ -2599,18 +2632,34 @@ window.TradeMasterApp = (function() {
           <div>
             <h4 style="font-weight: 700; color: var(--warning); margin-bottom: 8px; font-size: 0.88rem;">🎯 TARGET HARGA & SUPPORT</h4>
             <div style="display: flex; flex-direction: column; gap: 4px; font-size: 0.78rem;">
-              <div style="font-size: 0.72rem; font-weight: 600; color: var(--text-muted); margin-bottom: 2px;">Zona Entry Akumulasi:</div>
-              <div style="display: flex; justify-content: space-between; background: rgba(255,255,255,0.02); padding: 3px 6px; border-radius: 4px;">
-                <span>1. Agresif (Current)</span>
+              <div style="font-size: 0.72rem; font-weight: 600; color: var(--text-muted); margin-bottom: 2px;">Zona Entry Akumulasi (5-Tier Strategy):</div>
+
+              <div style="background: linear-gradient(135deg, rgba(108,92,231,0.1), rgba(0,230,118,0.05)); padding: 8px; border-radius: 6px; margin-bottom: 6px; border: 1px solid ${zoneColor};">
+                <div style="font-size: 0.68rem; color: var(--text-muted); text-transform: uppercase;">📍 Anda Saat Ini Di:</div>
+                <div style="font-weight: 800; color: ${zoneColor}; font-size: 0.85rem; margin: 2px 0;">${currentZone}</div>
+                <div style="font-size: 0.68rem; color: var(--text-muted); line-height: 1.4;">${zoneAdvice}</div>
+                <div style="margin-top: 4px; font-weight: 700; font-size: 0.75rem; color: ${zoneColor};">Alokasi Rekomendasi: ${zoneCashPct} dari total cash</div>
+              </div>
+
+              <div style="display: flex; justify-content: space-between; background: ${currentPrice >= entryEarlyMin ? 'rgba(255,193,7,0.08)' : 'rgba(255,255,255,0.02)'}; padding: 3px 6px; border-radius: 4px; border-left: 3px solid ${currentPrice >= entryEarlyMin ? 'var(--warning)' : 'transparent'};">
+                <span>1. ⚡ Early Entry (Cicil 15%)</span>
+                <span style="font-weight: bold; color: var(--warning);">$${entryEarlyMin.toLocaleString()} - $${entryEarlyMax.toLocaleString()}</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; background: ${currentPrice >= entryAggressiveMin && currentPrice < entryEarlyMin ? 'rgba(255,193,7,0.08)' : 'rgba(255,255,255,0.02)'}; padding: 3px 6px; border-radius: 4px; border-left: 3px solid ${currentPrice >= entryAggressiveMin && currentPrice < entryEarlyMin ? 'var(--warning)' : 'transparent'};">
+                <span>2. 🟡 Aggressive (DCA 20%)</span>
                 <span style="font-weight: bold; color: var(--warning);">$${entryAggressiveMin.toLocaleString()} - $${entryAggressiveMax.toLocaleString()}</span>
               </div>
-              <div style="display: flex; justify-content: space-between; background: rgba(255,255,255,0.02); padding: 3px 6px; border-radius: 4px;">
-                <span>2. Optimal (EMA-50)</span>
+              <div style="display: flex; justify-content: space-between; background: ${currentPrice >= entryOptimalMin && currentPrice < entryAggressiveMin ? 'rgba(0,230,118,0.08)' : 'rgba(255,255,255,0.02)'}; padding: 3px 6px; border-radius: 4px; border-left: 3px solid ${currentPrice >= entryOptimalMin && currentPrice < entryAggressiveMin ? 'var(--success)' : 'transparent'};">
+                <span>3. 🟢 Optimal Sweet Spot (25%)</span>
                 <span style="font-weight: bold; color: var(--success);">$${entryOptimalMin.toLocaleString()} - $${entryOptimalMax.toLocaleString()}</span>
               </div>
-              <div style="display: flex; justify-content: space-between; background: rgba(255,255,255,0.02); padding: 3px 6px; border-radius: 4px;">
-                <span>3. Floor Support</span>
+              <div style="display: flex; justify-content: space-between; background: ${currentPrice >= entryFloorMin && currentPrice < entryOptimalMin ? 'rgba(0,230,118,0.12)' : 'rgba(255,255,255,0.02)'}; padding: 3px 6px; border-radius: 4px; border-left: 3px solid ${currentPrice >= entryFloorMin && currentPrice < entryOptimalMin ? 'var(--success)' : 'transparent'};">
+                <span>4. 💎 ALL-IN Floor (30%)</span>
                 <span style="font-weight: bold; color: var(--success);">$${entryFloorMin.toLocaleString()} - $${entryFloorMax.toLocaleString()}</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; background: rgba(255,255,255,0.02); padding: 3px 6px; border-radius: 4px;">
+                <span>5. 🔄 Recovery DCA (Sisa 10%)</span>
+                <span style="font-weight: bold; color: var(--primary);">Q1 2027 (Konfirmasi Naik)</span>
               </div>
               <div style="font-size: 0.72rem; font-weight: 600; color: var(--text-muted); margin-top: 4px;">Target Bull Run Cycle 5:</div>
               <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 3px;">
@@ -4502,6 +4551,9 @@ window.TradeMasterApp = (function() {
   // 5. Initialize listeners & actions
   function init() {
     console.log('Initializing TradeMaster Application...');
+    
+    // Auth gateway disabled
+    // if (window.TradeMasterAuth) { TradeMasterAuth.init(); }
     
     // 1. Navigation handlers
     navigateTo('dashboard');
