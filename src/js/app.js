@@ -1918,7 +1918,7 @@ window.TradeMasterApp = (function() {
     
     if (!list) return;
 
-    list.innerHTML = `<tr><td colspan="9" style="text-align: center; color: var(--text-muted); padding: 24px;">Memindai seluruh pasar spot ${scannerExchange} USDT... Mohon tunggu...</td></tr>`;
+    list.innerHTML = `<tr><td colspan="10" style="text-align: center; color: var(--text-muted); padding: 24px;">Memindai seluruh pasar spot ${scannerExchange} USDT... Mohon tunggu...</td></tr>`;
 
     try {
       let usdPairs = [];
@@ -2047,7 +2047,7 @@ window.TradeMasterApp = (function() {
         .slice(0, 10); // Slice Top 10 most potential tokens!
 
       if (topMoonshots.length === 0) {
-        list.innerHTML = `<tr><td colspan="9" style="text-align: center; color: var(--danger);">Tidak ada token yang memenuhi kriteria likuiditas saat ini.</td></tr>`;
+        list.innerHTML = `<tr><td colspan="10" style="text-align: center; color: var(--danger);">Tidak ada token yang memenuhi kriteria likuiditas saat ini.</td></tr>`;
         return;
       }
 
@@ -2071,6 +2071,19 @@ window.TradeMasterApp = (function() {
 
         const accuracyProb = (92.0 + Math.min(7.4, m.score * 0.08)).toFixed(1);
 
+        // Calculate Target Price and Upside Percent based on score
+        const targetUpsidePct = m.score > 50 ? 25.0 + (m.score - 50) * 0.7 : 25.0;
+        const targetPriceVal = m.price * (1 + targetUpsidePct / 100);
+        let targetPriceFormatted = '';
+        
+        if (targetPriceVal >= 1.0) {
+          targetPriceFormatted = `$${targetPriceVal.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 4})}`;
+        } else if (targetPriceVal >= 0.001) {
+          targetPriceFormatted = `$${targetPriceVal.toLocaleString(undefined, {minimumFractionDigits: 4, maximumFractionDigits: 6})}`;
+        } else {
+          targetPriceFormatted = `$${targetPriceVal.toLocaleString(undefined, {minimumFractionDigits: 6, maximumFractionDigits: 8})}`;
+        }
+
         return `
           <tr id="moonshot-row-${m.symbol}" style="cursor: pointer;" onclick="TradeMasterApp.navigateTo('crypto', '${m.symbol}')" title="Klik untuk menganalisis ${m.symbol} secara detail">
             <td style="font-weight: 800; color: var(--primary); font-size: 0.85rem;">#${index + 1}</td>
@@ -2084,6 +2097,7 @@ window.TradeMasterApp = (function() {
             <td style="font-weight: 600;">${m.rsi}</td>
             <td style="font-weight: bold; color: var(--primary);">${m.score}%</td>
             <td style="font-weight: bold; color: var(--success);">~${accuracyProb}%</td>
+            <td style="font-weight: bold; color: var(--success);">${targetPriceFormatted} <span style="font-size: 0.7rem; color: var(--text-muted); font-weight: normal;">(+${targetUpsidePct.toFixed(1)}%)</span></td>
             <td>
               <span class="badge ${badgeClass}">${rec}</span>
             </td>
@@ -2093,7 +2107,7 @@ window.TradeMasterApp = (function() {
 
     } catch (err) {
       console.error('Failed to run moonshot scanner:', err);
-      list.innerHTML = `<tr><td colspan="9" style="text-align: center; color: var(--danger);">Gagal memindai pasar. Periksa koneksi internet Anda.</td></tr>`;
+      list.innerHTML = `<tr><td colspan="10" style="text-align: center; color: var(--danger);">Gagal memindai pasar. Periksa koneksi internet Anda.</td></tr>`;
     }
   }
 
