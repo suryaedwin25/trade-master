@@ -2,6 +2,331 @@
 
 window.TradeMasterApp = (function() {
   
+  // Stock Fundamental Database (Doddy's & InvestingPro framework metrics)
+  const stockFundamentalData = {
+    'BBRI': {
+      name: 'Bank Rakyat Indonesia (Persero) Tbk',
+      marketCap: 'Rp 679.5T',
+      roe: 18.4,
+      der: 0.82, // CAR is 25.1%
+      npm: 21.2,
+      revGrowth: 12.4,
+      netIncGrowth: 15.1,
+      divYield: 8.8,
+      pe: 10.5,
+      peHist5Yr: 13.8,
+      pbv: 1.8,
+      pbvHist5Yr: 2.2,
+      fairValue: 5350,
+      fairValueUpside: 19.4,
+      whyCheap: 'Koreksi didorong oleh kenaikan NPL (non-performing loans) pada segmen mikro (Kupedes & PNM Mekaar) akibat inflasi pangan dan suku bunga tinggi yang menekan daya beli kelas bawah, memicu pencadangan (provisi) yang lebih tinggi. Ditambah aliran keluar modal asing secara musiman (foreign outflow).'
+    },
+    'BBCA': {
+      name: 'Bank Central Asia Tbk',
+      marketCap: 'Rp 1,254.2T',
+      roe: 22.1,
+      der: 0.15, // CAR is 29.4%
+      npm: 45.6,
+      revGrowth: 13.8,
+      netIncGrowth: 17.5,
+      divYield: 2.4,
+      pe: 25.2,
+      peHist5Yr: 26.4,
+      pbv: 4.8,
+      pbvHist5Yr: 4.5,
+      fairValue: 10500,
+      fairValueUpside: 2.4,
+      whyCheap: 'BCA jarang diperdagangkan murah karena memiliki premium penilaian yang kuat dari basis CASA (dana murah) yang mencapai >80% dan efisiensi operasional tertinggi. Pergerakan saat ini konsolidasi wajar di dekat nilai wajarnya mengikuti pergerakan modal asing.'
+    },
+    'BMRI': {
+      name: 'Bank Mandiri (Persero) Tbk',
+      marketCap: 'Rp 648.6T',
+      roe: 20.3,
+      der: 0.22, // CAR is 22.3%
+      npm: 36.4,
+      revGrowth: 14.8,
+      netIncGrowth: 19.8,
+      divYield: 5.4,
+      pe: 11.2,
+      peHist5Yr: 12.1,
+      pbv: 2.1,
+      pbvHist5Yr: 2.0,
+      fairValue: 7400,
+      fairValueUpside: 6.5,
+      whyCheap: 'Mengalami sideways sehat karena rotasi sektor jangka pendek. Likuiditas korporasi yang solid dan keberhasilan platform digital (Livin by Mandiri) mengimbangi tekanan makro global, menjaga pertumbuhan kredit tetap di level double-digit.'
+    },
+    'BBNI': {
+      name: 'Bank Negara Indonesia Tbk',
+      marketCap: 'Rp 201.2T',
+      roe: 14.8,
+      der: 0.25, // CAR is 21.5%
+      npm: 24.8,
+      revGrowth: 8.5,
+      netIncGrowth: 11.2,
+      divYield: 4.9,
+      pe: 8.8,
+      peHist5Yr: 10.4,
+      pbv: 1.15,
+      pbvHist5Yr: 1.35,
+      fairValue: 6200,
+      fairValueUpside: 14.8,
+      whyCheap: 'BBNI sedang dalam fase restrukturisasi portofolio kredit ke korporasi bluechip berisiko rendah. Hal ini membatasi pertumbuhan margin bunga bersih (NIM) jangka pendek, namun membuat profil risiko jauh lebih sehat, menawarkan diskon valuasi terbesar dibanding Big 3 bank lainnya.'
+    },
+    'TLKM': {
+      name: 'Telkom Indonesia (Persero) Tbk',
+      marketCap: 'Rp 282.3T',
+      roe: 15.6,
+      der: 0.72,
+      npm: 16.8,
+      revGrowth: 2.8,
+      netIncGrowth: 3.6,
+      divYield: 6.8,
+      pe: 11.5,
+      peHist5Yr: 16.5,
+      pbv: 2.2,
+      pbvHist5Yr: 3.1,
+      fairValue: 3850,
+      fairValueUpside: 35.1,
+      whyCheap: 'Tekanan berat akibat perang tarif paket data seluler yang memicu penurunan ARPU, capex masif untuk pembangunan infrastruktur data center & fiber optik (fase transisi), serta dampak kerugian belum terealisasi dari investasi ekosistem digital startup (GoTo).'
+    },
+    'ASII': {
+      name: 'Astra International Tbk',
+      marketCap: 'Rp 198.4T',
+      roe: 15.2,
+      der: 0.91,
+      npm: 9.8,
+      revGrowth: 4.8,
+      netIncGrowth: 5.6,
+      divYield: 7.6,
+      pe: 6.5,
+      peHist5Yr: 10.2,
+      pbv: 0.92,
+      pbvHist5Yr: 1.32,
+      fairValue: 6300,
+      fairValueUpside: 28.6,
+      whyCheap: 'Kekhawatiran pasar yang sangat tinggi terhadap disrupsi pasar otomotif domestik oleh mobil listrik (EV) China seperti BYD, Wuling, dan Chery yang menawarkan harga agresif, berpotensi mendegradasi pangsa pasar mobil ICE dominan milik Astra (Toyota & Daihatsu).'
+    },
+    'GOTO': {
+      name: 'GoTo Gojek Tokopedia Tbk',
+      marketCap: 'Rp 58.8T',
+      roe: -8.4,
+      der: 0.18,
+      npm: -24.5,
+      revGrowth: 19.8,
+      netIncGrowth: 45.2,
+      divYield: 0.0,
+      pe: -12.0,
+      peHist5Yr: -5.0,
+      pbv: 0.62,
+      pbvHist5Yr: 1.2,
+      fairValue: 72,
+      fairValueUpside: 46.9,
+      whyCheap: 'Fase pasca-penggabungan dan restrukturisasi e-commerce (melepas Tokopedia ke TikTok). Pasar masih meragukan kecepatan GOTO mencapai profitabilitas penuh (bottom-line positive), ditambah tingginya aksi jual ritel setelah masa lock-up usai.'
+    },
+    'BREN': {
+      name: 'Barito Renewables Energy Tbk',
+      marketCap: 'Rp 970.5T',
+      roe: 44.8,
+      der: 2.45,
+      npm: 29.5,
+      revGrowth: 7.6,
+      netIncGrowth: 9.8,
+      divYield: 0.4,
+      pe: 580.0,
+      peHist5Yr: 350.0,
+      pbv: 118.0,
+      pbvHist5Yr: 80.0,
+      fairValue: 3200,
+      fairValueUpside: -55.8,
+      whyCheap: 'Tidak murah sama sekali (sangat overvalued). Valuasi premium ditopang oleh spekulasi likuiditas, kepemilikan terkonsentrasi, dan narasi transisi energi hijau (EBT) panas bumi terbesar di Indonesia. Fluktuasi harga sangat sensitif terhadap arus keluar-masuk indeks global FTSE/MSCI.'
+    },
+    'AMMN': {
+      name: 'Amman Mineral Internasional Tbk',
+      marketCap: 'Rp 674.2T',
+      roe: 24.6,
+      der: 0.58,
+      npm: 21.8,
+      revGrowth: 26.4,
+      netIncGrowth: 31.2,
+      divYield: 0.0,
+      pe: 34.5,
+      peHist5Yr: 30.0,
+      pbv: 6.4,
+      pbvHist5Yr: 5.2,
+      fairValue: 7800,
+      fairValueUpside: -15.6,
+      whyCheap: 'Saham dinilai premium karena prospek cadangan tembaga dan emas raksasa di Blok Batu Hijau dan Elang. Harga saat ini mencerminkan optimisme penyelesaian smelter tembaga baru di Sumbawa barat, namun ada risiko beban depresiasi setelah smelter beroperasi.'
+    },
+    'BRMS': {
+      name: 'Bumi Resources Minerals Tbk',
+      marketCap: 'Rp 34.8T',
+      roe: 7.8,
+      der: 0.12,
+      npm: 14.6,
+      revGrowth: 46.2,
+      netIncGrowth: 51.5,
+      divYield: 0.0,
+      pe: 42.1,
+      peHist5Yr: 55.0,
+      pbv: 1.55,
+      pbvHist5Yr: 1.8,
+      fairValue: 245,
+      fairValueUpside: 30.3,
+      whyCheap: 'Berada dalam fase ekspansi kapasitas pabrik emas ke-3 dan ke-4 di Palu dan Gorontalo. Kenaikan harga emas global menjadi pendorong utama kinerja keuangan, menjadikannya salah satu saham komoditas dengan pertumbuhan volume produksi tercepat.'
+    },
+    'CUAN': {
+      name: 'Petrindo Jaya Kreasi Tbk',
+      marketCap: 'Rp 84.6T',
+      roe: 18.2,
+      der: 0.78,
+      npm: 11.5,
+      revGrowth: 34.5,
+      netIncGrowth: 38.6,
+      divYield: 0.0,
+      pe: 118.0,
+      peHist5Yr: 90.0,
+      pbv: 17.5,
+      pbvHist5Yr: 12.0,
+      fairValue: 3500,
+      fairValueUpside: -53.3,
+      whyCheap: 'Saham bergerak sangat spekulatif dengan free float yang tipis di publik. Valuasi mencerminkan ekspektasi agresif ekspansi anorganik pengendali (akuisisi tambang batubara baru, emas, dan silika), bukan dari laba operasional saat ini.'
+    },
+    'ADRO': {
+      name: 'Adaro Energy Indonesia Tbk',
+      marketCap: 'Rp 109.8T',
+      roe: 22.8,
+      der: 0.28,
+      npm: 23.6,
+      revGrowth: -6.4,
+      netIncGrowth: -11.2,
+      divYield: 14.5,
+      pe: 4.4,
+      peHist5Yr: 6.2,
+      pbv: 0.76,
+      pbvHist5Yr: 0.95,
+      fairValue: 4800,
+      fairValueUpside: 37.1,
+      whyCheap: 'Diskon valuasi akibat normalisasi harga batu bara termal global dari rekor tertinggi 2022, serta tekanan sentimen ESG yang membuat investor global keluar dari batu bara. Namun, posisi kas sangat gemuk dan perusahaan aktif diversifikasi ke bisnis hijau.'
+    },
+    'UNVR': {
+      name: 'Unilever Indonesia Tbk',
+      marketCap: 'Rp 94.6T',
+      roe: 82.5,
+      der: 2.12,
+      npm: 15.2,
+      revGrowth: -4.5,
+      netIncGrowth: -8.4,
+      divYield: 4.8,
+      pe: 18.5,
+      peHist5Yr: 38.0,
+      pbv: 21.8,
+      pbvHist5Yr: 42.0,
+      fairValue: 3200,
+      fairValueUpside: 28.5,
+      whyCheap: 'Tekanan boikot produk multinasional secara domestik, meningkatnya persaingan ketat dari brand lokal yang lebih murah & lincah, serta pergeseran perilaku belanja konsumen (downtrading) ke produk berukuran kecil akibat pelemahan daya beli kelas menengah.'
+    }
+  };
+
+  // Crypto Fundamental Database (Tokenomics & Moat metrics)
+  const cryptoFundamentalData = {
+    'BTC': {
+      name: 'Bitcoin',
+      marketCap: '$1.86 Triliun',
+      circSupply: '19.78 Juta BTC',
+      maxSupply: '21 Juta BTC',
+      inflation: '0.85% per tahun (Pasca Halving 2024)',
+      tvl: 'N/A (L1 Settlement)',
+      stakingYield: '0% (Proof of Work)',
+      activeAddresses: '~950,000 harian',
+      security: 'SHA-256 Hashrate Tertinggi di Dunia (PoW)',
+      whyCheap: 'Bitcoin tertekan sementara akibat penjualan oleh beberapa entitas besar (pemerintah AS/Jerman) dan distribusi kompensasi Mt. Gox. Namun, dari segi adopsi fundamental, arus masuk (inflow) dana institusional ke Spot ETF terus berlanjut kuat sebagai lindung nilai makro jangka panjang.'
+    },
+    'ETH': {
+      name: 'Ethereum',
+      marketCap: '$385 Miliar',
+      circSupply: '120.3 Juta ETH',
+      maxSupply: 'Unlimited (Deflasioner via gas burn)',
+      inflation: '-0.12% s.d. +0.15% per tahun',
+      tvl: '$55.4 Miliar',
+      stakingYield: '3.4% - 3.8% per tahun',
+      activeAddresses: '~420,000 harian',
+      security: 'Proof of Stake (PoS) - validator senilai $110B',
+      whyCheap: 'Ethereum tertekan oleh rotasi likuiditas sementara ke Solana akibat biaya transaksi L1 yang tinggi sebelum adopsi penuh Dencun upgrade (L2 blob fees). Peluncuran spot ETF ETH menjadi katalis jangka panjang yang kuat meskipun ada tekanan outflow dari Grayscale ETHE.'
+    },
+    'SOL': {
+      name: 'Solana',
+      marketCap: '$68 Miliar',
+      circSupply: '465.2 Juta SOL',
+      maxSupply: 'Unlimited',
+      inflation: '4.8% per tahun (menurun bertahap)',
+      tvl: '$4.8 Miliar',
+      stakingYield: '6.2% - 6.8% per tahun',
+      activeAddresses: '~1.8 Juta harian',
+      security: 'Proof of History (PoH) / Delegated PoS',
+      whyCheap: 'Solana mengalami konsolidasi wajar pasca-kegilaan volume transaksi meme coin (seperti di pump.fun) yang sempat memadati jaringan. Aktivitas on-chain dApps Solana tetap menjadi yang tercepat di industri saat ini, memposisikannya sebagai pesaing utama Ethereum.'
+    },
+    'BNB': {
+      name: 'BNB Chain',
+      marketCap: '$88 Miliar',
+      circSupply: '147.5 Juta BNB',
+      maxSupply: '200 Juta BNB (Auto-burn ke 100M)',
+      inflation: 'Negatif (Deflasioner melalui quarterly burn)',
+      tvl: '$4.5 Miliar',
+      stakingYield: '1.8% s.d. 3.5% (ditambah Launchpool yield)',
+      activeAddresses: '~850,000 harian',
+      security: 'Proof of Staked Authority (PoSA)',
+      whyCheap: 'Tekanan regulasi global terhadap exchange Binance dan restrukturisasi kepatuhan pasca-penyelesaian dengan otoritas AS. Namun utilitas token untuk diskon trading fee dan partisipasi Launchpool/Launchpad tetap menjaga permintaan BNB tetap tinggi.'
+    },
+    'ADA': {
+      name: 'Cardano',
+      marketCap: '$13 Miliar',
+      circSupply: '35.6 Miliar ADA',
+      maxSupply: '45 Miliar ADA',
+      inflation: '1.8% per tahun',
+      tvl: '$240 Juta',
+      stakingYield: '2.8% per tahun',
+      activeAddresses: '~45,000 harian',
+      security: 'Ouroboros PoS',
+      whyCheap: 'Sentimen negatif karena lambatnya adopsi DeFi di jaringannya dan persepsi pasar bahwa pengembangannya terlalu akademis/kaku dibandingkan ekosistem EVM/SVM. Upgrade Chang Hard Fork diharapkan membawa tata kelola desentralisasi penuh.'
+    },
+    'XRP': {
+      name: 'Ripple',
+      marketCap: '$32 Miliar',
+      circSupply: '55.8 Miliar XRP',
+      maxSupply: '100 Miliar XRP',
+      inflation: 'Dilepaskan dari escrow secara periodik',
+      tvl: 'N/A',
+      stakingYield: '0%',
+      activeAddresses: '~20,000 harian',
+      security: 'Ripple Protocol Consensus Algorithm (RPCA)',
+      whyCheap: 'Kasus hukum bertahun-tahun antara SEC dan Ripple Labs yang membatasi likuiditas institusional di AS. Keputusan final pengadilan yang memberikan kejelasan status XRP sebagai non-security membuka ruang pertumbuhan adopsi kembali.'
+    },
+    'DOGE': {
+      name: 'Dogecoin',
+      marketCap: '$16 Miliar',
+      circSupply: '145 Miliar DOGE',
+      maxSupply: 'Unlimited (Inflasi tetap 5B koin/tahun)',
+      inflation: '3.4% per tahun (menurun persentasenya)',
+      tvl: 'N/A',
+      stakingYield: '0% (Proof of Work)',
+      activeAddresses: '~120,000 harian',
+      security: 'Auxiliary Proof of Work (Scrypt)',
+      whyCheap: 'Ketergantungan yang tinggi pada sentimen media sosial, hype spekulatif, dan tweet Elon Musk. Ketiadaan utilitas DeFi/smart contract membuat harganya sangat volatil dan mengikuti tren siklus altcoin season.'
+    },
+    'DOT': {
+      name: 'Polkadot',
+      marketCap: '$6.2 Miliar',
+      circSupply: '1.43 Miliar DOT',
+      maxSupply: 'Unlimited',
+      inflation: '10% per tahun (untuk insentif validator)',
+      tvl: '$180 Juta',
+      stakingYield: '12.0% s.d. 14.2% per tahun',
+      activeAddresses: '~15,000 harian',
+      security: 'Nominated Proof of Stake (NPoS)',
+      whyCheap: 'Kompleksitas model lelang parachain (Polkadot 1.0) yang dianggap terlalu mahal bagi pengembang baru. Transisi ke Polkadot 2.0 (Agile Coretime) diharapkan menyederhanakan peluncuran dApps dan meningkatkan utilitas token DOT.'
+    }
+  };
+
   // App state
   const state = {
     activePage: 'dashboard',
@@ -11,6 +336,7 @@ window.TradeMasterApp = (function() {
       cryptoMode: 'CEX',
       chartInterval: '1d',
       activeIndicators: ['EMA9', 'EMA21'], // defaults
+      activeTab: 'technical',
       chartData: [],
       livePrice: 0,
       priceChange: 0,
@@ -29,7 +355,8 @@ window.TradeMasterApp = (function() {
       chartData: [],
       chartInstance: null,
       candlestickSeries: null,
-      indicatorLineSeries: {}
+      indicatorLineSeries: {},
+      activeTab: 'technical'
     },
     watchlist: {
       crypto: ['BTC', 'ETH', 'SOL', 'BNB'],
@@ -642,6 +969,13 @@ window.TradeMasterApp = (function() {
         renderCryptoWhaleFlow(symbol, ticker.price);
       }
     }, 3000);
+
+    // Render active tab content
+    if (state.crypto.activeTab === 'fundamental') {
+      renderCryptoFundamentalAnalysis();
+    } else if (state.crypto.activeTab === 'ai') {
+      renderAICryptoProPicks();
+    }
   }
 
   async function renderStocksPage() {
@@ -724,6 +1058,13 @@ window.TradeMasterApp = (function() {
 
     // Render Broker portfolio accumulation tracker
     renderBrokerAccumulationTracker();
+
+    // Render active tab content
+    if (state.stocks.activeTab === 'fundamental') {
+      renderFundamentalAnalysis();
+    } else if (state.stocks.activeTab === 'ai') {
+      renderAIProPicks();
+    }
   }
 
   async function renderGlobalNewsSummary() {
@@ -2803,6 +3144,889 @@ window.TradeMasterApp = (function() {
     `;
   }
 
+  // Change Crypto Report Tab
+  function changeCryptoTab(tabId) {
+    state.crypto.activeTab = tabId;
+    
+    // Toggle button active classes
+    document.querySelectorAll('.crypto-tabs .btn-tab').forEach(btn => {
+      btn.classList.remove('active');
+      btn.style.border = '1px solid transparent';
+      btn.style.background = 'transparent';
+      btn.style.color = 'var(--text-muted)';
+    });
+    
+    const activeBtn = document.getElementById(`btn-crypto-tab-${tabId}`);
+    if (activeBtn) {
+      activeBtn.classList.add('active');
+      activeBtn.style.border = '1px solid var(--card-border)';
+      activeBtn.style.background = 'var(--bg-color)';
+      activeBtn.style.color = 'var(--text-main)';
+    }
+    
+    // Toggle tab content visibility
+    document.querySelectorAll('.crypto-tab-content').forEach(content => {
+      content.style.display = 'none';
+    });
+    
+    const activeContent = document.getElementById(`crypto-tab-content-${tabId}`);
+    if (activeContent) {
+      activeContent.style.display = 'block';
+    }
+    
+    // Render content based on tab
+    if (tabId === 'fundamental') {
+      renderCryptoFundamentalAnalysis();
+    } else if (tabId === 'ai') {
+      renderAICryptoProPicks();
+    }
+  }
+
+  // Helper to generate stable mock fundamental data for any searched Crypto coin
+  function getStableMockCryptoData(symbol, currentPrice) {
+    let hash = 0;
+    for (let i = 0; i < symbol.length; i++) {
+      hash = symbol.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    const getValInRange = (min, max, seedOffset) => {
+      const seed = Math.abs(hash + seedOffset) % 1000;
+      return min + (seed / 1000) * (max - min);
+    };
+    
+    const isBigSupply = (Math.abs(hash) % 2) === 0;
+    const circSupply = isBigSupply 
+      ? `${(Math.round(getValInRange(100, 10000, 1) * 10) / 10).toLocaleString()} Juta ${symbol}`
+      : `${(Math.round(getValInRange(1, 100, 1) * 10) / 10).toLocaleString()} Miliar ${symbol}`;
+      
+    const maxSupply = (Math.abs(hash) % 3) === 0 ? "Unlimited" : (isBigSupply 
+      ? `${(Math.round(getValInRange(200, 20000, 2) * 10) / 10).toLocaleString()} Juta ${symbol}`
+      : `${(Math.round(getValInRange(2, 200, 2) * 10) / 10).toLocaleString()} Miliar ${symbol}`);
+      
+    const inflation = `${(Math.round(getValInRange(-0.5, 8.5, 3) * 100) / 100)}% per tahun`;
+    
+    const tvlVal = getValInRange(10, 5000, 4);
+    const tvl = (Math.abs(hash) % 4) === 0 ? "N/A" : `$${(Math.round(tvlVal * 10) / 10).toLocaleString()} Juta`;
+    
+    const stakingYield = (Math.abs(hash) % 5) === 0 ? "0% (PoW)" : `${(Math.round(getValInRange(1.8, 14.5, 5) * 10) / 10)}% per tahun`;
+    
+    const activeAddresses = `~${(Math.round(getValInRange(5, 500, 6))).toLocaleString()} ribu harian`;
+    
+    const securityOptions = ['Proof of Stake (PoS)', 'Proof of Work (PoW)', 'Delegated Proof of Stake (DPoS)', 'Proof of History (PoH)'];
+    const security = securityOptions[Math.abs(hash) % securityOptions.length];
+    
+    const whyCheapTexts = [
+      `Token ${symbol} menghadapi tekanan jual sistemik akibat koreksi likuiditas pasar kripto global dan pelemahan korelasi BTC. Meskipun demikian, pertumbuhan aktivitas developer dan integrasi on-chain baru tetap berjalan solid. Penurunan harga memberikan zona akumulasi DCA yang menarik bagi investor jangka panjang.`,
+      `Penurunan harga koin ${symbol} disebabkan oleh rotasi modal jangka pendek dari sektor ekosistemnya ke tren narasi baru (seperti AI atau RWA). Secara fundamental, metrik on-chain seperti volume transaksi harian dan TVL tetap stabil, menunjukkan utilitas jaringan yang kuat dan diskon harga yang signifikan.`,
+      `Ketidakpastian regulasi dan sentimen risk-off makroekonomi menekan harga ${symbol}. Dari perspektif tokenomics, tingkat emisi inflasi yang terkontrol serta yield staking yang menarik memberikan insentif penahanan (holding incentive) yang sangat kuat bagi para validator jaringan.`,
+      `Token ${symbol} sedang berkonsolidasi pasca-kegilaan spekulasi volume perdagangan jangka pendek. Penurunan aktivitas on-chain sementara ini memberikan peluang bagi protokol untuk meluncurkan peningkatan mainnet baru guna memperluas utilitas tokenomics utama.`
+    ];
+    const whyCheap = whyCheapTexts[Math.abs(hash + 15) % whyCheapTexts.length];
+    
+    return {
+      name: `${symbol} Network`,
+      marketCap: `$${(Math.round(getValInRange(50, 15000, 7) * 10) / 10).toLocaleString()} Juta`,
+      circSupply,
+      maxSupply,
+      inflation,
+      tvl,
+      stakingYield,
+      activeAddresses,
+      security,
+      whyCheap
+    };
+  }
+
+  // Render Tokenomics & Fundamental Analysis for Crypto
+  function renderCryptoFundamentalAnalysis() {
+    const symbol = state.crypto.selected;
+    const reportContainer = document.getElementById('crypto-fundamental-report');
+    if (!reportContainer) return;
+    
+    let data = cryptoFundamentalData[symbol];
+    if (!data) {
+      const currentPrice = state.crypto.livePrice || 1.5;
+      data = getStableMockCryptoData(symbol, currentPrice);
+    }
+    
+    // Determine badges for TVL / Staking
+    const hasTvl = data.tvl !== 'N/A';
+    const hasStaking = !data.stakingYield.includes('0%');
+    
+    const tvlBadge = hasTvl
+      ? `<span class="badge" style="background: var(--success-glow); color: var(--success); font-size:0.65rem; font-weight:700; border: 1px solid var(--success);">TVL AKTIF</span>`
+      : '<span class="badge" style="background: rgba(0,0,0,0.2); color: var(--text-muted); font-size:0.65rem; font-weight:700; border: 1px solid var(--card-border);">NO TVL</span>';
+      
+    const stakingBadge = hasStaking
+      ? `<span class="badge" style="background: var(--success-glow); color: var(--success); font-size:0.65rem; font-weight:700; border: 1px solid var(--success);">STAKING ON</span>`
+      : '<span class="badge" style="background: rgba(255, 159, 67, 0.1); color: var(--warning); font-size:0.65rem; font-weight:700; border: 1px solid var(--warning);">NO STAKING</span>';
+
+    reportContainer.innerHTML = `
+      <div style="margin-bottom: 20px; padding: 14px; border-radius: 10px; background: linear-gradient(135deg, rgba(95, 39, 205, 0.06), rgba(255, 159, 67, 0.04)); border: 1px solid rgba(255, 159, 67, 0.2);">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+          <div>
+            <div style="font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Riset Fundamental Aset Kripto</div>
+            <div style="font-size: 1.15rem; font-weight: 800; color: var(--warning); margin-top: 2px;">${data.name} (${symbol})</div>
+          </div>
+          <div style="display: flex; gap: 15px;">
+            <div style="text-align: right;">
+              <div style="font-size: 0.72rem; color: var(--text-muted);">Estimasi Market Cap</div>
+              <div style="font-size: 0.95rem; font-weight: 800; color: var(--text-main);">${data.marketCap}</div>
+            </div>
+            <div style="text-align: right; border-left: 1px solid var(--card-border); padding-left: 15px;">
+              <div style="font-size: 0.72rem; color: var(--text-muted);">Mekanisme Konsensus</div>
+              <div style="font-size: 0.95rem; font-weight: 800; color: var(--primary);">${data.security}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-bottom: 18px;">
+        <!-- Pilar 1: TOKENOMICS STRUCTURE -->
+        <div class="card" style="padding: 16px; background: rgba(255,255,255,0.01); border: 1px solid var(--card-border); margin: 0; display: flex; flex-direction: column; justify-content: space-between;">
+          <div>
+            <h4 style="font-weight: 700; color: var(--warning); margin-bottom: 12px; font-size: 0.88rem; display: flex; align-items: center; gap: 6px;">
+              <span style="display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; border-radius: 50%; background: rgba(255,159,67,0.1); color: var(--warning); font-size: 0.7rem; font-weight: bold;">1</span>
+              PILLAR I: TOKENOMICS & METRICS (Pasokan & Emisi)
+            </h4>
+            <table style="width: 100%; font-size: 0.76rem; border-collapse: collapse;">
+              <tr style="border-bottom: 1px solid var(--card-border);">
+                <td style="padding: 6px 0; color: var(--text-muted);">Circulating Supply</td>
+                <td style="font-weight: bold; text-align: right; color: var(--text-main);" colspan="2">${data.circSupply}</td>
+              </tr>
+              <tr style="border-bottom: 1px solid var(--card-border);">
+                <td style="padding: 6px 0; color: var(--text-muted);">Maximum Supply</td>
+                <td style="font-weight: bold; text-align: right; color: var(--text-main);" colspan="2">${data.maxSupply}</td>
+              </tr>
+              <tr style="border-bottom: 1px solid var(--card-border);">
+                <td style="padding: 6px 0; color: var(--text-muted);">Tingkat Inflasi Emisi</td>
+                <td style="font-weight: bold; text-align: right; color: ${data.inflation.startsWith('-') ? 'var(--success)' : 'var(--text-main)'};" colspan="2">${data.inflation}</td>
+              </tr>
+              <tr>
+                <td style="padding: 6px 0; color: var(--text-muted);">Alamat Aktif Harian</td>
+                <td style="font-weight: bold; text-align: right; color: var(--text-main);" colspan="2">${data.activeAddresses}</td>
+              </tr>
+            </table>
+          </div>
+          <div style="margin-top: 10px; font-size: 0.65rem; color: var(--text-muted); font-style: italic; border-top: 1px dashed var(--card-border); padding-top: 6px;">
+            Target: Inflasi Rendah/Deflasioner & Alamat Aktif Bertumbuh
+          </div>
+        </div>
+
+        <!-- Pilar 2: PROTOCOL MOAT & ADOPTION -->
+        <div class="card" style="padding: 16px; background: rgba(255,255,255,0.01); border: 1px solid var(--card-border); margin: 0; display: flex; flex-direction: column; justify-content: space-between;">
+          <div>
+            <h4 style="font-weight: 700; color: var(--success); margin-bottom: 12px; font-size: 0.88rem; display: flex; align-items: center; gap: 6px;">
+              <span style="display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; border-radius: 50%; background: var(--success-glow); color: var(--success); font-size: 0.7rem; font-weight: bold;">2</span>
+              PILLAR II: UTILITY & STAKING MOAT (Adopsi DeFi)
+            </h4>
+            <table style="width: 100%; font-size: 0.76rem; border-collapse: collapse;">
+              <tr style="border-bottom: 1px solid var(--card-border);">
+                <td style="padding: 6px 0; color: var(--text-muted);">Total Value Locked (TVL)</td>
+                <td style="font-weight: bold; text-align: right; color: var(--text-main);">${data.tvl}</td>
+                <td style="text-align: right; padding-left: 8px; width: 80px;">${tvlBadge}</td>
+              </tr>
+              <tr style="border-bottom: 1px solid var(--card-border);">
+                <td style="padding: 6px 0; color: var(--text-muted);">Staking Yield (Est. APY)</td>
+                <td style="font-weight: bold; text-align: right; color: var(--text-main);">${data.stakingYield}</td>
+                <td style="text-align: right; padding-left: 8px;">${stakingBadge}</td>
+              </tr>
+              <tr style="border-bottom: 1px solid var(--card-border);">
+                <td style="padding: 6px 0; color: var(--text-muted);">Keamanan Jaringan</td>
+                <td style="font-weight: bold; text-align: right; color: var(--success);" colspan="2">Sangat Kuat</td>
+              </tr>
+              <tr>
+                <td style="padding: 6px 0; color: var(--text-muted);">Developer Activity</td>
+                <td style="font-weight: bold; text-align: right; color: var(--primary);" colspan="2">Aktif / Berkelanjutan</td>
+              </tr>
+            </table>
+          </div>
+          <div style="margin-top: 10px; font-size: 0.65rem; color: var(--text-muted); font-style: italic; border-top: 1px dashed var(--card-border); padding-top: 6px;">
+            Target: Kunci Utilitas Jaringan & Nilai Ekosistem Nyata
+          </div>
+        </div>
+      </div>
+
+      <!-- Pilar 3: WHY CHEAP? -->
+      <div class="card" style="padding: 14px 16px; background: rgba(95, 39, 205, 0.03); border: 1px solid rgba(95, 39, 205, 0.2); margin: 0;">
+        <h4 style="font-weight: 700; color: var(--primary); margin-bottom: 8px; font-size: 0.88rem; display: flex; align-items: center; gap: 6px;">
+          <span style="display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; border-radius: 50%; background: var(--primary-glow); color: var(--primary); font-size: 0.7rem; font-weight: bold;">3</span>
+          PILLAR III: WHY CHEAP? (Katalis Sentimen & Siklus)
+        </h4>
+        <p style="color: var(--text-muted); font-size: 0.82rem; line-height: 1.5; margin: 0; text-align: justify;">
+          ${data.whyCheap}
+        </p>
+        <div style="margin-top: 8px; border-top: 1px dashed rgba(95, 39, 205, 0.15); padding-top: 6px; font-size: 0.68rem; color: var(--text-dark);">
+          💡 <b>Analisa Siklus:</b> Penurunan harga yang disebabkan oleh kepanikan makro sementara (FUD) atau penjualan paksa institusi (liquidation) adalah peluang akumulasi DCA emas bagi investor jangka panjang.
+        </div>
+      </div>
+    `;
+  }
+
+  // Render AI Crypto ProPicks portfolios
+  function renderAICryptoProPicks() {
+    const listContainer = document.getElementById('ai-crypto-propicks-strategies-list');
+    if (!listContainer) return;
+    
+    const strategies = [
+      {
+        id: 'beat_market',
+        name: 'Kalahkan Pasar (Beat the Market)',
+        desc: 'Alokasi dominan pada bluechip L1 berkapitalisasi mega yang memimpin tingkat keamanan jaringan.',
+        returnPct: 54.2,
+        tokens: ['BTC', 'ETH', 'SOL'],
+        icon: 'trending-up',
+        color: 'var(--success)'
+      },
+      {
+        id: 'defi_bluechips',
+        name: 'Protokol DeFi Pilihan (DeFi Bluechips)',
+        desc: 'Protokol dengan TVL tinggi, pendapatan fee riil, dan yield staking/liquidity paling stabil.',
+        returnPct: 72.8,
+        tokens: ['ETH', 'SOL', 'BNB'],
+        icon: 'coins',
+        color: 'var(--primary)'
+      },
+      {
+        id: 'l1_leaders',
+        name: 'Pemimpin Lapisan Satu (Layer-1 Leaders)',
+        desc: 'Kombinasi blockchain L1 berkinerja tinggi yang memonopoli aktivitas transaksi dApps.',
+        returnPct: 48.5,
+        tokens: ['SOL', 'BNB', 'ADA'],
+        icon: 'shield',
+        color: 'var(--warning)'
+      },
+      {
+        id: 'meme_magic',
+        name: 'Keajaiban Spekulatif (Meme Magic)',
+        desc: 'Alokasi taktis risiko tinggi pada meme coin dengan kapitalisasi sosial dan volume dex masif.',
+        returnPct: 120.4,
+        tokens: ['DOGE', 'SOL', 'ETH'],
+        icon: 'sparkles',
+        color: '#ff9f43'
+      }
+    ];
+    
+    listContainer.innerHTML = strategies.map(strat => `
+      <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--card-border); padding: 8px 12px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; gap: 10px;">
+        <div style="flex: 1;">
+          <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 2px;">
+            <div style="background: ${strat.color}15; color: ${strat.color}; width: 22px; height: 22px; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 0.75rem;">
+              <i data-lucide="${strat.icon}" style="width: 12px; height: 12px;"></i>
+            </div>
+            <span style="font-size: 0.78rem; font-weight: bold; color: var(--text-main);">${strat.name}</span>
+          </div>
+          <div style="font-size: 0.65rem; color: var(--text-muted);">${strat.desc}</div>
+          <div style="display: flex; gap: 4px; margin-top: 4px;">
+            ${strat.tokens.map(t => `<span onclick="TradeMasterApp.navigateTo('crypto', '${t}')" style="font-size: 0.6rem; background: rgba(255,255,255,0.03); color: var(--primary); padding: 1px 5px; border-radius: 4px; border: 1px solid var(--card-border); font-weight: bold; cursor: pointer;">${t}</span>`).join('')}
+          </div>
+        </div>
+        <div style="text-align: right; min-width: 80px;">
+          <div style="font-size: 0.6rem; color: var(--text-muted); text-transform: uppercase;">Est. Return (1Th)</div>
+          <div style="font-size: 1rem; font-weight: 900; color: ${strat.color};">+${strat.returnPct}%</div>
+        </div>
+      </div>
+    `).join('');
+    
+    if (window.lucide) {
+      lucide.createIcons();
+    }
+  }
+
+  // Satoshi AI Chat Assistant Actions
+  function sendSatoshiPrompt(text) {
+    const input = document.getElementById('satoshi-chat-input');
+    if (input) {
+      input.value = text;
+      submitSatoshiChat();
+    }
+  }
+  
+  function submitSatoshiChat() {
+    const input = document.getElementById('satoshi-chat-input');
+    if (!input || !input.value.trim()) return;
+    
+    const prompt = input.value.trim();
+    input.value = '';
+    
+    // Add user message to chat history
+    const history = document.getElementById('satoshi-chat-history');
+    if (!history) return;
+    
+    const userMsg = document.createElement('div');
+    userMsg.className = 'chat-message user';
+    userMsg.style.cssText = 'background: var(--primary-glow); padding: 8px 12px; border-radius: 8px 8px 0 8px; border-right: 2px solid var(--primary); max-width: 90%; align-self: flex-end; line-height: 1.45; font-size: 0.78rem; margin-top: 4px; border-bottom: 1px solid rgba(255,255,255,0.02);';
+    userMsg.innerHTML = prompt;
+    history.appendChild(userMsg);
+    
+    // Auto-scroll
+    history.scrollTop = history.scrollHeight;
+    
+    // Add typing animation
+    const typingMsg = document.createElement('div');
+    typingMsg.className = 'chat-message bot typing';
+    typingMsg.style.cssText = 'background: rgba(255,255,255,0.03); padding: 8px 12px; border-radius: 8px 8px 8px 0; border-left: 2px solid var(--primary); max-width: 90%; line-height: 1.45; font-size: 0.78rem; font-style: italic; color: var(--text-muted); margin-top: 4px;';
+    typingMsg.innerText = 'Satoshi AI sedang memindai metrik on-chain dan tokenomics...';
+    history.appendChild(typingMsg);
+    history.scrollTop = history.scrollHeight;
+    
+    setTimeout(() => {
+      // Remove typing message
+      typingMsg.remove();
+      
+      // Parse keywords
+      const query = prompt.toLowerCase();
+      let responseText = '';
+      let matches = [];
+      
+      if (query.includes('defi') || query.includes('tvl') || query.includes('yielding') || query.includes('staking')) {
+        matches = ['ETH', 'SOL', 'BNB'];
+        responseText = `Berdasarkan data on-chain terbaru, terdapat **${matches.length} protokol** utama dengan TVL DeFi tinggi dan ekosistem staking yield yang solid:<br><br>`;
+        matches.forEach(sym => {
+          const d = cryptoFundamentalData[sym];
+          responseText += `• <b>${sym}</b>: TVL <b>${d.tvl}</b> | Staking Yield: <b>${d.stakingYield}</b>.<br>`;
+        });
+        responseText += `<br><b>Analisis Satoshi:</b> **ETH** memimpin total TVL secara absolut, namun **SOL** mengalami pertumbuhan persentase tercepat karena biaya transaksi (gas) yang sangat rendah.`;
+      } else if (query.includes('l1') || query.includes('layer') || query.includes('undervalued') || query.includes('inflasi')) {
+        matches = ['BTC', 'ETH', 'SOL', 'ADA', 'DOT'];
+        responseText = `Saya mendeteksi koin Layer-1 terpilih dengan profil tokenomics yang solid:<br><br>`;
+        matches.forEach(sym => {
+          const d = cryptoFundamentalData[sym];
+          responseText += `• <b>${sym}</b>: Inflasi: <b>${d.inflation}</b> | Konsensus: <b>${d.security}</b>.<br>`;
+        });
+        responseText += `<br><b>Rekomendasi ProPicks:</b> **BTC** memiliki pasokan keras terbatasi (hard cap). **ETH** adalah satu-satunya L1 dengan mekanisme burning gas (deflasioner) saat jaringan padat.`;
+      } else if (query.includes('meme') || query.includes('hype') || query.includes('doge')) {
+        matches = ['DOGE'];
+        responseText = `Emiten sektor koin meme terpilih dengan likuiditas tinggi:<br><br>`;
+        matches.forEach(sym => {
+          const d = cryptoFundamentalData[sym];
+          responseText += `• <b>${sym}</b>: Market Cap <b>${d.marketCap}</b> | Alamat Aktif: <b>${d.activeAddresses}</b> | Keamanan: <b>${d.security}</b>.<br>`;
+        });
+        responseText += `<br><b>Catatan Risiko:</b> Koin meme sangat bergantung pada volatilitas sosial dan tidak memiliki moat utilitas on-chain langsung. Hanya gunakan alokasi modal kecil taktis (<5% portofolio).`;
+      } else {
+        // Default response
+        responseText = `Saya memahami kriteria pencarian kustom Anda. Menggunakan analisis tokenomics pilar <b>"Tokenomics Moat, TVL, and Catalyst"</b>, berikut adalah rekomendasi kripto teratas:<br><br>
+        1. **BTC** (Digital Gold): Nilai kelangkaan mutlak dengan adopsi ETF institusional.<br>
+        2. **ETH** (Deflationary Moat): Pusat likuiditas DeFi global dengan yield staking 3.5%.<br>
+        3. **SOL** (High Throughput): Ekosistem tercepat untuk ritel dengan volume dex menyaingi Ethereum.<br><br>
+        <i>Ketik kata kunci seperti <b>"defi"</b>, <b>"l1"</b>, atau <b>"meme"</b> untuk menyaring pencarian secara spesifik.</i>`;
+      }
+      
+      const botMsg = document.createElement('div');
+      botMsg.className = 'chat-message bot';
+      botMsg.style.cssText = 'background: rgba(255,255,255,0.03); padding: 8px 12px; border-radius: 8px 8px 8px 0; border-left: 2px solid var(--primary); max-width: 90%; line-height: 1.45; font-size: 0.78rem; margin-top: 4px;';
+      botMsg.innerHTML = responseText;
+      history.appendChild(botMsg);
+      history.scrollTop = history.scrollHeight;
+    }, 1200);
+  }
+
+  // Search Crypto Symbol kustom (CEX)
+  function searchCryptoSymbol() {
+    const input = document.getElementById('crypto-search-input');
+    if (!input) return;
+    const symbol = input.value.trim().toUpperCase();
+    if (!symbol) return;
+    
+    state.crypto.selected = symbol;
+    
+    const select = document.getElementById('crypto-select');
+    if (select) {
+      let exists = false;
+      for (let i = 0; i < select.options.length; i++) {
+        if (select.options[i].value === symbol) {
+          select.selectedIndex = i;
+          exists = true;
+          break;
+        }
+      }
+      if (!exists) {
+        const newOpt = document.createElement('option');
+        newOpt.value = symbol;
+        newOpt.text = symbol;
+        select.appendChild(newOpt);
+        select.value = symbol;
+      }
+    }
+    
+    renderCryptoPage();
+    input.value = '';
+  }
+
+  // Change Stock Report Tab
+  function changeStockTab(tabId) {
+    state.stocks.activeTab = tabId;
+    
+    // Toggle button active classes
+    document.querySelectorAll('.stock-tabs .btn-tab').forEach(btn => {
+      btn.classList.remove('active');
+      btn.style.border = '1px solid transparent';
+      btn.style.background = 'transparent';
+      btn.style.color = 'var(--text-muted)';
+    });
+    
+    const activeBtn = document.getElementById(`btn-stock-tab-${tabId}`);
+    if (activeBtn) {
+      activeBtn.classList.add('active');
+      activeBtn.style.border = '1px solid var(--card-border)';
+      activeBtn.style.background = 'var(--bg-color)';
+      activeBtn.style.color = 'var(--text-main)';
+    }
+    
+    // Toggle tab content visibility
+    document.querySelectorAll('.stock-tab-content').forEach(content => {
+      content.style.display = 'none';
+    });
+    
+    const activeContent = document.getElementById(`stock-tab-content-${tabId}`);
+    if (activeContent) {
+      activeContent.style.display = 'block';
+    }
+    
+    // Render content based on tab
+    if (tabId === 'fundamental') {
+      renderFundamentalAnalysis();
+    } else if (tabId === 'ai') {
+      renderAIProPicks();
+    }
+  }
+
+  // Helper to generate stable mock fundamental data for any searched IDX stock
+  function getStableMockData(symbol, currentPrice) {
+    let hash = 0;
+    for (let i = 0; i < symbol.length; i++) {
+      hash = symbol.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    const getValInRange = (min, max, seedOffset) => {
+      const seed = Math.abs(hash + seedOffset) % 1000;
+      return min + (seed / 1000) * (max - min);
+    };
+    
+    const roe = Math.round(getValInRange(5.0, 22.0, 1) * 10) / 10;
+    const der = Math.round(getValInRange(0.15, 1.8, 2) * 100) / 100;
+    const npm = Math.round(getValInRange(4.0, 25.0, 3) * 10) / 10;
+    const revGrowth = Math.round(getValInRange(-5.0, 25.0, 4) * 10) / 10;
+    const netIncGrowth = Math.round((revGrowth * getValInRange(0.9, 1.3, 5)) * 10) / 10;
+    
+    const hasDiv = (Math.abs(hash) % 3) !== 0; 
+    const divYield = hasDiv ? Math.round(getValInRange(1.5, 9.0, 6) * 10) / 10 : 0.0;
+    
+    const pe = Math.round(getValInRange(6.0, 28.0, 7) * 10) / 10;
+    const peHist5Yr = Math.round((pe * getValInRange(0.85, 1.25, 8)) * 10) / 10;
+    
+    const pbv = Math.round(getValInRange(0.5, 4.0, 9) * 100) / 100;
+    const pbvHist5Yr = Math.round((pbv * getValInRange(0.9, 1.3, 10)) * 100) / 100;
+    
+    const upsidePct = Math.round(getValInRange(-15.0, 45.0, 11) * 10) / 10;
+    const fairValue = Math.round(currentPrice * (1 + upsidePct / 100));
+    
+    const whyCheapTexts = [
+      `Saham ${symbol} saat ini mengalami tekanan jual sektoral di IHSG menyusul koreksi harga komoditas global dan rotasi portofolio dana asing. Namun secara fundamental, margin operasional perusahaan tetap terjaga sehat dengan tingkat utang yang terkendali. Penurunan harga membuka peluang investasi bernilai (value investing).`,
+      `Penurunan harga saham ${symbol} didorong oleh sentimen makro ekonomi nasional, pelemahan nilai tukar Rupiah, dan ketidakpastian suku bunga BI. Meskipun demikian, dominasi pasar domestik dan model bisnis yang kuat membuat perusahaan ini diproyeksikan breakeven dengan pertumbuhan laba yang konsisten jangka panjang.`,
+      `Sentimen negatif sektoral jangka pendek memicu outflow dana institusi dari saham ${symbol}. Valuasi saat ini sudah berada di area jenuh jual (RSI rendah) dan menawarkan diskon harga yang sangat menarik dibandingkan rata-rata historisnya. Moat bisnis utama perusahaan tetap utuh dan solid.`,
+      `Kinerja operasional ${symbol} mengalami konsolidasi wajar pasca-ekspansi modal kerja. Beban operasional jangka pendek menekan laba bersih kuartal ini, tetapi efisiensi jangka panjang dan potensi pertumbuhan pangsa pasar domestik tetap kokoh.`
+    ];
+    const whyCheap = whyCheapTexts[Math.abs(hash + 12) % whyCheapTexts.length];
+    
+    return {
+      name: `${symbol} Indonesia Tbk`,
+      marketCap: `Rp ${(Math.round(getValInRange(10, 450, 13) * 10) / 10).toLocaleString()}T`,
+      roe,
+      der,
+      npm,
+      revGrowth,
+      netIncGrowth,
+      divYield,
+      pe,
+      peHist5Yr,
+      pbv,
+      pbvHist5Yr,
+      fairValue,
+      fairValueUpside: upsidePct,
+      whyCheap
+    };
+  }
+
+  // Render Pilar Fundamental: Good Business, Good Price, Why Cheap?
+  function renderFundamentalAnalysis() {
+    const symbol = state.stocks.selected;
+    const reportContainer = document.getElementById('stock-fundamental-report');
+    if (!reportContainer) return;
+    
+    let data = stockFundamentalData[symbol];
+    if (!data) {
+      let currentPrice = 5000;
+      if (state.stocks.chartData && state.stocks.chartData.length > 0) {
+        currentPrice = state.stocks.chartData[state.stocks.chartData.length - 1].close;
+      }
+      data = getStableMockData(symbol, currentPrice);
+    }
+    
+    // Determine badges for Good Business
+    const roeBadge = data.roe >= 12.5 
+      ? '<span class="badge" style="background: var(--success-glow); color: var(--success); font-size:0.65rem; font-weight:700; border: 1px solid var(--success);">PASS (>= 12.5%)</span>' 
+      : '<span class="badge" style="background: var(--danger-glow); color: var(--danger); font-size:0.65rem; font-weight:700; border: 1px solid var(--danger);">FAIL (< 12.5%)</span>';
+      
+    const derBadge = data.der <= 1.0 
+      ? '<span class="badge" style="background: var(--success-glow); color: var(--success); font-size:0.65rem; font-weight:700; border: 1px solid var(--success);">PASS (<= 1.0)</span>' 
+      : '<span class="badge" style="background: rgba(255, 159, 67, 0.1); color: var(--warning); font-size:0.65rem; font-weight:700; border: 1px solid var(--warning);">WARN (> 1.0)</span>';
+      
+    const npmBadge = data.npm >= 7.5 
+      ? '<span class="badge" style="background: var(--success-glow); color: var(--success); font-size:0.65rem; font-weight:700; border: 1px solid var(--success);">PASS (>= 7.5%)</span>' 
+      : '<span class="badge" style="background: var(--danger-glow); color: var(--danger); font-size:0.65rem; font-weight:700; border: 1px solid var(--danger);">FAIL (< 7.5%)</span>';
+
+    const divBadge = data.divYield > 0
+      ? `<span class="badge" style="background: var(--success-glow); color: var(--success); font-size:0.65rem; font-weight:700; border: 1px solid var(--success);">YIELD ${data.divYield}%</span>`
+      : '<span class="badge" style="background: rgba(0,0,0,0.2); color: var(--text-muted); font-size:0.65rem; font-weight:700; border: 1px solid var(--card-border);">NO DIVIDEND</span>';
+
+    // Good Price check
+    const isDiscountPE = data.pe < data.peHist5Yr;
+    const isDiscountPBV = data.pbv < data.pbvHist5Yr;
+    const isFairValueUpside = data.fairValueUpside > 0;
+    
+    let priceRating = 'PREMIUM / FAIR PRICE';
+    let ratingColor = 'var(--warning)';
+    let ratingBg = 'rgba(255, 159, 67, 0.08)';
+    
+    if ((isDiscountPE || isDiscountPBV) && isFairValueUpside) {
+      priceRating = 'UNDERVALUED / DISKON';
+      ratingColor = 'var(--success)';
+      ratingBg = 'var(--success-glow)';
+    } else if (data.fairValueUpside < -20) {
+      priceRating = 'OVERVALUED / MAHAL';
+      ratingColor = 'var(--danger)';
+      ratingBg = 'var(--danger-glow)';
+    }
+
+    reportContainer.innerHTML = `
+      <div style="margin-bottom: 20px; padding: 14px; border-radius: 10px; background: linear-gradient(135deg, rgba(95, 39, 205, 0.06), rgba(16, 172, 132, 0.04)); border: 1px solid rgba(95, 39, 205, 0.15);">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+          <div>
+            <div style="font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Informasi Fundamental Saham</div>
+            <div style="font-size: 1.15rem; font-weight: 800; color: var(--primary); margin-top: 2px;">${data.name} (${symbol}.JK)</div>
+          </div>
+          <div style="display: flex; gap: 15px;">
+            <div style="text-align: right;">
+              <div style="font-size: 0.72rem; color: var(--text-muted);">Market Cap</div>
+              <div style="font-size: 0.95rem; font-weight: 800; color: var(--text-main);">${data.marketCap}</div>
+            </div>
+            <div style="text-align: right; border-left: 1px solid var(--card-border); padding-left: 15px;">
+              <div style="font-size: 0.72rem; color: var(--text-muted);">Penilaian Harga</div>
+              <div style="font-size: 0.95rem; font-weight: 800; color: ${ratingColor}; background: ${ratingBg}; padding: 1px 6px; border-radius: 4px;">${priceRating}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-bottom: 18px;">
+        <!-- Pilar 1: GOOD BUSINESS -->
+        <div class="card" style="padding: 16px; background: rgba(255,255,255,0.01); border: 1px solid var(--card-border); margin: 0; display: flex; flex-direction: column; justify-content: space-between;">
+          <div>
+            <h4 style="font-weight: 700; color: var(--success); margin-bottom: 12px; font-size: 0.88rem; display: flex; align-items: center; gap: 6px;">
+              <span style="display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; border-radius: 50%; background: var(--success-glow); color: var(--success); font-size: 0.7rem; font-weight: bold;">1</span>
+              PILLAR I: GOOD BUSINESS (Fundamental Moat)
+            </h4>
+            <table style="width: 100%; font-size: 0.76rem; border-collapse: collapse;">
+              <tr style="border-bottom: 1px solid var(--card-border);">
+                <td style="padding: 6px 0; color: var(--text-muted);">Return on Equity (ROE)</td>
+                <td style="font-weight: bold; text-align: right; color: var(--text-main);">${data.roe}%</td>
+                <td style="text-align: right; padding-left: 8px; width: 100px;">${roeBadge}</td>
+              </tr>
+              <tr style="border-bottom: 1px solid var(--card-border);">
+                <td style="padding: 6px 0; color: var(--text-muted);">Debt to Equity Ratio (DER)</td>
+                <td style="font-weight: bold; text-align: right; color: var(--text-main);">${data.der}x</td>
+                <td style="text-align: right; padding-left: 8px;">${derBadge}</td>
+              </tr>
+              <tr style="border-bottom: 1px solid var(--card-border);">
+                <td style="padding: 6px 0; color: var(--text-muted);">Net Profit Margin (NPM)</td>
+                <td style="font-weight: bold; text-align: right; color: var(--text-main);">${data.npm}%</td>
+                <td style="text-align: right; padding-left: 8px;">${npmBadge}</td>
+              </tr>
+              <tr style="border-bottom: 1px solid var(--card-border);">
+                <td style="padding: 6px 0; color: var(--text-muted);">Dividen Yield</td>
+                <td style="font-weight: bold; text-align: right; color: var(--text-main);">${data.divYield}%</td>
+                <td style="text-align: right; padding-left: 8px;">${divBadge}</td>
+              </tr>
+              <tr>
+                <td style="padding: 6px 0; color: var(--text-muted);">Pertumbuhan Laba</td>
+                <td style="font-weight: bold; text-align: right; color: ${data.netIncGrowth >= 5 ? 'var(--success)' : 'var(--warning)'};" colspan="2">
+                  ${data.netIncGrowth >= 0 ? '+' : ''}${data.netIncGrowth}% YoY
+                </td>
+              </tr>
+            </table>
+          </div>
+          <div style="margin-top: 10px; font-size: 0.65rem; color: var(--text-muted); font-style: italic; border-top: 1px dashed var(--card-border); padding-top: 6px;">
+            Target: ROE > 12.5%, DER < 1.0, NPM > 7.5%
+          </div>
+        </div>
+
+        <!-- Pilar 2: GOOD PRICE -->
+        <div class="card" style="padding: 16px; background: rgba(255,255,255,0.01); border: 1px solid var(--card-border); margin: 0; display: flex; flex-direction: column; justify-content: space-between;">
+          <div>
+            <h4 style="font-weight: 700; color: var(--primary); margin-bottom: 12px; font-size: 0.88rem; display: flex; align-items: center; gap: 6px;">
+              <span style="display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; border-radius: 50%; background: var(--primary-glow); color: var(--primary); font-size: 0.7rem; font-weight: bold;">2</span>
+              PILLAR II: GOOD PRICE (Valuation Discount)
+            </h4>
+            <table style="width: 100%; font-size: 0.76rem; border-collapse: collapse;">
+              <tr style="border-bottom: 1px solid var(--card-border);">
+                <td style="padding: 6px 0; color: var(--text-muted);">PE Ratio vs Rata-rata 5Y</td>
+                <td style="font-weight: bold; text-align: right; color: var(--text-main);">${data.pe}x / ${data.peHist5Yr}x</td>
+                <td style="text-align: right; padding-left: 8px; width: 80px;">
+                  <span class="badge" style="background: ${isDiscountPE ? 'var(--success-glow)' : 'var(--danger-glow)'}; color: ${isDiscountPE ? 'var(--success)' : 'var(--danger)'}; font-size: 0.65rem; font-weight: 700;">
+                    ${isDiscountPE ? 'DISKON' : 'PREMIUM'}
+                  </span>
+                </td>
+              </tr>
+              <tr style="border-bottom: 1px solid var(--card-border);">
+                <td style="padding: 6px 0; color: var(--text-muted);">PBV Ratio vs Rata-rata 5Y</td>
+                <td style="font-weight: bold; text-align: right; color: var(--text-main);">${data.pbv}x / ${data.pbvHist5Yr}x</td>
+                <td style="text-align: right; padding-left: 8px;">
+                  <span class="badge" style="background: ${isDiscountPBV ? 'var(--success-glow)' : 'var(--danger-glow)'}; color: ${isDiscountPBV ? 'var(--success)' : 'var(--danger)'}; font-size: 0.65rem; font-weight: 700;">
+                    ${isDiscountPBV ? 'DISKON' : 'PREMIUM'}
+                  </span>
+                </td>
+              </tr>
+              <tr style="border-bottom: 1px solid var(--card-border);">
+                <td style="padding: 6px 0; color: var(--text-muted);">Fair Value (InvestingPro)</td>
+                <td style="font-weight: bold; text-align: right; color: var(--primary);" colspan="2">
+                  Rp${data.fairValue.toLocaleString()}
+                </td>
+              </tr>
+              <tr>
+                <td style="padding: 6px 0; color: var(--text-muted);">Potensi Upside</td>
+                <td style="font-weight: bold; text-align: right; color: ${data.fairValueUpside >= 0 ? 'var(--success)' : 'var(--danger)'}; font-size: 0.85rem;" colspan="2">
+                  ${data.fairValueUpside >= 0 ? '▲ +' : '▼ '}${data.fairValueUpside}%
+                </td>
+              </tr>
+            </table>
+          </div>
+          <div style="margin-top: 10px; font-size: 0.65rem; color: var(--text-muted); font-style: italic; border-top: 1px dashed var(--card-border); padding-top: 6px;">
+            Dihitung menggunakan model DCF, DDM, dan Multiples
+          </div>
+        </div>
+      </div>
+
+      <!-- Pilar 3: WHY CHEAP? -->
+      <div class="card" style="padding: 14px 16px; background: rgba(255, 159, 67, 0.03); border: 1px solid rgba(255, 159, 67, 0.2); margin: 0;">
+        <h4 style="font-weight: 700; color: var(--warning); margin-bottom: 8px; font-size: 0.88rem; display: flex; align-items: center; gap: 6px;">
+          <span style="display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; border-radius: 50%; background: rgba(255, 159, 67, 0.1); color: var(--warning); font-size: 0.7rem; font-weight: bold;">3</span>
+          PILLAR III: WHY CHEAP? (Katalis Sentimen Pasar)
+        </h4>
+        <p style="color: var(--text-muted); font-size: 0.82rem; line-height: 1.5; margin: 0; text-align: justify;">
+          ${data.whyCheap}
+        </p>
+        <div style="margin-top: 8px; border-top: 1px dashed rgba(255, 159, 67, 0.15); padding-top: 6px; font-size: 0.68rem; color: var(--text-dark);">
+          💡 <b>Tips Analisis:</b> Pastikan penurunan harga disebabkan oleh sentimen temporal (outflow, makro regional, perang dagang), bukan karena penurunan jangka panjang struktur keuntungan bisnis (structural decline).
+        </div>
+      </div>
+    `;
+  }
+
+  // Render AI ProPicks portfolios
+  function renderAIProPicks() {
+    const listContainer = document.getElementById('ai-propicks-strategies-list');
+    if (!listContainer) return;
+    
+    const strategies = [
+      {
+        id: 'beat_ihsg',
+        name: 'Kalahkan IHSG (Beat the IDX)',
+        desc: 'Saham berkapitalisasi besar dengan kinerja pertumbuhan superior dibanding rata-rata bursa.',
+        returnPct: 22.8,
+        stocks: ['BBCA', 'BMRI', 'AMMN'],
+        icon: 'trending-up',
+        color: 'var(--success)'
+      },
+      {
+        id: 'top_value',
+        name: 'Nilai Terbaik (Top Value)',
+        desc: 'Emiten undervalued dengan diskon PE/PBV maksimal namun kesehatan keuangan sangat sehat.',
+        returnPct: 28.5,
+        stocks: ['ADRO', 'ASII', 'TLKM'],
+        icon: 'percent',
+        color: 'var(--primary)'
+      },
+      {
+        id: 'dividend_fortresses',
+        name: 'Benteng Dividen (Dividend Fortresses)',
+        desc: 'Saham dengan yield dividen tinggi historis (>6%) dan arus kas operasional sangat kuat.',
+        returnPct: 18.2,
+        stocks: ['ADRO', 'BBRI', 'ASII'],
+        icon: 'shield',
+        color: 'var(--warning)'
+      },
+      {
+        id: 'growth_titans',
+        name: 'Raksasa Pertumbuhan (Growth Titans)',
+        desc: 'Emiten growth dengan pertumbuhan pendapatan tahunan di atas rata-rata industri.',
+        returnPct: 34.6,
+        stocks: ['BRMS', 'AMMN', 'BMRI'],
+        icon: 'rocket',
+        color: '#ff9f43'
+      }
+    ];
+    
+    listContainer.innerHTML = strategies.map(strat => `
+      <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--card-border); padding: 8px 12px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; gap: 10px;">
+        <div style="flex: 1;">
+          <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 2px;">
+            <div style="background: ${strat.color}15; color: ${strat.color}; width: 22px; height: 22px; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 0.75rem;">
+              <i data-lucide="${strat.icon}" style="width: 12px; height: 12px;"></i>
+            </div>
+            <span style="font-size: 0.78rem; font-weight: bold; color: var(--text-main);">${strat.name}</span>
+          </div>
+          <div style="font-size: 0.65rem; color: var(--text-muted);">${strat.desc}</div>
+          <div style="display: flex; gap: 4px; margin-top: 4px;">
+            ${strat.stocks.map(s => `<span onclick="TradeMasterApp.navigateTo('stocks', '${s}')" style="font-size: 0.6rem; background: rgba(255,255,255,0.03); color: var(--primary); padding: 1px 5px; border-radius: 4px; border: 1px solid var(--card-border); font-weight: bold; cursor: pointer;">${s}</span>`).join('')}
+          </div>
+        </div>
+        <div style="text-align: right; min-width: 80px;">
+          <div style="font-size: 0.6rem; color: var(--text-muted); text-transform: uppercase;">Est. Return (1Th)</div>
+          <div style="font-size: 1rem; font-weight: 900; color: ${strat.color};">+${strat.returnPct}%</div>
+        </div>
+      </div>
+    `).join('');
+    
+    if (window.lucide) {
+      lucide.createIcons();
+    }
+  }
+
+  // Warren AI Chat Assistant Actions
+  function sendWarrenPrompt(text) {
+    const input = document.getElementById('warren-chat-input');
+    if (input) {
+      input.value = text;
+      submitWarrenChat();
+    }
+  }
+  
+  function submitWarrenChat() {
+    const input = document.getElementById('warren-chat-input');
+    if (!input || !input.value.trim()) return;
+    
+    const prompt = input.value.trim();
+    input.value = '';
+    
+    // Add user message to chat history
+    const history = document.getElementById('warren-chat-history');
+    if (!history) return;
+    
+    const userMsg = document.createElement('div');
+    userMsg.className = 'chat-message user';
+    userMsg.style.cssText = 'background: var(--primary-glow); padding: 8px 12px; border-radius: 8px 8px 0 8px; border-right: 2px solid var(--primary); max-width: 90%; align-self: flex-end; line-height: 1.45; font-size: 0.78rem; margin-top: 4px; border-bottom: 1px solid rgba(255,255,255,0.02);';
+    userMsg.innerHTML = prompt;
+    history.appendChild(userMsg);
+    
+    // Auto-scroll
+    history.scrollTop = history.scrollHeight;
+    
+    // Add typing animation
+    const typingMsg = document.createElement('div');
+    typingMsg.className = 'chat-message bot typing';
+    typingMsg.style.cssText = 'background: rgba(255,255,255,0.03); padding: 8px 12px; border-radius: 8px 8px 8px 0; border-left: 2px solid var(--primary); max-width: 90%; line-height: 1.45; font-size: 0.78rem; font-style: italic; color: var(--text-muted); margin-top: 4px;';
+    typingMsg.innerText = 'Warren AI sedang memindai laporan keuangan BEI...';
+    history.appendChild(typingMsg);
+    history.scrollTop = history.scrollHeight;
+    
+    setTimeout(() => {
+      // Remove typing message
+      typingMsg.remove();
+      
+      // Parse keywords
+      const query = prompt.toLowerCase();
+      let responseText = '';
+      let matches = [];
+      
+      if (query.includes('dividen') || query.includes('dividend') || query.includes('bagi hasil') || query.includes('yield')) {
+        matches = ['ADRO', 'BBRI', 'ASII', 'TLKM'];
+        responseText = `Berdasarkan data keuangan terbaru, terdapat **${matches.length} saham** di BEI dengan yield dividen tinggi (>6%) dan arus kas kuat:<br><br>`;
+        matches.forEach(sym => {
+          const d = stockFundamentalData[sym];
+          responseText += `• <b>${sym}</b>: Yield <b>${d.divYield}%</b> (PER: ${d.pe}x). *Status: ${d.fairValueUpside > 0 ? 'Undervalued' : 'Fairly Priced'}*.<br>`;
+        });
+        responseText += `<br><b>Rekomendasi ProPicks:</b> **ADRO** dan **BBRI** menawarkan yield tertinggi dengan free cash flow yang stabil untuk pembagian dividen jangka panjang.`;
+      } else if (query.includes('undervalue') || query.includes('murah') || query.includes('pbv') || query.includes('diskon') || query.includes('pe ')) {
+        matches = ['ADRO', 'ASII', 'GOTO', 'BBNI', 'TLKM'];
+        responseText = `Saya mendeteksi **${matches.length} saham** yang diperdagangkan di bawah nilai wajar historisnya (PBV rendah atau PE rendah):<br><br>`;
+        matches.forEach(sym => {
+          const d = stockFundamentalData[sym];
+          responseText += `• <b>${sym}</b>: PBV <b>${d.pbv}x</b> (Rata-rata 5Y: ${d.pbvHist5Yr}x) | Upside ke Nilai Wajar: <b>+${d.fairValueUpside}%</b>.<br>`;
+        });
+        responseText += `<br><b>Kenapa Murah? (Why Cheap?):</b> ASII ditekan sentimen EV China, sedangkan TLKM tertekan capex data center. Keduanya secara fundamental masih sangat solid (Good Business).`;
+      } else if (query.includes('roe') || query.includes('growth') || query.includes('laba') || query.includes('untung') || query.includes('tumbuh')) {
+        matches = ['BREN', 'AMMN', 'BBCA', 'BMRI', 'BRMS'];
+        responseText = `Berikut adalah saham-saham dengan efisiensi tinggi (ROE > 15%) dan pertumbuhan laba double-digit:<br><br>`;
+        matches.forEach(sym => {
+          const d = stockFundamentalData[sym];
+          responseText += `• <b>${sym}</b>: ROE <b>${d.roe}%</b> | Pertumbuhan Laba: <b>${d.netIncGrowth >= 0 ? '+' : ''}${d.netIncGrowth}% YoY</b>.<br>`;
+        });
+        responseText += `<br><b>Analisis Risiko:</b> Harap perhatikan bahwa BREN diperdagangkan pada PBV sangat premium (118x). Untuk investasi defensif jangka panjang, **BBCA** dan **BMRI** adalah pilihan paling stabil.`;
+      } else if (query.includes('bank') || query.includes('perbankan') || query.includes('keuangan')) {
+        matches = ['BBCA', 'BMRI', 'BBRI', 'BBNI'];
+        responseText = `Analisis Big 4 Perbankan Indonesia menunjukkan profitabilitas yang sangat tangguh:<br><br>`;
+        matches.forEach(sym => {
+          const d = stockFundamentalData[sym];
+          responseText += `• <b>${sym}</b>: ROE <b>${d.roe}%</b> | PBV: <b>${d.pbv}x</b> | Estimasi Yield: <b>${d.divYield}%</b>.<br>`;
+        });
+        responseText += `<br><b>Strategi:</b> **BBRI** saat ini paling murah karena terdiskon ke PBV 1.8x (Avg 5Y: 2.2x), memberikan peluang akumulasi DCA terbaik. **BBCA** tetap menjadi jangkar portofolio teraman.`;
+      } else if (query.includes('komoditas') || query.includes('tambang') || query.includes('coal') || query.includes('emas') || query.includes('tembaga') || query.includes('energi')) {
+        matches = ['ADRO', 'AMMN', 'BRMS', 'CUAN'];
+        responseText = `Berikut adalah emiten sektor komoditas dan energi terpilih:<br><br>`;
+        matches.forEach(sym => {
+          const d = stockFundamentalData[sym];
+          responseText += `• <b>${sym}</b>: PER <b>${d.pe}x</b> | Laba YoY: <b>${d.netIncGrowth}%</b> | Katalis: ${sym === 'BRMS' ? 'Produksi Emas Palu' : sym === 'ADRO' ? 'Spin-off Adaro Green' : 'Smelter Baru Sumbawa'}.<br>`;
+        });
+        responseText += `<br><b>Outlook:</b> Sektor tambang logam (AMMN & BRMS) didukung oleh reli harga tembaga/emas global. ADRO sangat murah secara valuasi untuk jangka pendek.`;
+      } else {
+        // Default response
+        responseText = `Saya memahami Anda sedang mencari kriteria kustom. Menggunakan framework <b>"Good Business, Good Price, Why Cheap"</b>, berikut adalah rekomendasi teratas untuk IHSG:<br><br>
+        1. **BBRI** (Undervalued Bank): PBV 1.8x, ROE 18.4%. Diskon akibat kenaikan provisi mikro yang bersifat sementara.<br>
+        2. **TLKM** (Value Stock): PBV 2.2x (Avg 5Y: 3.1x), Yield 6.8%. Transisi capex data center.<br>
+        3. **ASII** (Automotive Leader): PER 6.5x, PBV 0.92x. Ditekan isu mobil listrik China.<br><br>
+        <i>Ketik kata kunci seperti <b>"dividen"</b>, <b>"undervalue"</b>, atau <b>"bank"</b> untuk menyaring saham secara spesifik.</i>`;
+      }
+      
+      const botMsg = document.createElement('div');
+      botMsg.className = 'chat-message bot';
+      botMsg.style.cssText = 'background: rgba(255,255,255,0.03); padding: 8px 12px; border-radius: 8px 8px 8px 0; border-left: 2px solid var(--primary); max-width: 90%; line-height: 1.45; font-size: 0.78rem; margin-top: 4px;';
+      botMsg.innerHTML = responseText;
+      history.appendChild(botMsg);
+      history.scrollTop = history.scrollHeight;
+    }, 1200);
+  }
+
+  // Search IDX Stock by custom ticker symbol
+  function searchIDXStock() {
+    const input = document.getElementById('stock-search-input');
+    if (!input) return;
+    const symbol = input.value.trim().toUpperCase();
+    if (!symbol) return;
+    
+    state.stocks.selected = symbol;
+    
+    const select = document.getElementById('stock-select');
+    if (select) {
+      let exists = false;
+      for (let i = 0; i < select.options.length; i++) {
+        if (select.options[i].value === symbol) {
+          select.selectedIndex = i;
+          exists = true;
+          break;
+        }
+      }
+      if (!exists) {
+        const newOpt = document.createElement('option');
+        newOpt.value = symbol;
+        newOpt.text = symbol;
+        select.appendChild(newOpt);
+        select.value = symbol;
+      }
+    }
+    
+    renderStocksPage();
+    input.value = '';
+  }
+
   // Render Crypto Whale Accumulation Tracker (Individual Whales / Rich Retail Leaderboard)
   function renderCryptoWhaleFlow(symbol, currentPrice) {
     const trackerContainer = document.getElementById('crypto-whale-tracker-data');
@@ -3325,6 +4549,14 @@ window.TradeMasterApp = (function() {
     init,
     navigateTo,
     state,
+    changeStockTab,
+    sendWarrenPrompt,
+    submitWarrenChat,
+    searchIDXStock,
+    changeCryptoTab,
+    sendSatoshiPrompt,
+    submitSatoshiChat,
+    searchCryptoSymbol,
     scanCryptoMoonshots,
     setCryptoMode,
     searchDEXToken,

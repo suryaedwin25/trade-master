@@ -199,22 +199,27 @@
               </div>
 
               <!-- CEX Exchange & Asset Selectors -->
-              <div id="cex-selectors" style="display: flex; gap: 8px; align-items: center;">
-                <select class="select-asset" id="exchange-select">
+              <div id="cex-selectors" style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                <select class="select-asset" id="exchange-select" style="height: 32px; padding: 6px 10px; margin: 0;">
                   <option value="Binance">Binance</option>
                   <option value="Bybit">Bybit</option>
                   <option value="Gate.io">Gate.io</option>
                 </select>
                 
-                <select class="select-asset" id="crypto-select">
-                  <option value="BTC">Bitcoin (BTC)</option>
-                  <option value="ETH">Ethereum (ETH)</option>
-                  <option value="SOL">Solana (SOL)</option>
-                  <option value="BNB">Binance Coin (BNB)</option>
-                  <option value="ADA">Cardano (ADA)</option>
-                  <option value="XRP">Ripple (XRP)</option>
-                  <option value="DOGE">Dogecoin (DOGE)</option>
-                  <option value="DOT">Polkadot (DOT)</option>
+                <div style="display: flex; gap: 6px; align-items: center;">
+                  <input type="text" id="crypto-search-input" placeholder="Cari Koin (e.g. SOL, ADA)..." class="select-asset" style="width: 130px; padding: 6px 12px; margin: 0; font-size: 0.85rem; font-weight: 700; text-transform: uppercase; border: 1px solid var(--card-border); height: 32px;" onkeydown="if(event.key === 'Enter') TradeMasterApp.searchCryptoSymbol()">
+                  <button class="btn btn-primary" onclick="TradeMasterApp.searchCryptoSymbol()" style="padding: 6.5px 12px; margin: 0; font-size: 0.8rem; font-weight: bold; cursor: pointer; border-radius: 6px; display: flex; align-items: center; justify-content: center; height: 32px;">Cari</button>
+                </div>
+
+                <select class="select-asset" id="crypto-select" style="margin: 0; width: 110px; height: 32px; padding: 6px 10px;">
+                  <option value="BTC" selected>BTC</option>
+                  <option value="ETH">ETH</option>
+                  <option value="SOL">SOL</option>
+                  <option value="BNB">BNB</option>
+                  <option value="ADA">ADA</option>
+                  <option value="XRP">XRP</option>
+                  <option value="DOGE">DOGE</option>
+                  <option value="DOT">DOT</option>
                 </select>
               </div>
 
@@ -227,17 +232,101 @@
           </div>
 
           <div class="grid-layout grid-terminal">
-            <!-- CEX Technical Report Panel (Replaces TradingView Charts) -->
+            <!-- CEX Report Panel with Tabs (Technical, Tokenomics, AI Satoshi Chat) -->
             <div class="card" id="cex-report-pane" style="padding: 24px; min-height: 450px;">
-              <div class="card-header" style="border-bottom: 1px solid var(--card-border); padding-bottom: 12px; margin-bottom: 16px;">
-                <span class="card-title" style="font-size: 1.2rem; display: flex; align-items: center; gap: 8px;">
-                  <i data-lucide="file-text" style="color: var(--primary);"></i>
-                  Laporan Ringkasan Analisis Teknis Tertulis
-                </span>
+              <div class="card-header" style="border-bottom: 1px solid var(--card-border); padding-bottom: 12px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+                <div style="display: flex; gap: 8px;" class="crypto-tabs">
+                  <button class="btn btn-tab active" id="btn-crypto-tab-technical" onclick="TradeMasterApp.changeCryptoTab('technical')" style="padding: 6px 12px; font-size: 0.8rem; border-radius: 6px; display: flex; align-items: center; gap: 6px; border: 1px solid var(--card-border); background: var(--bg-color); color: var(--text-main); font-weight: bold; cursor: pointer;">
+                    <i data-lucide="trending-up" style="width: 14px; height: 14px;"></i>
+                    Teknikal & Siklus
+                  </button>
+                  <button class="btn btn-tab" id="btn-crypto-tab-fundamental" onclick="TradeMasterApp.changeCryptoTab('fundamental')" style="padding: 6px 12px; font-size: 0.8rem; border-radius: 6px; display: flex; align-items: center; gap: 6px; border: 1px solid transparent; background: transparent; color: var(--text-muted); font-weight: bold; cursor: pointer;">
+                    <i data-lucide="coins" style="width: 14px; height: 14px;"></i>
+                    Tokenomics & Moat
+                  </button>
+                  <button class="btn btn-tab" id="btn-crypto-tab-ai" onclick="TradeMasterApp.changeCryptoTab('ai')" style="padding: 6px 12px; font-size: 0.8rem; border-radius: 6px; display: flex; align-items: center; gap: 6px; border: 1px solid transparent; background: transparent; color: var(--text-muted); font-weight: bold; cursor: pointer;">
+                    <i data-lucide="cpu" style="width: 14px; height: 14px;"></i>
+                    AI ProPicks & Satoshi AI
+                  </button>
+                </div>
                 <span id="cex-report-timestamp" style="font-size: 0.8rem; color: var(--text-muted);">Updated: --:--:--</span>
               </div>
-              <div id="crypto-written-report" style="line-height: 1.6; font-size: 0.95rem;">
-                <!-- Generated dynamically by JS -->
+              
+              <!-- Tab 1: Technical & Cycle Analysis (Default) -->
+              <div id="crypto-tab-content-technical" class="crypto-tab-content" style="display: block;">
+                <div id="crypto-written-report" style="line-height: 1.6; font-size: 0.95rem;">
+                  <!-- Generated dynamically by JS -->
+                </div>
+              </div>
+
+              <!-- Tab 2: Tokenomics & Fundamental Analysis -->
+              <div id="crypto-tab-content-fundamental" class="crypto-tab-content" style="display: none;">
+                <div id="crypto-fundamental-report" style="line-height: 1.6; font-size: 0.95rem;">
+                  <!-- Generated dynamically by JS -->
+                </div>
+              </div>
+
+              <!-- Tab 3: AI ProPicks & Satoshi AI Chat Assistant -->
+              <div id="crypto-tab-content-ai" class="crypto-tab-content" style="display: none;">
+                <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 20px;">
+                  <!-- AI ProPicks Portfolios -->
+                  <div style="display: flex; flex-direction: column; gap: 14px;">
+                    <h4 style="font-size: 0.9rem; color: var(--primary); font-weight: 700; margin-bottom: 2px; display: flex; align-items: center; gap: 6px;">
+                      <i data-lucide="award" style="width: 16px; height: 16px; color: var(--primary);"></i>
+                      AI ProPicks™ Strategi Portofolio Kripto Terpilih
+                    </h4>
+                    <p style="font-size: 0.72rem; color: var(--text-muted); margin-bottom: 6px;">
+                      Rekomendasi alokasi aset kripto hasil evaluasi model kecerdasan buatan berbasis on-chain, TVL, volume sosial, dan tokenomics jangka panjang.
+                    </p>
+                    
+                    <div id="ai-crypto-propicks-strategies-list" style="display: flex; flex-direction: column; gap: 10px;">
+                      <!-- Generated dynamically by JS -->
+                    </div>
+                  </div>
+
+                  <!-- Satoshi AI Assistant Chat Widget -->
+                  <div class="card" style="padding: 16px; background: rgba(0,0,0,0.15); border: 1px solid var(--card-border); display: flex; flex-direction: column; height: 420px; justify-content: space-between; margin: 0; border-radius: 8px;">
+                    <div style="display: flex; flex-direction: column; height: calc(100% - 75px);">
+                      <!-- Widget Header -->
+                      <div style="display: flex; align-items: center; gap: 8px; border-bottom: 1px solid var(--card-border); padding-bottom: 8px; margin-bottom: 10px; flex-shrink: 0;">
+                        <div style="width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, var(--primary), var(--warning)); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 0.8rem; font-family: var(--font-header);">S</div>
+                        <div>
+                          <h4 style="font-size: 0.85rem; font-weight: bold; margin: 0; color: var(--text-main);">Satoshi AI™</h4>
+                          <span style="font-size: 0.62rem; color: var(--success); font-weight: bold; display: flex; align-items: center; gap: 3px;">
+                            <span style="width: 5px; height: 5px; border-radius: 50%; background: var(--success); display: inline-block;"></span> Online - Tokenomics Assistant
+                          </span>
+                        </div>
+                      </div>
+                      
+                      <!-- Chat History -->
+                      <div id="satoshi-chat-history" style="flex-grow: 1; overflow-y: auto; padding-right: 5px; display: flex; flex-direction: column; gap: 8px; font-size: 0.78rem;">
+                        <div class="chat-message bot" style="background: rgba(255,255,255,0.03); padding: 8px 12px; border-radius: 8px 8px 8px 0; border-left: 2px solid var(--primary); max-width: 90%; line-height: 1.45;">
+                          Halo! Saya <b>Satoshi AI</b>, asisten riset kripto dan tokenomics Anda. Tulis kriteria pencarian token Anda, misalnya:<br>
+                          - <i>"cari koin L1 dengan inflasi rendah dan staking yield bagus"</i><br>
+                          - <i>"cari protocol DeFi dengan TVL tinggi"</i><br>
+                          - <i>"cari koin meme dengan market cap di bawah $100M"</i>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <!-- Chat Input Area -->
+                    <div style="margin-top: 6px; flex-shrink: 0;">
+                      <!-- Quick prompts chips -->
+                      <div style="display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 6px;">
+                        <button onclick="TradeMasterApp.sendSatoshiPrompt('Cari protokol DeFi dengan TVL dan yield staking terbaik')" style="font-size: 0.6rem; background: var(--primary-glow); border: 1px solid rgba(95, 39, 205, 0.3); color: var(--primary); padding: 2px 6px; border-radius: 20px; cursor: pointer; font-weight: 600; outline: none; transition: var(--transition);">💎 DeFi Teratas</button>
+                        <button onclick="TradeMasterApp.sendSatoshiPrompt('Cari koin Layer-1 undervalued dengan inflasi rendah')" style="font-size: 0.6rem; background: var(--success-glow); border: 1px solid rgba(16, 172, 132, 0.3); color: var(--success); padding: 2px 6px; border-radius: 20px; cursor: pointer; font-weight: 600; outline: none; transition: var(--transition);">🔥 L1 Undervalued</button>
+                        <button onclick="TradeMasterApp.sendSatoshiPrompt('Cari koin meme dengan hype sosial tinggi')" style="font-size: 0.6rem; background: rgba(255, 159, 67, 0.1); border: 1px solid rgba(255, 159, 67, 0.3); color: var(--warning); padding: 2px 6px; border-radius: 20px; cursor: pointer; font-weight: 600; outline: none; transition: var(--transition);">🚀 Meme Taktis</button>
+                      </div>
+                      
+                      <div style="display: flex; gap: 6px;">
+                        <input type="text" id="satoshi-chat-input" placeholder="Ketik kriteria pencarian token..." style="flex: 1; padding: 6px 10px; border-radius: 6px; border: 1px solid var(--card-border); background: rgba(0,0,0,0.2); color: var(--text-main); font-size: 0.75rem; outline: none;" onkeydown="if(event.key === 'Enter') TradeMasterApp.submitSatoshiChat()">
+                        <button onclick="TradeMasterApp.submitSatoshiChat()" style="background: var(--primary); color: white; border: none; padding: 6px 12px; border-radius: 6px; font-weight: bold; font-size: 0.75rem; cursor: pointer; display: flex; align-items: center; gap: 4px; transition: var(--transition);">
+                          Kirim
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -339,43 +428,136 @@
               <p class="page-subtitle">Indonesian Stock Market analysis (15-min delay Yahoo Finance).</p>
             </div>
             <div style="display: flex; gap: 15px; align-items: center;">
-              <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 2px;">
-                <label style="font-size: 0.65rem; color: var(--text-muted); font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px;">Avg Buy Price (Cost)</label>
-                <input type="number" id="stock-avg-price" value="5400" placeholder="Contoh: 5400" class="select-asset" style="width: 140px; padding: 6px 12px; text-align: right; margin: 0; font-size: 0.85rem; font-weight: 700; color: var(--primary);" oninput="TradeMasterApp.renderStocksPage()">
-              </div>
-              <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 2px;">
-                <label style="font-size: 0.65rem; color: var(--text-muted); font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px;">Pilih Saham</label>
-                <select class="select-asset" id="stock-select" style="margin: 0;">
-                  <option value="BBRI" selected>Bank Rakyat Indonesia (BBRI)</option>
-                  <option value="BBCA">Bank Central Asia (BBCA)</option>
-                  <option value="BMRI">Bank Mandiri (BMRI)</option>
-                  <option value="BBNI">Bank Negara Indonesia (BBNI)</option>
-                  <option value="TLKM">Telkom Indonesia (TLKM)</option>
-                  <option value="ASII">Astra International (ASII)</option>
-                  <option value="GOTO">GoTo Gojek Tokopedia (GOTO)</option>
-                  <option value="BREN">Barito Renewables (BREN)</option>
-                  <option value="AMMN">Amman Mineral (AMMN)</option>
-                  <option value="BRMS">Bumi Resources Minerals (BRMS)</option>
-                  <option value="CUAN">Petrindo Jaya Kreasi (CUAN)</option>
-                  <option value="ADRO">Adaro Energy (ADRO)</option>
-                  <option value="UNVR">Unilever Indonesia (UNVR)</option>
-                </select>
+              <div style="display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap;">
+                <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 2px;">
+                  <label style="font-size: 0.65rem; color: var(--text-muted); font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px;">Avg Buy Price (Cost)</label>
+                  <input type="number" id="stock-avg-price" value="5400" placeholder="Contoh: 5400" class="select-asset" style="width: 140px; padding: 6px 12px; text-align: right; margin: 0; font-size: 0.85rem; font-weight: 700; color: var(--primary);" oninput="TradeMasterApp.renderStocksPage()">
+                </div>
+                <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 2px;">
+                  <label style="font-size: 0.65rem; color: var(--text-muted); font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px;">Cari Kode Saham (e.g. UNTR, KLBF)</label>
+                  <div style="display: flex; gap: 6px;">
+                    <input type="text" id="stock-search-input" placeholder="Ketik Kode..." class="select-asset" style="width: 120px; padding: 6px 12px; margin: 0; font-size: 0.85rem; font-weight: 700; text-transform: uppercase; border: 1px solid var(--card-border);" onkeydown="if(event.key === 'Enter') TradeMasterApp.searchIDXStock()">
+                    <button class="btn btn-primary" onclick="TradeMasterApp.searchIDXStock()" style="padding: 6.5px 12px; margin: 0; font-size: 0.8rem; font-weight: bold; cursor: pointer; border-radius: 6px; display: flex; align-items: center; justify-content: center; height: 32px;">Cari</button>
+                  </div>
+                </div>
+                <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 2px;">
+                  <label style="font-size: 0.65rem; color: var(--text-muted); font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px;">Pilih Saham Utama</label>
+                  <select class="select-asset" id="stock-select" style="margin: 0; width: 110px; height: 32px; padding: 6px 10px;">
+                    <option value="BBRI" selected>BBRI</option>
+                    <option value="BBCA">BBCA</option>
+                    <option value="BMRI">BMRI</option>
+                    <option value="BBNI">BBNI</option>
+                    <option value="TLKM">TLKM</option>
+                    <option value="ASII">ASII</option>
+                    <option value="GOTO">GOTO</option>
+                    <option value="BREN">BREN</option>
+                    <option value="AMMN">AMMN</option>
+                    <option value="BRMS">BRMS</option>
+                    <option value="CUAN">CUAN</option>
+                    <option value="ADRO">ADRO</option>
+                    <option value="UNVR">UNVR</option>
+                  </select>
+                </div>
               </div>
             </div>
           </div>
 
           <div class="grid-layout grid-terminal">
-            <!-- Stock Technical Report Panel (Replaces TradingView Charts) -->
+            <!-- Stock Report Panel with Tabs (Technical, Fundamental, AI ProPicks) -->
             <div class="card" id="stock-report-pane" style="padding: 24px; min-height: 400px;">
-              <div class="card-header" style="border-bottom: 1px solid var(--card-border); padding-bottom: 12px; margin-bottom: 16px;">
-                <span class="card-title" style="font-size: 1.2rem; display: flex; align-items: center; gap: 8px;">
-                  <i data-lucide="file-text" style="color: var(--primary);"></i>
-                  Laporan Ringkasan Analisis Teknis Saham
-                </span>
+              <div class="card-header" style="border-bottom: 1px solid var(--card-border); padding-bottom: 12px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+                <div style="display: flex; gap: 8px;" class="stock-tabs">
+                  <button class="btn btn-tab active" id="btn-stock-tab-technical" onclick="TradeMasterApp.changeStockTab('technical')" style="padding: 6px 12px; font-size: 0.8rem; border-radius: 6px; display: flex; align-items: center; gap: 6px; border: 1px solid var(--card-border); background: var(--bg-color); color: var(--text-main); font-weight: bold; cursor: pointer;">
+                    <i data-lucide="trending-up" style="width: 14px; height: 14px;"></i>
+                    Teknikal & Siklus
+                  </button>
+                  <button class="btn btn-tab" id="btn-stock-tab-fundamental" onclick="TradeMasterApp.changeStockTab('fundamental')" style="padding: 6px 12px; font-size: 0.8rem; border-radius: 6px; display: flex; align-items: center; gap: 6px; border: 1px solid transparent; background: transparent; color: var(--text-muted); font-weight: bold; cursor: pointer;">
+                    <i data-lucide="bar-chart-2" style="width: 14px; height: 14px;"></i>
+                    Fundamental
+                  </button>
+                  <button class="btn btn-tab" id="btn-stock-tab-ai" onclick="TradeMasterApp.changeStockTab('ai')" style="padding: 6px 12px; font-size: 0.8rem; border-radius: 6px; display: flex; align-items: center; gap: 6px; border: 1px solid transparent; background: transparent; color: var(--text-muted); font-weight: bold; cursor: pointer;">
+                    <i data-lucide="cpu" style="width: 14px; height: 14px;"></i>
+                    AI ProPicks & Warren AI
+                  </button>
+                </div>
                 <span id="stock-report-timestamp" style="font-size: 0.8rem; color: var(--text-muted);">Updated: --:--:--</span>
               </div>
-              <div id="stock-written-report" style="line-height: 1.6; font-size: 0.95rem;">
-                <!-- Generated dynamically by JS -->
+              
+              <!-- Tab 1: Technical & Cycle Analysis (Default) -->
+              <div id="stock-tab-content-technical" class="stock-tab-content" style="display: block;">
+                <div id="stock-written-report" style="line-height: 1.6; font-size: 0.95rem;">
+                  <!-- Generated dynamically by JS -->
+                </div>
+              </div>
+
+              <!-- Tab 2: Fundamental Analysis (Doddy's "Good Business, Good Price, Why Cheap?") -->
+              <div id="stock-tab-content-fundamental" class="stock-tab-content" style="display: none;">
+                <div id="stock-fundamental-report" style="line-height: 1.6; font-size: 0.95rem;">
+                  <!-- Generated dynamically by JS -->
+                </div>
+              </div>
+
+              <!-- Tab 3: AI ProPicks & Warren AI Custom Screening -->
+              <div id="stock-tab-content-ai" class="stock-tab-content" style="display: none;">
+                <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 20px;">
+                  <!-- AI ProPicks Portfolios -->
+                  <div style="display: flex; flex-direction: column; gap: 14px;">
+                    <h4 style="font-size: 0.9rem; color: var(--primary); font-weight: 700; margin-bottom: 2px; display: flex; align-items: center; gap: 6px;">
+                      <i data-lucide="award" style="width: 16px; height: 16px; color: var(--primary);"></i>
+                      AI ProPicks™ Strategi Saham BEI Terpilih
+                    </h4>
+                    <p style="font-size: 0.72rem; color: var(--text-muted); margin-bottom: 6px;">
+                      Rekomendasi saham pilihan IHSG hasil evaluasi model kecerdasan buatan berbasis data fundamental 25 tahun terakhir. Kinerja dihitung dan direbalancing setiap bulan.
+                    </p>
+                    
+                    <div id="ai-propicks-strategies-list" style="display: flex; flex-direction: column; gap: 10px;">
+                      <!-- Generated dynamically by JS -->
+                    </div>
+                  </div>
+
+                  <!-- Warren AI Assistant Chat Widget -->
+                  <div class="card" style="padding: 16px; background: rgba(0,0,0,0.15); border: 1px solid var(--card-border); display: flex; flex-direction: column; height: 420px; justify-content: space-between; margin: 0; border-radius: 8px;">
+                    <div style="display: flex; flex-direction: column; height: calc(100% - 75px);">
+                      <!-- Widget Header -->
+                      <div style="display: flex; align-items: center; gap: 8px; border-bottom: 1px solid var(--card-border); padding-bottom: 8px; margin-bottom: 10px; flex-shrink: 0;">
+                        <div style="width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, var(--primary), var(--success)); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 0.8rem; font-family: var(--font-header);">W</div>
+                        <div>
+                          <h4 style="font-size: 0.85rem; font-weight: bold; margin: 0; color: var(--text-main);">Warren AI™</h4>
+                          <span style="font-size: 0.62rem; color: var(--success); font-weight: bold; display: flex; align-items: center; gap: 3px;">
+                            <span style="width: 5px; height: 5px; border-radius: 50%; background: var(--success); display: inline-block;"></span> Online - InvestingPro Research Assistant
+                          </span>
+                        </div>
+                      </div>
+                      
+                      <!-- Chat History -->
+                      <div id="warren-chat-history" style="flex-grow: 1; overflow-y: auto; padding-right: 5px; display: flex; flex-direction: column; gap: 8px; font-size: 0.78rem;">
+                        <div class="chat-message bot" style="background: rgba(255,255,255,0.03); padding: 8px 12px; border-radius: 8px 8px 8px 0; border-left: 2px solid var(--primary); max-width: 90%; line-height: 1.45;">
+                          Halo! Saya <b>Warren AI</b>, asisten riset InvestingPro Anda. Tulis kriteria saham BEI yang Anda cari dengan bahasa natural, misalnya:<br>
+                          - <i>"saham dividen tinggi dengan utang rendah"</i><br>
+                          - <i>"saham bank besar dengan ROE > 15%"</i><br>
+                          - <i>"saham undervalue di bawah nilai buku (PBV < 1)"</i>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <!-- Chat Input Area -->
+                    <div style="margin-top: 6px; flex-shrink: 0;">
+                      <!-- Quick prompts chips -->
+                      <div style="display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 6px;">
+                        <button onclick="TradeMasterApp.sendWarrenPrompt('Cari saham dividen besar dan konsisten')" style="font-size: 0.6rem; background: var(--primary-glow); border: 1px solid rgba(95, 39, 205, 0.3); color: var(--primary); padding: 2px 6px; border-radius: 20px; cursor: pointer; font-weight: 600; outline: none; transition: var(--transition);">💎 Dividen Tinggi</button>
+                        <button onclick="TradeMasterApp.sendWarrenPrompt('Cari saham undervalue dengan PBV < 1.0')" style="font-size: 0.6rem; background: var(--success-glow); border: 1px solid rgba(16, 172, 132, 0.3); color: var(--success); padding: 2px 6px; border-radius: 20px; cursor: pointer; font-weight: 600; outline: none; transition: var(--transition);">🔥 Saham Undervalued</button>
+                        <button onclick="TradeMasterApp.sendWarrenPrompt('Cari saham bluechip dengan ROE > 15%')" style="font-size: 0.6rem; background: rgba(255, 159, 67, 0.1); border: 1px solid rgba(255, 159, 67, 0.3); color: var(--warning); padding: 2px 6px; border-radius: 20px; cursor: pointer; font-weight: 600; outline: none; transition: var(--transition);">🚀 ROE Tinggi (>15%)</button>
+                      </div>
+                      
+                      <div style="display: flex; gap: 6px;">
+                        <input type="text" id="warren-chat-input" placeholder="Ketik kriteria pencarian saham..." style="flex: 1; padding: 6px 10px; border-radius: 6px; border: 1px solid var(--card-border); background: rgba(0,0,0,0.2); color: var(--text-main); font-size: 0.75rem; outline: none;" onkeydown="if(event.key === 'Enter') TradeMasterApp.submitWarrenChat()">
+                        <button onclick="TradeMasterApp.submitWarrenChat()" style="background: var(--primary); color: white; border: none; padding: 6px 12px; border-radius: 6px; font-weight: bold; font-size: 0.75rem; cursor: pointer; display: flex; align-items: center; gap: 4px; transition: var(--transition);">
+                          Kirim
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
 
