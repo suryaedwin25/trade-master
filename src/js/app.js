@@ -2627,6 +2627,52 @@ window.TradeMasterApp = (function() {
             <div style="margin-top: 6px; font-size: 0.68rem; color: var(--text-dark); font-style: italic;">
               Pola: Bear bottom turun ~77-87% dari puncak | Puncak ~480-548 hari post-halving | Bear ~363-410 hari post-peak
             </div>
+
+            <!-- Bull Trap Historical Analysis Widget -->
+            <div style="margin-top: 10px; background: rgba(255,193,7,0.04); border: 1px solid rgba(255,193,7,0.2); border-radius: 6px; padding: 8px 10px;">
+              <div style="font-weight: 700; font-size: 0.75rem; color: var(--warning); margin-bottom: 6px; display: flex; align-items: center; gap: 4px;">
+                ⚠️ HISTORI BULL TRAP / BEAR MARKET RALLIES (Siklus 1 - 4)
+              </div>
+              <table style="width: 100%; font-size: 0.68rem; border-collapse: collapse;">
+                <thead>
+                  <tr style="border-bottom: 1px solid var(--card-border); color: var(--text-muted);">
+                    <th style="text-align: left; padding: 2px;">Siklus</th>
+                    <th style="text-align: left; padding: 2px;">Bull Trap Rally</th>
+                    <th style="text-align: right; padding: 2px;">% Bounce</th>
+                    <th style="text-align: right; padding: 2px; color: var(--danger);">Bottom Akhir</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr style="border-bottom: 1px dashed rgba(255,255,255,0.05);">
+                    <td style="padding: 2px;">Cycle 1 (2014)</td>
+                    <td style="padding: 2px;">$340 ➔ $680 (Mei-Jun 2014)</td>
+                    <td style="text-align: right; padding: 2px; color: var(--success); font-weight: bold;">+100%</td>
+                    <td style="text-align: right; padding: 2px; color: var(--danger); font-weight: bold;">$152 (-77%)</td>
+                  </tr>
+                  <tr style="border-bottom: 1px dashed rgba(255,255,255,0.05);">
+                    <td style="padding: 2px;">Cycle 2 (2018)</td>
+                    <td style="padding: 2px;">$6,000 ➔ $11,700 (Feb 2018)</td>
+                    <td style="text-align: right; padding: 2px; color: var(--success); font-weight: bold;">+95%</td>
+                    <td style="text-align: right; padding: 2px; color: var(--danger); font-weight: bold;">$3,122 (-73%)</td>
+                  </tr>
+                  <tr style="border-bottom: 1px dashed rgba(255,255,255,0.05);">
+                    <td style="padding: 2px;">Cycle 3 (2022)</td>
+                    <td style="padding: 2px;">$17,600 ➔ $25,200 (Agu 2022)</td>
+                    <td style="text-align: right; padding: 2px; color: var(--success); font-weight: bold;">+43%</td>
+                    <td style="text-align: right; padding: 2px; color: var(--danger); font-weight: bold;">$15,476 (-38%)</td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 2px; font-weight: bold; color: var(--warning);">Cycle 4 (2026)</td>
+                    <td style="padding: 2px; color: var(--warning);">$63,600 ➔ $81,000 (Agu 2026)</td>
+                    <td style="text-align: right; padding: 2px; color: var(--success); font-weight: bold;">+27%</td>
+                    <td style="text-align: right; padding: 2px; color: var(--danger); font-weight: bold;">~$35k-49k (Est)</td>
+                  </tr>
+                </tbody>
+              </table>
+              <div style="font-size: 0.64rem; color: var(--text-muted); margin-top: 5px; line-height: 1.35;">
+                💡 <b>Pelajaran Siklus:</b> Setiap bear market SELALU memiliki 1-2 kali rally perangkap (+27% s/d +100%) sebelum menyentuh bottom final. Jangan FOMO All-In saat terjadi rally bear market!
+              </div>
+            </div>
           </div>
 
           <div>
