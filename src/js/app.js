@@ -2707,6 +2707,37 @@ window.TradeMasterApp = (function() {
                 <span>5. 🔄 Recovery DCA (Sisa 15%)</span>
                 <span style="font-weight: bold; color: var(--primary);">Q1 2027 (Konfirmasi Naik)</span>
               </div>
+
+              <!-- Detail Support Levels Breakdown -->
+              <div style="margin-top: 6px; background: rgba(0,230,118,0.03); border: 1px solid rgba(0,230,118,0.15); border-radius: 6px; padding: 6px 8px; font-size: 0.72rem;">
+                <div style="font-weight: 700; color: var(--success); margin-bottom: 4px; display: flex; justify-content: space-between; align-items: center;">
+                  <span>📌 TITIK LEVEL SUPPORT TEKNIKAL</span>
+                  <span style="font-size: 0.65rem; color: var(--text-muted);">Dasar Analisis</span>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 3px;">
+                  <div style="display: flex; justify-content: space-between; border-bottom: 1px dashed rgba(255,255,255,0.05); padding-bottom: 2px;">
+                    <span>S1. <b>$74,000 - $76,000</b> (Dekat)</span>
+                    <span style="color: var(--text-muted); font-size: 0.65rem;">EMA-20 & Swing Low</span>
+                  </div>
+                  <div style="display: flex; justify-content: space-between; border-bottom: 1px dashed rgba(255,255,255,0.05); padding-bottom: 2px;">
+                    <span>S2. <b>$67,000 - $70,000</b> (Sedang)</span>
+                    <span style="color: var(--text-muted); font-size: 0.65rem;">EMA-50 & Psikologis $70k</span>
+                  </div>
+                  <div style="display: flex; justify-content: space-between; border-bottom: 1px dashed rgba(255,255,255,0.05); padding-bottom: 2px;">
+                    <span>S3. <b>$58,000 - $64,000</b> (Kuat)</span>
+                    <span style="color: var(--text-muted); font-size: 0.65rem;">SMA-200 & Base Agustus</span>
+                  </div>
+                  <div style="display: flex; justify-content: space-between; border-bottom: 1px dashed rgba(255,255,255,0.05); padding-bottom: 2px;">
+                    <span>S4. <b>$48,000 - $54,000</b> (Mayor)</span>
+                    <span style="color: var(--text-muted); font-size: 0.65rem;">Fibonacci 0.618 Sweet Spot</span>
+                  </div>
+                  <div style="display: flex; justify-content: space-between;">
+                    <span style="color: var(--success); font-weight: bold;">S5. <b>$36,500 - $44,000</b> (ALL-IN)</span>
+                    <span style="color: var(--success); font-size: 0.65rem; font-weight: bold;">200-Week SMA / Realized Floor</span>
+                  </div>
+                </div>
+              </div>
+
               <div style="font-size: 0.72rem; font-weight: 600; color: var(--text-muted); margin-top: 4px;">Target Bull Run Cycle 5:</div>
               <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 3px;">
                 <div style="background: rgba(255,255,255,0.02); padding: 3px; border-radius: 4px; text-align: center;">
