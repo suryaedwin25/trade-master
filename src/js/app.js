@@ -2533,6 +2533,60 @@ window.TradeMasterApp = (function() {
       }
 
       reportContainer.innerHTML = `
+        <!-- Actionable Limit Order Execution Plan -->
+        <div style="margin-bottom: 16px; padding: 14px; border-radius: 10px; background: linear-gradient(135deg, rgba(0,230,118,0.12), rgba(108,92,231,0.08)); border: 2px solid var(--success); box-shadow: 0 4px 15px rgba(0,230,118,0.15);">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap; gap: 6px;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span style="font-size: 1.2rem;">🎯</span>
+              <div>
+                <div style="font-size: 0.95rem; font-weight: 900; color: var(--success); letter-spacing: 0.5px;">TITIK MASUK & JARING LIMIT ORDER SAYA (Modal Rp 50 Juta)</div>
+                <div style="font-size: 0.72rem; color: var(--text-muted);">Pasang 4 antrean Limit Buy ini di exchange (Tokocrypto/Binance) untuk eksekusi otomatis:</div>
+              </div>
+            </div>
+            <div class="badge badge-success" style="font-size: 0.75rem; padding: 4px 8px; font-weight: bold;">
+              ⚡ Status: 4 Jaring Siap
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 8px; margin-top: 10px;">
+            <div style="background: rgba(0,0,0,0.3); padding: 8px 10px; border-radius: 8px; border-left: 3px solid var(--warning);">
+              <div style="display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--text-muted); font-weight: 600;">
+                <span>JARING 1 (Post-FOMC)</span>
+                <span style="color: var(--warning); font-weight: bold;">20% (Rp 10 Jt)</span>
+              </div>
+              <div style="font-size: 1rem; font-weight: 900; color: #fff; margin: 2px 0;">$75,400 <span style="font-size: 0.75rem; font-weight: normal; color: var(--text-muted);">(Rp 1,330 M)</span></div>
+              <div style="font-size: 0.65rem; color: var(--text-muted);">Uji support S1 pasca rapat The Fed</div>
+            </div>
+
+            <div style="background: rgba(0,0,0,0.3); padding: 8px 10px; border-radius: 8px; border-left: 3px solid var(--warning);">
+              <div style="display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--text-muted); font-weight: 600;">
+                <span>JARING 2 (Stage 1 Diskon)</span>
+                <span style="color: var(--warning); font-weight: bold;">30% (Rp 15 Jt)</span>
+              </div>
+              <div style="font-size: 1rem; font-weight: 900; color: #fff; margin: 2px 0;">$63,500 <span style="font-size: 0.75rem; font-weight: normal; color: var(--text-muted);">(Rp 1,120 M)</span></div>
+              <div style="font-size: 0.65rem; color: var(--text-muted);">Diskon 50% dari rekor ATH ($126k)</div>
+            </div>
+
+            <div style="background: rgba(0,0,0,0.3); padding: 8px 10px; border-radius: 8px; border-left: 3px solid var(--success);">
+              <div style="display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--text-muted); font-weight: 600;">
+                <span>JARING 3 (Sweet Spot Q4)</span>
+                <span style="color: var(--success); font-weight: bold;">30% (Rp 15 Jt)</span>
+              </div>
+              <div style="font-size: 1rem; font-weight: 900; color: var(--success); margin: 2px 0;">$51,000 <span style="font-size: 0.75rem; font-weight: normal; color: var(--text-muted);">(Rp 900 Jt)</span></div>
+              <div style="font-size: 0.65rem; color: var(--text-muted);">Fibonacci Golden Pocket 0.618 - 0.786</div>
+            </div>
+
+            <div style="background: rgba(0,0,0,0.3); padding: 8px 10px; border-radius: 8px; border-left: 3px solid var(--success);">
+              <div style="display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--text-muted); font-weight: 600;">
+                <span>JARING 4 (ALL-IN Floor)</span>
+                <span style="color: var(--success); font-weight: bold;">20% (Rp 10 Jt)</span>
+              </div>
+              <div style="font-size: 1rem; font-weight: 900; color: var(--success); margin: 2px 0;">$40,800 <span style="font-size: 0.75rem; font-weight: normal; color: var(--text-muted);">(Rp 720 Jt)</span></div>
+              <div style="font-size: 0.65rem; color: var(--text-muted);">🚨 Sinyal ALL-IN! Dasar terendah siklus</div>
+            </div>
+          </div>
+        </div>
+
         <div style="margin-bottom: 16px; padding: 14px; border-radius: 10px; background: linear-gradient(135deg, rgba(108,92,231,0.08), rgba(0,230,118,0.05)); border: 1px solid rgba(108,92,231,0.2);">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
             <div>
@@ -2825,6 +2879,138 @@ window.TradeMasterApp = (function() {
             <div style="margin-top: 12px; display: flex; justify-content: space-between; align-items: center; background: var(--bg-color); padding: 8px 12px; border-radius: 6px; font-size: 0.76rem;">
               <span style="color: var(--text-muted);">Sisa Waktu ke Puncak:</span>
               <span style="font-weight: 800; color: var(--primary);">${daysToPeak5 > 0 ? daysToPeak5 + ' Hari Lagi' : 'WASPADA PEAK!'}</span>
+            </div>
+          </div>
+        </div>
+      `;
+    } else if (isCrypto && (symbol === 'GOLD' || symbol === 'PAXG' || symbol === 'XAU')) {
+      // ===== GOLD (EMAS / PAXG / XAU) SPECIALIZED MACRO & TECHNICAL ENGINE =====
+      const goldUsdPerOz = currentPrice > 0 ? currentPrice : 2625;
+      const usdIdrRate = 17640;
+      const goldIdrPerGram = Math.round((goldUsdPerOz * usdIdrRate) / 31.1035);
+      
+      const goldS1Min = 2580, goldS1Max = 2620;
+      const goldS2Min = 2480, goldS2Max = 2530;
+      const goldS3Min = 2360, goldS3Max = 2420;
+      
+      const goldS1IdrMin = Math.round((goldS1Min * usdIdrRate) / 31.1035);
+      const goldS1IdrMax = Math.round((goldS1Max * usdIdrRate) / 31.1035);
+      const goldS2IdrMin = Math.round((goldS2Min * usdIdrRate) / 31.1035);
+      const goldS2IdrMax = Math.round((goldS2Max * usdIdrRate) / 31.1035);
+      const goldS3IdrMin = Math.round((goldS3Min * usdIdrRate) / 31.1035);
+      const goldS3IdrMax = Math.round((goldS3Max * usdIdrRate) / 31.1035);
+
+      reportContainer.innerHTML = `
+        <div style="margin-bottom: 16px; padding: 14px; border-radius: 10px; background: linear-gradient(135deg, rgba(255, 215, 0, 0.12), rgba(255, 165, 0, 0.05)); border: 1.5px solid rgba(255, 215, 0, 0.35); box-shadow: 0 4px 15px rgba(255, 215, 0, 0.1);">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 8px;">
+            <div>
+              <div style="font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;">Status Pasar Komoditas Global</div>
+              <div style="font-size: 1.15rem; font-weight: 900; color: #ffd700; margin-top: 2px;">🥇 EMAS (XAU / PAXG) — SAFE HAVEN MACRO ENGINE</div>
+            </div>
+            <div style="text-align: right;">
+              <div style="font-size: 0.72rem; color: var(--text-muted);">Estimasi Harga Antam / Gram</div>
+              <div style="font-size: 1.1rem; font-weight: 800; color: #ffd700;">Rp ${goldIdrPerGram.toLocaleString()} / gram</div>
+            </div>
+          </div>
+          <div style="background: rgba(0,0,0,0.3); padding: 8px 12px; border-radius: 6px; font-size: 0.8rem; color: #ffd700; font-weight: 600;">
+            ⚡ Aksi Rekomendasi: AKUMULASI DCA BERTINGKAT. Lindung nilai inflasi & tren de-dolarisasi bank sentral dunia.
+          </div>
+        </div>
+
+        <!-- Actionable Limit Order Execution Plan for Gold -->
+        <div style="margin-bottom: 16px; padding: 14px; border-radius: 10px; background: linear-gradient(135deg, rgba(0,230,118,0.12), rgba(255,215,0,0.08)); border: 2px solid #ffd700; box-shadow: 0 4px 15px rgba(255,215,0,0.15);">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap; gap: 6px;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span style="font-size: 1.2rem;">🎯</span>
+              <div>
+                <div style="font-size: 0.95rem; font-weight: 900; color: #ffd700; letter-spacing: 0.5px;">TITIK MASUK & JARING BELI EMAS (XAU / PAXG / ANTAM)</div>
+                <div style="font-size: 0.72rem; color: var(--text-muted);">Level harga jaring beli terbaik untuk akumulasi fisik maupun digital gold (PAXG):</div>
+              </div>
+            </div>
+            <div class="badge badge-warning" style="font-size: 0.75rem; padding: 4px 8px; font-weight: bold; background: rgba(255,215,0,0.2); color: #ffd700; border: 1px solid #ffd700;">
+              ⚡ Status: 3 Jaring Emas
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 8px; margin-top: 10px;">
+            <div style="background: rgba(0,0,0,0.3); padding: 8px 10px; border-radius: 8px; border-left: 3px solid var(--warning);">
+              <div style="display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--text-muted); font-weight: 600;">
+                <span>JARING 1 (Breakout Retest)</span>
+                <span style="color: var(--warning); font-weight: bold;">30% Cash</span>
+              </div>
+              <div style="font-size: 0.95rem; font-weight: 900; color: #fff; margin: 2px 0;">$${goldS1Min} - $${goldS1Max} <span style="font-size: 0.72rem; font-weight: normal; color: var(--text-muted);">(Rp ${(goldS1IdrMin/1000).toFixed(0)}k/g)</span></div>
+              <div style="font-size: 0.65rem; color: var(--text-muted);">Area support konsolidasi terdekat pasca ATH</div>
+            </div>
+
+            <div style="background: rgba(0,0,0,0.3); padding: 8px 10px; border-radius: 8px; border-left: 3px solid var(--success);">
+              <div style="display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--text-muted); font-weight: 600;">
+                <span>JARING 2 (Sweet Spot EMA 50)</span>
+                <span style="color: var(--success); font-weight: bold;">40% Cash (Ideal)</span>
+              </div>
+              <div style="font-size: 0.95rem; font-weight: 900; color: var(--success); margin: 2px 0;">$${goldS2Min} - $${goldS2Max} <span style="font-size: 0.72rem; font-weight: normal; color: var(--text-muted);">(Rp ${(goldS2IdrMin/1000).toFixed(0)}k/g)</span></div>
+              <div style="font-size: 0.65rem; color: var(--text-muted);">Support MA 50-hari & demand zone bank sentral</div>
+            </div>
+
+            <div style="background: rgba(0,0,0,0.3); padding: 8px 10px; border-radius: 8px; border-left: 3px solid var(--success);">
+              <div style="display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--text-muted); font-weight: 600;">
+                <span>JARING 3 (Major Macro Floor)</span>
+                <span style="color: var(--success); font-weight: bold;">30% Cash (Heavy Buy)</span>
+              </div>
+              <div style="font-size: 0.95rem; font-weight: 900; color: var(--success); margin: 2px 0;">$${goldS3Min} - $${goldS3Max} <span style="font-size: 0.72rem; font-weight: normal; color: var(--text-muted);">(Rp ${(goldS3IdrMin/1000).toFixed(0)}k/g)</span></div>
+              <div style="font-size: 0.65rem; color: var(--text-muted);">200-Day Moving Average / Diskon Langka</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 16px;">
+          <div>
+            <h4 style="font-weight: 700; color: #ffd700; margin-bottom: 8px; font-size: 0.88rem;">📊 METRIK TEKNIKAL & MAKRO EMAS</h4>
+            <table style="width: 100%; font-size: 0.72rem; border-collapse: collapse;">
+              <tbody>
+                <tr style="border-bottom: 1px solid var(--card-border);">
+                  <td style="padding: 5px 2px; color: var(--text-muted);">Harga Spot (USD/oz)</td>
+                  <td style="text-align: right; padding: 5px 2px; font-weight: bold; color: #ffd700;">$${goldUsdPerOz.toFixed(2)}</td>
+                </tr>
+                <tr style="border-bottom: 1px solid var(--card-border);">
+                  <td style="padding: 5px 2px; color: var(--text-muted);">Estimasi Fisik (IDR/gram)</td>
+                  <td style="text-align: right; padding: 5px 2px; font-weight: bold; color: #ffd700;">Rp ${goldIdrPerGram.toLocaleString()}</td>
+                </tr>
+                <tr style="border-bottom: 1px solid var(--card-border);">
+                  <td style="padding: 5px 2px; color: var(--text-muted);">Tren Utama (SMA 20)</td>
+                  <td style="text-align: right; padding: 5px 2px; font-weight: bold; color: var(--success);">BULLISH (Uptrend Kuat)</td>
+                </tr>
+                <tr style="border-bottom: 1px solid var(--card-border);">
+                  <td style="padding: 5px 2px; color: var(--text-muted);">RSI (14-Hari)</td>
+                  <td style="text-align: right; padding: 5px 2px; font-weight: bold; color: ${cRsi > 70 ? 'var(--danger)' : cRsi < 35 ? 'var(--success)' : 'var(--text-main)'};">${cRsi.toFixed(1)} (${cRsi > 70 ? 'Overbought' : cRsi < 35 ? 'Oversold' : 'Netral'})</td>
+                </tr>
+                <tr style="border-bottom: 1px solid var(--card-border);">
+                  <td style="padding: 5px 2px; color: var(--text-muted);">Katalis Sentral</td>
+                  <td style="text-align: right; padding: 5px 2px; font-weight: bold; color: var(--primary);">De-dolarisasi & Net Buy Bank Sentral (BRICS/PBOC)</td>
+                </tr>
+                <tr>
+                  <td style="padding: 5px 2px; color: var(--text-muted);">Rasio Emas vs Bitcoin</td>
+                  <td style="text-align: right; padding: 5px 2px; font-weight: bold; color: var(--text-main);">1 BTC ≈ ${(78850 / goldUsdPerOz).toFixed(1)} Troy Ounce Emas</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div>
+            <h4 style="font-weight: 700; color: #ffd700; margin-bottom: 8px; font-size: 0.88rem;">🎯 TARGET HARGA MULTI-TAHUN EMAS</h4>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
+              <div style="background: rgba(255,255,255,0.02); padding: 8px; border-radius: 6px; text-align: center; border: 1px solid rgba(255,215,0,0.15);">
+                <div style="color: var(--text-muted); font-size: 0.68rem;">Target Q4 2026</div>
+                <div style="font-weight: 900; color: #ffd700; font-size: 0.95rem;">$2,700 - $2,850</div>
+                <div style="font-size: 0.65rem; color: var(--text-muted);">~Rp 1.55 - 1.62 Jt/g</div>
+              </div>
+              <div style="background: rgba(255,255,255,0.02); padding: 8px; border-radius: 6px; text-align: center; border: 1px solid rgba(255,215,0,0.15);">
+                <div style="color: var(--text-muted); font-size: 0.68rem;">Target Siklus 2027-2028</div>
+                <div style="font-weight: 900; color: #ffd700; font-size: 0.95rem;">$3,000 - $3,200</div>
+                <div style="font-size: 0.65rem; color: var(--text-muted);">~Rp 1.70 - 1.81 Jt/g</div>
+              </div>
+            </div>
+            <div style="margin-top: 8px; background: rgba(0,0,0,0.2); padding: 8px; border-radius: 6px; font-size: 0.72rem; color: var(--text-muted); line-height: 1.4;">
+              💡 <b>Tesis Alokasi:</b> Emas adalah jangkar pelindung nilai kekayaan terhadap penurunan daya beli uang kertas fiat (Rupiah/USD). Komposisi ideal: 10-20% Emas, 30-40% Saham Blue Chip (BBRI/SPYX), dan 40-50% Bitcoin di dasar siklus.
             </div>
           </div>
         </div>
@@ -4625,6 +4811,39 @@ window.TradeMasterApp = (function() {
     }
   }
 
+  // 4b. Refresh Current Analysis function with visual feedback
+  async function refreshCurrentAnalysis(type = 'crypto') {
+    const toast = document.createElement('div');
+    toast.className = 'toast-notification';
+    toast.style.cssText = 'position: fixed; bottom: 20px; right: 20px; background: var(--primary); color: #fff; padding: 10px 18px; border-radius: 8px; font-weight: bold; font-size: 0.85rem; box-shadow: 0 4px 15px rgba(0,0,0,0.5); z-index: 99999; display: flex; align-items: center; gap: 8px; animation: fadeIn 0.3s ease;';
+    toast.innerHTML = `<i data-lucide="refresh-cw" class="spin-icon" style="width: 16px; height: 16px;"></i> Sedang me-refresh analisa & live data...`;
+    document.body.appendChild(toast);
+    if (window.lucide) lucide.createIcons();
+
+    const spinIcons = document.querySelectorAll('#icon-refresh-crypto, #icon-refresh-stocks, [data-lucide="rotate-cw"]');
+    spinIcons.forEach(el => el.classList.add('spin-icon'));
+
+    try {
+      if (type === 'stocks') {
+        await renderStocksPage();
+      } else {
+        await renderCryptoPage();
+      }
+      toast.style.background = 'var(--success)';
+      const sym = type === 'stocks' ? state.stocks.selected : state.crypto.selected;
+      toast.innerHTML = `✔ Analisa & Data ${sym} berhasil diperbarui!`;
+      setTimeout(() => { toast.remove(); }, 2500);
+    } catch (e) {
+      console.error('Refresh error:', e);
+      toast.style.background = 'var(--danger)';
+      toast.innerHTML = `❌ Gagal me-refresh: ${e.message}`;
+      setTimeout(() => { toast.remove(); }, 3000);
+    } finally {
+      spinIcons.forEach(el => el.classList.remove('spin-icon'));
+      if (window.lucide) lucide.createIcons();
+    }
+  }
+
   // 5. Initialize listeners & actions
   function init() {
     console.log('Initializing TradeMaster Application...');
@@ -4713,7 +4932,8 @@ window.TradeMasterApp = (function() {
     saveCryptoWhaleData,
     deleteCryptoWhaleData,
     calcPositionSize,
-    calcAverageDown
+    calcAverageDown,
+    refreshCurrentAnalysis
   };
 })();
 

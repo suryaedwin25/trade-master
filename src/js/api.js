@@ -109,7 +109,8 @@ window.TradeMasterAPI = (function() {
 
     // 3. Crypto API - Historical Candlestick data for Charts with multi-tier failover & synthetic fallback
     async getCryptoChartData(symbol, interval = '1d', limit = 150, exchange = 'Binance') {
-      const pair = symbol.toUpperCase() + 'USDT';
+      const cleanSym = (symbol.toUpperCase() === 'GOLD' || symbol.toUpperCase() === 'XAU') ? 'PAXG' : symbol.toUpperCase();
+      const pair = cleanSym + 'USDT';
       
       const fetchBinance = async () => {
         const url = `https://api.binance.com/api/v3/klines?symbol=${pair}&interval=${interval}&limit=${limit}`;
@@ -143,7 +144,7 @@ window.TradeMasterAPI = (function() {
 
       const fetchGate = async () => {
         const gateInterval = interval === '1d' ? '1d' : '1h';
-        const url = `https://api.gateio.ws/api/v4/spot/candlesticks?currency_pair=${symbol.toUpperCase()}_USDT&limit=${limit}&interval=${gateInterval}`;
+        const url = `https://api.gateio.ws/api/v4/spot/candlesticks?currency_pair=${cleanSym}_USDT&limit=${limit}&interval=${gateInterval}`;
         const data = await fetchJSON(url);
         if (!Array.isArray(data) || data.length === 0) return null;
         return data.map(item => ({
@@ -187,7 +188,7 @@ window.TradeMasterAPI = (function() {
       console.warn(`All crypto APIs failed/blocked for ${symbol}. Generating synthetic candle dataset.`);
       const nowSec = Math.floor(Date.now() / 1000);
       const step = interval === '1d' ? 86400 : 3600;
-      let basePrice = symbol === 'BTC' ? 97000 : symbol === 'ETH' ? 2700 : symbol === 'SOL' ? 175 : symbol === 'BNB' ? 600 : 2.5;
+      let basePrice = symbol === 'BTC' ? 78850 : (cleanSym === 'PAXG' || symbol === 'GOLD' || symbol === 'XAU') ? 2625 : symbol === 'ETH' ? 2700 : symbol === 'SOL' ? 101 : symbol === 'HYPE' ? 83 : symbol === 'BNB' ? 600 : 2.5;
       const synth = [];
       for (let i = limit; i >= 0; i--) {
         const time = nowSec - (i * step);
@@ -205,7 +206,8 @@ window.TradeMasterAPI = (function() {
 
     // 3b. Crypto API - Fetch single live ticker price with failover
     async getCryptoLiveTicker(symbol, exchange = 'Binance') {
-      const pair = symbol.toUpperCase() + 'USDT';
+      const cleanSym = (symbol.toUpperCase() === 'GOLD' || symbol.toUpperCase() === 'XAU') ? 'PAXG' : symbol.toUpperCase();
+      const pair = cleanSym + 'USDT';
       
       const tryBinance = async () => {
         const url = `https://api.binance.com/api/v3/ticker/24hr?symbol=${pair}`;

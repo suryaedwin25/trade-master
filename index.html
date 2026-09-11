@@ -213,20 +213,30 @@
                 </select>
                 
                 <div style="display: flex; gap: 6px; align-items: center;">
-                  <input type="text" id="crypto-search-input" placeholder="Cari Koin (e.g. SOL, ADA)..." class="select-asset" style="width: 130px; padding: 6px 12px; margin: 0; font-size: 0.85rem; font-weight: 700; text-transform: uppercase; border: 1px solid var(--card-border); height: 32px;" onkeydown="if(event.key === 'Enter') TradeMasterApp.searchCryptoSymbol()">
+                  <input type="text" id="crypto-search-input" placeholder="Cari Koin (e.g. SOL, GOLD)..." class="select-asset" style="width: 130px; padding: 6px 12px; margin: 0; font-size: 0.85rem; font-weight: 700; text-transform: uppercase; border: 1px solid var(--card-border); height: 32px;" onkeydown="if(event.key === 'Enter') TradeMasterApp.searchCryptoSymbol()">
                   <button class="btn btn-primary" onclick="TradeMasterApp.searchCryptoSymbol()" style="padding: 6.5px 12px; margin: 0; font-size: 0.8rem; font-weight: bold; cursor: pointer; border-radius: 6px; display: flex; align-items: center; justify-content: center; height: 32px;">Cari</button>
                 </div>
 
-                <select class="select-asset" id="crypto-select" style="margin: 0; width: 110px; height: 32px; padding: 6px 10px;">
-                  <option value="BTC" selected>BTC</option>
-                  <option value="ETH">ETH</option>
-                  <option value="SOL">SOL</option>
+                <select class="select-asset" id="crypto-select" style="margin: 0; width: 140px; height: 32px; padding: 6px 10px; font-weight: bold;">
+                  <option value="BTC" selected>BTC (Bitcoin)</option>
+                  <option value="GOLD">🥇 GOLD (Emas)</option>
+                  <option value="PAXG">🥇 PAXG (Gold)</option>
+                  <option value="SOL">SOL (Solana)</option>
+                  <option value="HYPE">HYPE (Hyperliquid)</option>
+                  <option value="ETH">ETH (Ethereum)</option>
+                  <option value="ZEC">ZEC (Zcash)</option>
+                  <option value="ZEN">ZEN (Horizen)</option>
                   <option value="BNB">BNB</option>
                   <option value="ADA">ADA</option>
                   <option value="XRP">XRP</option>
                   <option value="DOGE">DOGE</option>
-                  <option value="DOT">DOT</option>
                 </select>
+
+                <!-- Refresh Button for Crypto & Gold -->
+                <button id="btn-refresh-crypto" class="btn btn-secondary" onclick="TradeMasterApp.refreshCurrentAnalysis('crypto')" title="Refresh Analisa & Live Data" style="height: 32px; padding: 6px 12px; font-size: 0.8rem; font-weight: bold; display: flex; align-items: center; gap: 6px; cursor: pointer; border-radius: 6px; border: 1px solid var(--primary); background: rgba(108,92,231,0.12); color: var(--primary);">
+                  <i data-lucide="refresh-cw" id="icon-refresh-crypto" style="width: 14px; height: 14px;"></i>
+                  Refresh
+                </button>
               </div>
 
               <!-- DEX Input -->
@@ -255,7 +265,13 @@
                     AI ProPicks & Satoshi AI
                   </button>
                 </div>
-                <span id="cex-report-timestamp" style="font-size: 0.8rem; color: var(--text-muted);">Updated: --:--:--</span>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <span id="cex-report-timestamp" style="font-size: 0.8rem; color: var(--text-muted);">Updated: --:--:--</span>
+                  <button class="btn btn-secondary" onclick="TradeMasterApp.refreshCurrentAnalysis('crypto')" title="Refresh Analisa & Live Data" style="padding: 4px 10px; font-size: 0.75rem; border-radius: 4px; display: flex; align-items: center; gap: 4px; background: rgba(255,255,255,0.04); border: 1px solid var(--card-border); color: var(--text-main); cursor: pointer;">
+                    <i data-lucide="rotate-cw" style="width: 12px; height: 12px;"></i>
+                    Refresh Data
+                  </button>
+                </div>
               </div>
               
               <!-- Tab 1: Technical & Cycle Analysis (Default) -->
@@ -487,7 +503,13 @@
                     AI ProPicks & Warren AI
                   </button>
                 </div>
-                <span id="stock-report-timestamp" style="font-size: 0.8rem; color: var(--text-muted);">Updated: --:--:--</span>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <span id="stock-report-timestamp" style="font-size: 0.8rem; color: var(--text-muted);">Updated: --:--:--</span>
+                  <button class="btn btn-secondary" onclick="TradeMasterApp.refreshCurrentAnalysis('stocks')" title="Refresh Analisa & Live Data" style="padding: 4px 10px; font-size: 0.75rem; border-radius: 4px; display: flex; align-items: center; gap: 4px; background: rgba(255,255,255,0.04); border: 1px solid var(--card-border); color: var(--text-main); cursor: pointer;">
+                    <i data-lucide="rotate-cw" id="icon-refresh-stocks" style="width: 12px; height: 12px;"></i>
+                    Refresh Data
+                  </button>
+                </div>
               </div>
               
               <!-- Tab 1: Technical & Cycle Analysis (Default) -->
@@ -833,11 +855,11 @@
   <script src="https://unpkg.com/lucide@latest"></script>
 
   <!-- Core App Scripts (Explicit dependency order) -->
-  <script src="src/js/auth.js?v=2.3"></script>
-  <script src="src/js/api.js?v=2.3"></script>
-  <script src="src/js/ta.js?v=2.3"></script>
-  <script src="src/js/impact.js?v=2.3"></script>
-  <script src="src/js/app.js?v=2.3"></script>
+  <script src="src/js/auth.js?v=2.4"></script>
+  <script src="src/js/api.js?v=2.4"></script>
+  <script src="src/js/ta.js?v=2.4"></script>
+  <script src="src/js/impact.js?v=2.4"></script>
+  <script src="src/js/app.js?v=2.4"></script>
 
 </body>
 </html>
