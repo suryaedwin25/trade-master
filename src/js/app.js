@@ -2555,7 +2555,10 @@ window.TradeMasterApp = (function() {
                 <span style="color: var(--warning); font-weight: bold;">20% (Rp 10 Jt)</span>
               </div>
               <div style="font-size: 1rem; font-weight: 900; color: #fff; margin: 2px 0;">$75,400 <span style="font-size: 0.75rem; font-weight: normal; color: var(--text-muted);">(Rp 1,330 M)</span></div>
-              <div style="font-size: 0.65rem; color: var(--text-muted);">Uji support S1 pasca rapat The Fed</div>
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px; padding-top: 4px; border-top: 1px dashed rgba(255,255,255,0.08); font-size: 0.68rem;">
+                <span style="color: var(--warning); font-weight: bold;">📅 17 - 25 Sep 2026</span>
+                <span style="color: var(--text-muted);">Uji S1 pasca The Fed</span>
+              </div>
             </div>
 
             <div style="background: rgba(0,0,0,0.3); padding: 8px 10px; border-radius: 8px; border-left: 3px solid var(--warning);">
@@ -2564,7 +2567,10 @@ window.TradeMasterApp = (function() {
                 <span style="color: var(--warning); font-weight: bold;">30% (Rp 15 Jt)</span>
               </div>
               <div style="font-size: 1rem; font-weight: 900; color: #fff; margin: 2px 0;">$63,500 <span style="font-size: 0.75rem; font-weight: normal; color: var(--text-muted);">(Rp 1,120 M)</span></div>
-              <div style="font-size: 0.65rem; color: var(--text-muted);">Diskon 50% dari rekor ATH ($126k)</div>
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px; padding-top: 4px; border-top: 1px dashed rgba(255,255,255,0.08); font-size: 0.68rem;">
+                <span style="color: var(--warning); font-weight: bold;">📅 26 Sep - 10 Okt 2026</span>
+                <span style="color: var(--text-muted);">Diskon 50% ATH ($126k)</span>
+              </div>
             </div>
 
             <div style="background: rgba(0,0,0,0.3); padding: 8px 10px; border-radius: 8px; border-left: 3px solid var(--success);">
@@ -2573,7 +2579,10 @@ window.TradeMasterApp = (function() {
                 <span style="color: var(--success); font-weight: bold;">30% (Rp 15 Jt)</span>
               </div>
               <div style="font-size: 1rem; font-weight: 900; color: var(--success); margin: 2px 0;">$51,000 <span style="font-size: 0.75rem; font-weight: normal; color: var(--text-muted);">(Rp 900 Jt)</span></div>
-              <div style="font-size: 0.65rem; color: var(--text-muted);">Fibonacci Golden Pocket 0.618 - 0.786</div>
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px; padding-top: 4px; border-top: 1px dashed rgba(255,255,255,0.08); font-size: 0.68rem;">
+                <span style="color: var(--success); font-weight: bold;">📅 15 - 31 Okt 2026</span>
+                <span style="color: var(--text-muted);">Golden Pocket Fibonacci</span>
+              </div>
             </div>
 
             <div style="background: rgba(0,0,0,0.3); padding: 8px 10px; border-radius: 8px; border-left: 3px solid var(--success);">
@@ -2582,7 +2591,10 @@ window.TradeMasterApp = (function() {
                 <span style="color: var(--success); font-weight: bold;">20% (Rp 10 Jt)</span>
               </div>
               <div style="font-size: 1rem; font-weight: 900; color: var(--success); margin: 2px 0;">$40,800 <span style="font-size: 0.75rem; font-weight: normal; color: var(--text-muted);">(Rp 720 Jt)</span></div>
-              <div style="font-size: 0.65rem; color: var(--text-muted);">🚨 Sinyal ALL-IN! Dasar terendah siklus</div>
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px; padding-top: 4px; border-top: 1px dashed rgba(255,255,255,0.08); font-size: 0.68rem;">
+                <span style="color: var(--success); font-weight: bold;">📅 Nov - Des 2026</span>
+                <span style="color: var(--text-muted);">🚨 Sinyal ALL-IN Siklus</span>
+              </div>
             </div>
           </div>
         </div>
