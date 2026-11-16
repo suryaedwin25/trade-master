@@ -49,6 +49,10 @@
           <i data-lucide="cpu"></i>
           <span>Strategy Center</span>
         </div>
+        <div class="nav-item" onclick="TradeMasterApp.openTelegramModal()">
+          <i data-lucide="bell-ring"></i>
+          <span>Telegram Alerts</span>
+        </div>
       </nav>
       
       <div class="sidebar-footer">
@@ -104,6 +108,10 @@
         </div>
         
         <div style="display:flex; align-items:center; gap:12px;">
+          <button class="btn-topbar-lock" onclick="TradeMasterApp.openTelegramModal()" style="border-color: rgba(0, 136, 204, 0.4); color: #0088cc; background: rgba(0, 136, 204, 0.1); cursor: pointer;" title="Setup Notifikasi Telegram">
+            <span>✈️</span>
+            <span>Telegram Bot</span>
+          </button>
           <div class="status-indicator">
             <div class="dot"></div>
             <span>Connection: Secure (Live)</span>
@@ -1181,13 +1189,30 @@
       </div>
 
       <!-- Quick Step-by-Step Instructions -->
-      <div style="background: rgba(0, 136, 204, 0.08); border: 1px solid rgba(0, 136, 204, 0.3); border-radius: 8px; padding: 12px; margin-bottom: 16px; font-size: 0.76rem; color: #b8e6ff; line-height: 1.45;">
-        <b>💡 Panduan Cepat Setup (Hanya 1 Menit):</b>
-        <ol style="margin-left: 18px; margin-top: 4px;">
-          <li>Buka Telegram, cari bot resmi <b>@BotFather</b> lalu ketik <code>/newbot</code> untuk membuat bot Anda sendiri & dapatkan <b>Bot Token</b>.</li>
-          <li>Kirim pesan <i>"/start"</i> ke bot baru Anda.</li>
-          <li>Cari bot <b>@userinfobot</b> di Telegram untuk melihat <b>Chat ID</b> Anda (berupa deretan angka).</li>
-          <li>Paste Token & Chat ID di bawah ini, lalu klik <b>"Kirim Test Notifikasi"</b>!</li>
+      <div style="background: rgba(0, 136, 204, 0.08); border: 1px solid rgba(0, 136, 204, 0.35); border-radius: 10px; padding: 14px; margin-bottom: 16px; font-size: 0.78rem; color: #b8e6ff; line-height: 1.5;">
+        <div style="font-weight: 800; font-size: 0.85rem; margin-bottom: 6px; color: #fff; display: flex; align-items: center; gap: 6px;">
+          <span>💡</span> Cara Menghubungkan Telegram (Hanya 3 Langkah):
+        </div>
+        <ol style="margin-left: 20px; display: flex; flex-direction: column; gap: 8px;">
+          <li>
+            <b>Buat Bot:</b> Buka Telegram ke <b>@BotFather</b>, klik Start, lalu kirim perintah <code>/newbot</code>. Beri nama & username bot. Copy <b>HTTP API Token</b> yang diberikan.
+            <div style="margin-top: 4px;">
+              <a href="https://t.me/BotFather" target="_blank" style="background: rgba(0, 136, 204, 0.2); border: 1px solid rgba(0, 136, 204, 0.5); color: #fff; padding: 3px 8px; border-radius: 4px; font-size: 0.72rem; text-decoration: none; font-weight: bold; display: inline-flex; align-items: center; gap: 4px;">
+                👉 Buka @BotFather di Telegram ↗
+              </a>
+            </div>
+          </li>
+          <li>
+            <b>Start Bot Anda:</b> Buka bot baru yang barusan Anda buat, lalu tekan tombol <b>START</b> (wajib agar bot bisa mengirim pesan ke Anda).
+          </li>
+          <li>
+            <b>Dapatkan Chat ID:</b> Buka <b>@userinfobot</b> di Telegram, klik Start. Salin deretan angka <b>Id</b> Anda.
+            <div style="margin-top: 4px;">
+              <a href="https://t.me/userinfobot" target="_blank" style="background: rgba(0, 136, 204, 0.2); border: 1px solid rgba(0, 136, 204, 0.5); color: #fff; padding: 3px 8px; border-radius: 4px; font-size: 0.72rem; text-decoration: none; font-weight: bold; display: inline-flex; align-items: center; gap: 4px;">
+                👉 Buka @userinfobot (Cek Chat ID) ↗
+              </a>
+            </div>
+          </li>
         </ol>
       </div>
 
@@ -1253,12 +1278,12 @@
   <script src="https://unpkg.com/lucide@latest"></script>
 
   <!-- Core App Scripts (Explicit dependency order) -->
-  <script src="src/js/auth.js?v=3.1"></script>
-  <script src="src/js/api.js?v=3.1"></script>
-  <script src="src/js/ta.js?v=3.1"></script>
-  <script src="src/js/impact.js?v=3.1"></script>
-  <script src="src/js/macro.js?v=3.1"></script>
-  <script src="src/js/app.js?v=3.1"></script>
+  <script src="src/js/auth.js?v=3.2"></script>
+  <script src="src/js/api.js?v=3.2"></script>
+  <script src="src/js/ta.js?v=3.2"></script>
+  <script src="src/js/impact.js?v=3.2"></script>
+  <script src="src/js/macro.js?v=3.2"></script>
+  <script src="src/js/app.js?v=3.2"></script>
 
 </body>
 </html>

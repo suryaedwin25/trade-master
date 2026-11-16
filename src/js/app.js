@@ -1089,7 +1089,7 @@ window.TradeMasterApp = (function() {
 
     if (tokenInput) tokenInput.value = config.botToken || '';
     if (chatInput) chatInput.value = config.chatId || '';
-    if (enableToggle) enableToggle.checked = !!config.enabled;
+    if (enableToggle) enableToggle.checked = (config.botToken && config.chatId) ? (config.enabled !== false) : true;
     if (alertOpen) alertOpen.checked = config.alertOpen !== false;
     if (alertClose) alertClose.checked = config.alertClose !== false;
 
@@ -1110,11 +1110,17 @@ window.TradeMasterApp = (function() {
 
     const botToken = tokenInput ? tokenInput.value.trim() : '';
     const chatId = chatInput ? chatInput.value.trim() : '';
-    const enabled = enableToggle ? enableToggle.checked : false;
 
-    if (enabled && (!botToken || !chatId)) {
-      alert('Perhatian: Harap isi Bot Token dan Chat ID Telegram Anda sebelum mengaktifkan notifikasi.');
+    if (!botToken || !chatId) {
+      alert('Perhatian: Harap isi Bot Token dan Chat ID Telegram Anda sebelum menyimpan.\n\nTips:\n- Bot Token didapat dari @BotFather di Telegram\n- Chat ID didapat dari @userinfobot di Telegram');
       return;
+    }
+
+    // Auto-enable when both fields are provided
+    let enabled = enableToggle ? enableToggle.checked : true;
+    if (!enabled && botToken && chatId) {
+      enabled = true;
+      if (enableToggle) enableToggle.checked = true;
     }
 
     state.telegramConfig = {
@@ -1135,19 +1141,23 @@ window.TradeMasterApp = (function() {
 
     updateTelegramStatusBadge();
     closeTelegramModal();
-    alert(enabled ? '✔ Notifikasi Telegram BERHASIL DIAKTIFKAN! Bot siap mengirimkan sinyal Whale live.' : 'Pengaturan Telegram tersimpan (Status: Nonaktif).');
+    alert('✔ Pengaturan Telegram BERHASIL DISIMPAN! Status: AKTIF 🟢.\n\nBot siap mengirimkan sinyal Whale live ke Telegram Anda.');
   }
 
   async function sendTestTelegramAlert() {
     const tokenInput = document.getElementById('telegram-bot-token');
     const chatInput = document.getElementById('telegram-chat-id');
-    const botToken = tokenInput ? tokenInput.value.trim() : (state.telegramConfig.botToken || '');
-    const chatId = chatInput ? chatInput.value.trim() : (state.telegramConfig.chatId || '');
+    const botToken = tokenInput && tokenInput.value.trim() ? tokenInput.value.trim() : (state.telegramConfig.botToken || '');
+    const chatId = chatInput && chatInput.value.trim() ? chatInput.value.trim() : (state.telegramConfig.chatId || '');
 
     if (!botToken || !chatId) {
-      alert('Harap isi Bot Token dan Chat ID terlebih dahulu untuk mencoba pengiriman pesan.');
+      alert('Harap isi Bot Token dan Chat ID terlebih dahulu untuk mencoba pengiriman pesan.\n\nContoh:\nBot Token: 1234567890:ABCdefGh...\nChat ID: 987654321');
       return;
     }
+
+    const testBtn = window.event && window.event.target ? window.event.target.closest('button') : null;
+    const origText = testBtn ? testBtn.innerHTML : '';
+    if (testBtn) testBtn.innerHTML = '<span>⏳ Mengirim ke Telegram...</span>';
 
     const testMsg = `🚀 <b>TEST NOTIFIKASI TRADEMASTER BERHASIL!</b> 🐋\n` +
       `----------------------------------------\n` +
@@ -1162,11 +1172,27 @@ window.TradeMasterApp = (function() {
 
     try {
       const res = await TradeMasterAPI.sendTelegramMessage(botToken, chatId, testMsg);
+      if (testBtn) testBtn.innerHTML = origText;
       if (res && res.success) {
-        alert('🎉 BERHASIL! Pesan test telah terkirim ke Telegram Anda. Silakan cek aplikasi Telegram Anda sekarang!');
+        alert('🎉 BERHASIL! Pesan test telah terkirim ke Telegram Anda.\n\nSilakan buka aplikasi Telegram Anda untuk melihat pesannya.');
+        // Auto-save and auto-enable on successful test
+        state.telegramConfig = {
+          botToken: botToken,
+          chatId: chatId,
+          enabled: true,
+          alertOpen: true,
+          alertClose: true,
+          minProfit: 500000,
+          minWinRate: 90.0
+        };
+        try {
+          localStorage.setItem('trademaster_telegram_config', JSON.stringify(state.telegramConfig));
+        } catch (e) {}
+        updateTelegramStatusBadge();
       }
     } catch (err) {
-      alert(`Gagal mengirim ke Telegram: ${err.message}\n\nTips: Pastikan Anda sudah membuka bot Anda di Telegram dan menekan tombol 'START'.`);
+      if (testBtn) testBtn.innerHTML = origText;
+      alert(`Gagal mengirim ke Telegram: ${err.message}\n\nPastikan:\n1. Bot Token sudah benar (dari @BotFather)\n2. Chat ID sudah benar (angka dari @userinfobot)\n3. PENTING: Anda sudah membuka bot Anda di Telegram dan menekan tombol 'START'`);
     }
   }
 
