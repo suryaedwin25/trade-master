@@ -213,11 +213,13 @@ window.TradeMasterTA = (function() {
     return { k: stochK, d: stochD };
   }
 
-  // 7. Core Strategy Engine: Combined Signals Generator
-  function generateSignals(chartData) {
+  // 7. Core Strategy Engine: Combined Signals Generator with Risk & Incident Awareness
+  function generateSignals(chartData, context = {}) {
     if (!chartData || chartData.length < 50) {
       return { recommendation: 'HOLD', score: 0, details: [] };
     }
+
+    const { sentimentScore = 0, hasCexRisk = false, macroScore = 0 } = context;
 
     const lastIdx = chartData.length - 1;
     const currentPrice = chartData[lastIdx].close;
@@ -323,9 +325,28 @@ window.TradeMasterTA = (function() {
       }
     }
 
+    // Incident & Macro Overlay Protection (Falling Knife & CEX Hack Safeguard)
+    if (hasCexRisk) {
+      score -= 4.0;
+      details.unshift({
+        indicator: '🚨 CEX Security / Hack Alert',
+        direction: 'Severe Risk-Off',
+        note: 'Terdeteksi insiden pembobolan/peretasan keamanan bursa! Filter pengaman aktif: Sinyal teknikal buy dibatalkan otomatis untuk melindungi modal dari cascading liquidation.'
+      });
+    } else if (sentimentScore <= -2.5) {
+      score -= 2.0;
+      details.unshift({
+        indicator: '⚠️ Geopolitical/Macro Drag',
+        direction: 'Bearish Headwind',
+        note: `Sentimen makro/isu global sedang sangat tertekan (Score: ${sentimentScore}). Waspada pembalikan arah tiba-tiba.`
+      });
+    }
+
     // Recommendation logic based on aggregated score
     let recommendation = 'HOLD';
-    if (score >= 2.5) {
+    if (hasCexRisk && score <= 0) {
+      recommendation = 'EXTREME CAUTION (HACK RISK)';
+    } else if (score >= 2.5) {
       recommendation = 'STRONG BUY';
     } else if (score >= 1.0) {
       recommendation = 'BUY';

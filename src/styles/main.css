@@ -2,26 +2,26 @@
 
 /* Design Tokens & Theme Variables */
 :root {
-  --bg-color: #f7f9fc;
-  --sidebar-bg: #ffffff;
-  --surface-bg: rgba(255, 255, 255, 0.85);
-  --card-bg: #ffffff;
-  --card-border: rgba(0, 0, 0, 0.07);
-  --card-glow: rgba(95, 39, 205, 0.05);
+  --bg-color: #0b0e17;
+  --sidebar-bg: #0f1422;
+  --surface-bg: rgba(15, 20, 34, 0.92);
+  --card-bg: #131929;
+  --card-border: rgba(255, 255, 255, 0.08);
+  --card-glow: rgba(108, 92, 231, 0.15);
   
-  --primary: #5f27cd;
-  --primary-hover: #341f97;
-  --primary-glow: rgba(95, 39, 205, 0.12);
+  --primary: #6c5ce7;
+  --primary-hover: #5844e3;
+  --primary-glow: rgba(108, 92, 231, 0.25);
   
-  --success: #10ac84;
-  --success-glow: rgba(16, 172, 132, 0.08);
-  --danger: #ee5253;
-  --danger-glow: rgba(238, 82, 83, 0.08);
-  --warning: #ff9f43;
+  --success: #00e676;
+  --success-glow: rgba(0, 230, 118, 0.15);
+  --danger: #ff5252;
+  --danger-glow: rgba(255, 82, 82, 0.15);
+  --warning: #ffb142;
   
-  --text-main: #2c3e50;
-  --text-muted: #57606f;
-  --text-dark: #ced6e0;
+  --text-main: #f1f2f6;
+  --text-muted: #8b9bb4;
+  --text-dark: #3a4759;
   
   --font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --font-header: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
@@ -2065,6 +2065,349 @@ tr:hover td {
 .spin-icon {
   animation: tm-spin 0.8s linear infinite !important;
 }
+
+/* ==========================================================================
+   MACROEKONOMI & FUND FLOW ANALYSIS MODULE STYLES
+   ========================================================================== */
+
+.macro-regime-banner {
+  background: linear-gradient(135deg, rgba(95, 39, 205, 0.08) 0%, rgba(16, 172, 132, 0.08) 100%);
+  border: 1px solid rgba(95, 39, 205, 0.25);
+  border-radius: 12px;
+  padding: 20px 24px;
+  margin-bottom: 24px;
+  position: relative;
+  overflow: hidden;
+}
+
+.macro-regime-banner::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: linear-gradient(180deg, var(--primary), var(--success));
+}
+
+.macro-regime-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.macro-regime-title {
+  font-size: 1.25rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.macro-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 14px;
+  margin-bottom: 24px;
+}
+
+.macro-kpi-card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 10px;
+  padding: 14px 16px;
+  transition: var(--transition);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+}
+
+.macro-kpi-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(95, 39, 205, 0.3);
+  box-shadow: 0 4px 12px rgba(95, 39, 205, 0.08);
+}
+
+.macro-kpi-label {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 6px;
+}
+
+.macro-kpi-val {
+  font-size: 1.45rem;
+  font-weight: 800;
+  color: var(--text-main);
+  line-height: 1.2;
+}
+
+.macro-kpi-change {
+  font-size: 0.75rem;
+  font-weight: 600;
+  margin-top: 6px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.flow-meter-container {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 10px 0;
+}
+
+.flow-meter-bar {
+  height: 8px;
+  background: rgba(0, 0, 0, 0.06);
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+}
+
+.flow-meter-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.6s ease;
+}
+
+.flow-meter-fill.inflow {
+  background: linear-gradient(90deg, #10ac84, #55efc4);
+}
+
+.flow-meter-fill.outflow {
+  background: linear-gradient(90deg, #ee5253, #ff7675);
+}
+
+.transmission-card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 10px;
+  padding: 16px;
+  margin-bottom: 12px;
+  transition: var(--transition);
+}
+
+.transmission-card:hover {
+  border-color: var(--primary);
+  background: rgba(255, 255, 255, 0.95);
+}
+
+.simulator-box {
+  background: rgba(0, 0, 0, 0.02);
+  border: 1px dashed rgba(95, 39, 205, 0.35);
+  border-radius: 12px;
+  padding: 20px;
+  margin-top: 16px;
+}
+
+.simulator-control-group {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+.simulator-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  margin-bottom: 4px;
+  display: block;
+}
+
+.simulator-select {
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--card-border);
+  background: var(--card-bg);
+  color: var(--text-main);
+  font-size: 0.82rem;
+  font-weight: 600;
+  outline: none;
+  cursor: pointer;
+}
+
+.simulator-select:focus {
+  border-color: var(--primary);
+}
+
+.calendar-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--card-border);
+  font-size: 0.82rem;
+  transition: background 0.2s ease;
+}
+
+.calendar-card:last-child {
+  border-bottom: none;
+}
+
+.calendar-card:hover {
+  background: rgba(0,0,0,0.015);
+}
+
+/* ================= WHALE TRACKER & ALPHA HUB STYLES ================= */
+.whale-hub-card {
+  background: linear-gradient(135deg, rgba(19, 25, 41, 0.95), rgba(15, 20, 34, 0.95));
+  border: 1px solid rgba(108, 92, 231, 0.35);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4), 0 0 20px rgba(108, 92, 231, 0.1);
+  border-radius: 14px;
+}
+
+.whale-kpi-pill {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--card-border);
+  border-radius: 10px;
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  transition: all 0.2s ease;
+}
+
+.whale-kpi-pill:hover {
+  border-color: rgba(108, 92, 231, 0.4);
+  transform: translateY(-2px);
+}
+
+.whale-gold-badge {
+  background: linear-gradient(135deg, rgba(255, 177, 66, 0.2), rgba(255, 215, 0, 0.1));
+  border: 1px solid rgba(255, 215, 0, 0.5);
+  color: #ffd700;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 0.72rem;
+  letter-spacing: 0.3px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  box-shadow: 0 0 10px rgba(255, 215, 0, 0.15);
+}
+
+.whale-profit-badge {
+  background: linear-gradient(135deg, rgba(0, 230, 118, 0.2), rgba(16, 172, 132, 0.1));
+  border: 1px solid rgba(0, 230, 118, 0.5);
+  color: #00e676;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  box-shadow: 0 0 10px rgba(0, 230, 118, 0.15);
+}
+
+.whale-filter-tab {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--card-border);
+  color: var(--text-muted);
+  font-weight: 600;
+  padding: 6px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.78rem;
+  transition: all 0.2s ease;
+}
+
+.whale-filter-tab:hover {
+  color: var(--text-main);
+  border-color: var(--primary);
+}
+
+.whale-filter-tab.active {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #ffffff;
+  font-weight: 700;
+  box-shadow: 0 0 12px var(--primary-glow);
+}
+
+.whale-action-pulse {
+  position: relative;
+}
+
+.whale-action-pulse::before {
+  content: '';
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--success);
+  margin-right: 6px;
+  box-shadow: 0 0 8px var(--success);
+  animation: pulse 1.8s infinite;
+}
+
+.whale-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(5, 7, 12, 0.85);
+  backdrop-filter: blur(8px);
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.whale-modal-container {
+  background: #141929;
+  border: 1px solid rgba(108, 92, 231, 0.4);
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7), 0 0 30px rgba(108, 92, 231, 0.2);
+  width: 100%;
+  max-width: 520px;
+  padding: 24px;
+  animation: authModalSlideIn 0.3s ease;
+}
+
+/* Telegram Bot Alert Toggle Slider */
+.toggle-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: #2d3748;
+  transition: .3s;
+  border-radius: 24px;
+}
+.toggle-slider:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: .3s;
+  border-radius: 50%;
+}
+input:checked + .toggle-slider {
+  background-color: var(--success);
+}
+input:checked + .toggle-slider:before {
+  transform: translateX(20px);
+}
+
+
+
 
 
 

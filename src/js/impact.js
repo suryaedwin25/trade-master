@@ -59,7 +59,38 @@ window.TradeMasterImpact = (function() {
       }
     },
     {
-      keywords: ['sec', 'etf', 'regulation', 'regulasi', 'tuntut', 'lawsuit', 'crypto ban', 'crypto legal', 'halving'],
+      keywords: ['hack', 'hacked', 'diretas', 'retas', 'exploit', 'breach', 'drain', 'bobol', 'binance hack', 'security breach', 'insolvency', 'bank run', 'kebocoran', 'rugpull'],
+      name: 'Keamanan Bursa Kripto & Insiden Siber (Hack / Exploit / Insolvency)',
+      category: 'Keamanan CEX & DeFi',
+      analyze: (title) => {
+        const text = title.toLowerCase();
+        const isResolved = text.includes('recovered') || text.includes('pulih') || text.includes('safe') || text.includes('safu') || text.includes('ganti rugi');
+        
+        if (isResolved) {
+          return {
+            sentiment: 'Cautious Recovery',
+            cryptoScore: -1,
+            stockScore: 0,
+            goldScore: +1,
+            isCexRisk: false,
+            analysis: 'Dana bursa/protokol berhasil dipulihkan atau dana perlindungan pengguna (SAFU) menutupi kerugian. Sentimen panik mereda secara bertahap.',
+            strategy: 'Pantau arus keluar (outflow) dompet bursa. Tunggu konfirmasi Proof of Reserves sebelum menambah posisi agresif.'
+          };
+        }
+
+        return {
+          sentiment: 'Extreme Risk-Off / Critical Hack Alert',
+          cryptoScore: -5,
+          stockScore: -1,
+          goldScore: +3,
+          isCexRisk: true,
+          analysis: '🚨 PERINGATAN RISIKO TINGGI: Terjadi insiden peretasan, pembobolan likuiditas, atau kegagalan keamanan pada bursa/protokol kripto utama. Membawa risiko penularan (contagion), penarikan dana massal (bank run), dan cascading liquidation.',
+          strategy: '⚠️ JANGAN SEROK BAWAH (Falling Knife)! Segera tarik aset non-trading ke hardware wallet (cold storage). Batalkan order Buy limit hingga kondisi bursa stabil.'
+        };
+      }
+    },
+    {
+      keywords: ['sec', 'etf', 'regulation', 'regulasi', 'tuntut', 'lawsuit', 'crypto ban', 'crypto legal', 'halving', 'binance tuntutan'],
       name: 'Regulasi Kripto & Sentimen Industri',
       category: 'Regulasi',
       analyze: (title) => {
@@ -265,11 +296,18 @@ window.TradeMasterImpact = (function() {
         summary = '⚖️ Sentimen Campuran: Ada divergensi pergerakan antara instrumen Crypto dan Saham lokal Indonesia. Lakukan alokasi selektif.';
       }
 
+      const hasCexRisk = analyzedNewsList.some(item => item.isCexRisk === true);
+      if (hasCexRisk) {
+        summary = '🚨 WASPADA TINGGI: Terdeteksi ancaman peretasan (hack/exploit) bursa kripto! Seluruh sinyal beli teknikal disarankan ditunda (Safety Filter Enabled) hingga situasi keamanan likuiditas terverifikasi.';
+        cryptoSentiment = 'EXTREME RISK-OFF (HACK ALERT)';
+      }
+
       return {
         cryptoSentiment,
         stockSentiment,
         cryptoScore: Math.round(avgCrypto * 10) / 10,
         stockScore: Math.round(avgStock * 10) / 10,
+        hasCexRisk,
         summary
       };
     }

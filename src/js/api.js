@@ -47,34 +47,80 @@ window.TradeMasterAPI = (function() {
   let currentWS = null;
 
   return {
-    // 1. Crypto API - Get Top Market Data (REST)
+    // 1. Crypto API - Get Top Market Data (REST) with Bybit & Gate.io Failover
     async getCryptoTickers() {
-      // Fetch prices for top pairs from Binance
       const symbols = ['BTCUSDT', 'ETHUSDT', 'SOLUSDT', 'BNBUSDT', 'ADAUSDT', 'XRPUSDT', 'DOGEUSDT', 'DOTUSDT'];
+      
+      // 1. Try Binance
       try {
         const data = await fetchJSON('https://api.binance.com/api/v3/ticker/24hr');
-        return data.filter(item => symbols.includes(item.symbol)).map(item => ({
-          symbol: item.symbol.replace('USDT', ''),
-          pair: item.symbol,
-          price: parseFloat(item.lastPrice),
-          change: parseFloat(item.priceChangePercent),
-          high: parseFloat(item.highPrice),
-          low: parseFloat(item.lowPrice),
-          volume: parseFloat(item.volume)
-        }));
+        if (Array.isArray(data) && data.length > 0) {
+          return data.filter(item => symbols.includes(item.symbol)).map(item => ({
+            symbol: item.symbol.replace('USDT', ''),
+            pair: item.symbol,
+            price: parseFloat(item.lastPrice),
+            change: parseFloat(item.priceChangePercent),
+            high: parseFloat(item.highPrice),
+            low: parseFloat(item.lowPrice),
+            volume: parseFloat(item.volume)
+          }));
+        }
       } catch (err) {
-        console.error('Failed to fetch crypto tickers from Binance:', err);
-        // Fallback mockup in case of network issue
-        return symbols.map(sym => ({
-          symbol: sym.replace('USDT', ''),
-          pair: sym,
-          price: sym === 'BTCUSDT' ? 97000 : sym === 'ETHUSDT' ? 2700 : sym === 'SOLUSDT' ? 175 : sym === 'BNBUSDT' ? 600 : 150,
-          change: 1.5,
-          high: 160,
-          low: 140,
-          volume: 100000
-        }));
+        console.warn('Primary Binance tickers fetch failed or blocked, attempting Bybit failover:', err);
       }
+
+      // 2. Failover to Bybit
+      try {
+        const data = await fetchJSON('https://api.bybit.com/v5/market/tickers?category=spot');
+        const list = data?.result?.list || [];
+        if (Array.isArray(list) && list.length > 0) {
+          return list.filter(item => symbols.includes(item.symbol)).map(item => ({
+            symbol: item.symbol.replace('USDT', ''),
+            pair: item.symbol,
+            price: parseFloat(item.lastPrice),
+            change: parseFloat(item.price24hPcnt) * 100,
+            high: parseFloat(item.highPrice24h),
+            low: parseFloat(item.lowPrice24h),
+            volume: parseFloat(item.volume24h)
+          }));
+        }
+      } catch (err) {
+        console.warn('Bybit tickers fetch failed, attempting Gate.io failover:', err);
+      }
+
+      // 3. Failover to Gate.io
+      try {
+        const data = await fetchJSON('https://api.gateio.ws/api/v4/spot/tickers');
+        if (Array.isArray(data) && data.length > 0) {
+          const gatePairs = symbols.map(s => s.replace('USDT', '_USDT'));
+          return data.filter(item => gatePairs.includes(item.currency_pair)).map(item => ({
+            symbol: item.currency_pair.replace('_USDT', ''),
+            pair: item.currency_pair.replace('_', ''),
+            price: parseFloat(item.last),
+            change: parseFloat(item.change_percentage),
+            high: parseFloat(item.high_24h),
+            low: parseFloat(item.low_24h),
+            volume: parseFloat(item.base_volume)
+          }));
+        }
+      } catch (err) {
+        console.warn('Gate.io tickers fetch failed, using fallback:', err);
+      }
+
+      // 4. Fallback realistic snapshot if all CEX APIs blocked
+      return symbols.map(sym => {
+        const s = sym.replace('USDT', '');
+        const p = s === 'BTC' ? 88500 : s === 'ETH' ? 2650 : s === 'SOL' ? 142 : s === 'BNB' ? 580 : s === 'XRP' ? 1.85 : s === 'DOGE' ? 0.22 : 12;
+        return {
+          symbol: s,
+          pair: sym,
+          price: p,
+          change: -1.2,
+          high: p * 1.03,
+          low: p * 0.96,
+          volume: 250000
+        };
+      });
     },
 
     // 2. Crypto API - Live Trades Stream (WebSocket)
@@ -314,7 +360,7 @@ window.TradeMasterAPI = (function() {
     },
 
     // 5. Global News API - Fetch Financial & Geopolitical News
-    async getGlobalNews(queries = ['financial market', 'geopolitics', 'saham indonesia', 'crypto regulation']) {
+    async getGlobalNews(queries = ['financial market', 'geopolitics', 'saham indonesia', 'crypto regulation', 'crypto security hack']) {
       // Use Google News RSS feed search wrapped in CORS proxy
       const searchQuery = queries.join(' OR ');
       const url = `https://news.google.com/rss/search?q=${encodeURIComponent(searchQuery)}&hl=id&gl=ID&ceid=ID:id`;
@@ -362,6 +408,57 @@ window.TradeMasterAPI = (function() {
             source: "CryptoNews Fallback"
           }
         ];
+      }
+    },
+
+    // 6. Telegram Bot API - Send Realtime Whale Position Alerts
+    async sendTelegramMessage(botToken, chatId, messageHtml) {
+      if (!botToken || !chatId || !messageHtml) {
+        throw new Error('Bot Token, Chat ID, and message text are required.');
+      }
+      
+      const cleanToken = botToken.trim().replace(/^bot/i, '');
+      const cleanChatId = chatId.trim();
+      const endpoint = `https://api.telegram.org/bot${cleanToken}/sendMessage`;
+
+      const payload = {
+        chat_id: cleanChatId,
+        text: messageHtml,
+        parse_mode: 'HTML',
+        disable_web_page_preview: true
+      };
+
+      try {
+        const response = await fetch(endpoint, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(payload)
+        });
+
+        const result = await response.json();
+        if (!result.ok) {
+          throw new Error(result.description || 'Gagal mengirim pesan Telegram.');
+        }
+        return { success: true, result };
+      } catch (err) {
+        // If direct fetch fails (e.g. network/firewall), try via CORS proxy fallback
+        try {
+          const proxyEndpoint = `https://api.allorigins.win/raw?url=${encodeURIComponent(endpoint)}`;
+          const proxyResponse = await fetch(proxyEndpoint, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+          const proxyResult = await proxyResponse.json();
+          if (proxyResult.ok) {
+            return { success: true, result: proxyResult };
+          }
+        } catch (proxyErr) {
+          console.warn('Telegram proxy failover also failed:', proxyErr);
+        }
+        throw err;
       }
     }
   };
