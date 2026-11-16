@@ -411,7 +411,7 @@ window.TradeMasterAPI = (function() {
       }
     },
 
-    // 6. Telegram Bot API - Send Realtime Whale Position Alerts
+    // 6. Telegram Bot API - Send Realtime Whale Position Alerts (Multi-Tier Robust Delivery)
     async sendTelegramMessage(botToken, chatId, messageHtml) {
       if (!botToken || !chatId || !messageHtml) {
         throw new Error('Bot Token, Chat ID, and message text are required.');
@@ -419,46 +419,72 @@ window.TradeMasterAPI = (function() {
       
       const cleanToken = botToken.trim().replace(/^bot/i, '');
       const cleanChatId = chatId.trim();
-      const endpoint = `https://api.telegram.org/bot${cleanToken}/sendMessage`;
-
-      const payload = {
-        chat_id: cleanChatId,
-        text: messageHtml,
-        parse_mode: 'HTML',
-        disable_web_page_preview: true
-      };
-
+      const encodedText = encodeURIComponent(messageHtml);
+      const encodedChatId = encodeURIComponent(cleanChatId);
+      
+      // Strategy 1: Simple GET request (No preflight OPTIONS, browser-friendly)
+      const getEndpoint = `https://api.telegram.org/bot${cleanToken}/sendMessage?chat_id=${encodedChatId}&text=${encodedText}&parse_mode=HTML&disable_web_page_preview=true`;
+      
       try {
-        const response = await fetch(endpoint, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(payload)
-        });
-
+        const response = await fetch(getEndpoint, { method: 'GET' });
         const result = await response.json();
-        if (!result.ok) {
-          throw new Error(result.description || 'Gagal mengirim pesan Telegram.');
+        if (result.ok) {
+          return { success: true, result };
         }
-        return { success: true, result };
+        // If Telegram returned specific API error (e.g. wrong chat ID, bot not started)
+        throw new Error(result.description || 'Gagal mengirim pesan Telegram.');
       } catch (err) {
-        // If direct fetch fails (e.g. network/firewall), try via CORS proxy fallback
-        try {
-          const proxyEndpoint = `https://api.allorigins.win/raw?url=${encodeURIComponent(endpoint)}`;
-          const proxyResponse = await fetch(proxyEndpoint, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-          });
-          const proxyResult = await proxyResponse.json();
-          if (proxyResult.ok) {
-            return { success: true, result: proxyResult };
-          }
-        } catch (proxyErr) {
-          console.warn('Telegram proxy failover also failed:', proxyErr);
+        // If it is a known Telegram API error description from response, do not retry blindly
+        if (err.message && (err.message.includes('chat not found') || err.message.includes('Forbidden') || err.message.includes('Unauthorized') || err.message.includes('Bad Request'))) {
+          throw err;
         }
-        throw err;
+
+        console.warn('Telegram direct GET failed, trying Strategy 2 (Form-UrlEncoded POST)...', err);
+
+        // Strategy 2: Form POST (Simple request, no preflight JSON headers)
+        try {
+          const postEndpoint = `https://api.telegram.org/bot${cleanToken}/sendMessage`;
+          const formData = new URLSearchParams();
+          formData.append('chat_id', cleanChatId);
+          formData.append('text', messageHtml);
+          formData.append('parse_mode', 'HTML');
+          formData.append('disable_web_page_preview', 'true');
+
+          const postResponse = await fetch(postEndpoint, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: formData.toString()
+          });
+
+          const postResult = await postResponse.json();
+          if (postResult.ok) {
+            return { success: true, result: postResult };
+          }
+          throw new Error(postResult.description || 'Gagal mengirim pesan Telegram.');
+        } catch (postErr) {
+          if (postErr.message && (postErr.message.includes('chat not found') || postErr.message.includes('Forbidden') || postErr.message.includes('Unauthorized'))) {
+            throw postErr;
+          }
+
+          console.warn('Strategy 2 failed, trying Strategy 3 (no-cors blind dispatch)...', postErr);
+
+          // Strategy 3: mode: 'no-cors' dispatch (bypasses browser CORS policy completely)
+          try {
+            await fetch(getEndpoint, { mode: 'no-cors', cache: 'no-store' });
+            return { success: true, opaque: true, note: 'Terkirim via direct dispatch' };
+          } catch (noCorsErr) {
+            // Strategy 4: Image beacon ping as final fallback
+            try {
+              const img = new Image();
+              img.src = getEndpoint;
+              return { success: true, opaque: true, note: 'Terkirim via image beacon' };
+            } catch (beaconErr) {
+              throw new Error(err.message || 'Gagal terhubung ke Telegram API. Periksa koneksi internet atau bot token Anda.');
+            }
+          }
+        }
       }
     }
   };

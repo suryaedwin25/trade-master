@@ -1257,14 +1257,17 @@
           </div>
         </div>
 
+        <!-- Inline Status & Error Message Box (Visible even if browser blocks alert dialogs) -->
+        <div id="telegram-modal-status-msg" style="display: none; padding: 12px 14px; border-radius: 8px; font-size: 0.8rem; line-height: 1.5; margin-top: 10px;"></div>
+
         <!-- Buttons -->
         <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px; border-top: 1px solid var(--card-border); padding-top: 14px; flex-wrap: wrap; gap: 10px;">
-          <button type="button" class="btn btn-secondary" onclick="TradeMasterApp.sendTestTelegramAlert()" style="display: flex; align-items: center; gap: 6px; font-size: 0.78rem; border-color: rgba(0,136,204,0.4); background: rgba(0,136,204,0.1); color: #0088cc; font-weight: bold; cursor: pointer;">
+          <button type="button" id="btn-send-telegram-test" class="btn btn-secondary" onclick="TradeMasterApp.sendTestTelegramAlert()" style="display: flex; align-items: center; gap: 6px; font-size: 0.78rem; border-color: rgba(0,136,204,0.4); background: rgba(0,136,204,0.1); color: #0088cc; font-weight: bold; cursor: pointer;">
             <span>🚀 Kirim Test Notifikasi</span>
           </button>
           <div style="display: flex; gap: 8px;">
             <button type="button" class="btn btn-secondary" onclick="TradeMasterApp.closeTelegramModal()">Tutup</button>
-            <button type="submit" class="btn btn-primary" style="display: flex; align-items: center; gap: 6px;">
+            <button type="submit" id="btn-save-telegram-config" class="btn btn-primary" style="display: flex; align-items: center; gap: 6px;">
               <i data-lucide="check" style="width: 14px; height: 14px;"></i> Simpan Pengaturan
             </button>
           </div>
@@ -1278,12 +1281,12 @@
   <script src="https://unpkg.com/lucide@latest"></script>
 
   <!-- Core App Scripts (Explicit dependency order) -->
-  <script src="src/js/auth.js?v=3.2"></script>
-  <script src="src/js/api.js?v=3.2"></script>
-  <script src="src/js/ta.js?v=3.2"></script>
-  <script src="src/js/impact.js?v=3.2"></script>
-  <script src="src/js/macro.js?v=3.2"></script>
-  <script src="src/js/app.js?v=3.2"></script>
+  <script src="src/js/auth.js?v=3.3"></script>
+  <script src="src/js/api.js?v=3.3"></script>
+  <script src="src/js/ta.js?v=3.3"></script>
+  <script src="src/js/impact.js?v=3.3"></script>
+  <script src="src/js/macro.js?v=3.3"></script>
+  <script src="src/js/app.js?v=3.3"></script>
 
 </body>
 </html>
