@@ -5869,6 +5869,13 @@ window.TradeMasterApp = (function() {
       renderStrategyPage();
     } else if (pageId === 'macro') {
       renderMacroPage();
+    } else if (pageId === 'telegram') {
+      const cfg = state.telegramConfig || {};
+      const pToken = document.getElementById('page-telegram-bot-token');
+      const pChat = document.getElementById('page-telegram-chat-id');
+      if (pToken && cfg.botToken) pToken.value = cfg.botToken;
+      if (pChat && cfg.chatId) pChat.value = cfg.chatId;
+      updateTelegramStatusBadge();
     }
   }
 

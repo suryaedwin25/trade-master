@@ -12,7 +12,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   
   <!-- Global Custom Stylesheets -->
-  <link rel="stylesheet" href="src/styles/main.css?v=3.4">
+  <link rel="stylesheet" href="src/styles/main.css?v=3.5">
 </head>
 <body>
   <div class="app-container">
@@ -25,31 +25,31 @@
       </div>
       
       <nav class="nav-menu">
-        <div class="nav-item active" onclick="TradeMasterApp.navigateTo('dashboard')">
+        <div class="nav-item active" onclick="navigateTo('dashboard')">
           <i data-lucide="layout-dashboard"></i>
           <span>Dashboard</span>
         </div>
-        <div class="nav-item" onclick="TradeMasterApp.navigateTo('crypto')">
+        <div class="nav-item" onclick="navigateTo('crypto')">
           <i data-lucide="coins"></i>
           <span>Crypto Terminal</span>
         </div>
-        <div class="nav-item" onclick="TradeMasterApp.navigateTo('dashboard'); setTimeout(() => { const el = document.getElementById('dashboard-whale-hub'); if(el) el.scrollIntoView({behavior:'smooth'}); }, 100);">
+        <div class="nav-item" onclick="navigateTo('dashboard'); setTimeout(() => { const el = document.getElementById('dashboard-whale-hub'); if(el) el.scrollIntoView({behavior:'smooth'}); }, 100);">
           <i data-lucide="radar"></i>
           <span>Whale Radar (90%+ WR)</span>
         </div>
-        <div class="nav-item" onclick="TradeMasterApp.navigateTo('macro')">
+        <div class="nav-item" onclick="navigateTo('macro')">
           <i data-lucide="globe-2"></i>
           <span>Macro & Fund Flow</span>
         </div>
-        <div class="nav-item" onclick="TradeMasterApp.navigateTo('news')">
+        <div class="nav-item" onclick="navigateTo('news')">
           <i data-lucide="globe"></i>
           <span>News & Geopolitics</span>
         </div>
-        <div class="nav-item" onclick="TradeMasterApp.navigateTo('strategy')">
+        <div class="nav-item" onclick="navigateTo('strategy')">
           <i data-lucide="cpu"></i>
           <span>Strategy Center</span>
         </div>
-        <div class="nav-item" onclick="TradeMasterApp.navigateTo('telegram')">
+        <div class="nav-item" onclick="navigateTo('telegram')">
           <i data-lucide="bell-ring"></i>
           <span>Telegram Alerts</span>
         </div>
@@ -1157,7 +1157,7 @@
   </div>
 
   <!-- Modal Dialog for Whale Portfolio Management -->
-  <div id="whale-modal" class="modal-overlay">
+  <div id="whale-modal" class="modal-overlay" style="display: none !important;">
     <div class="modal-content">
       <div class="modal-header">
         <h3 id="whale-modal-title">Tambah Data Whale</h3>
@@ -1196,8 +1196,10 @@
         <button class="btn btn-primary" onclick="TradeMasterApp.saveWhaleData()">Simpan</button>
       </div>
     </div>
+  </div>
+
   <!-- Modal Dialog for Crypto Whale Watcher -->
-  <div id="crypto-whale-modal" class="modal-overlay">
+  <div id="crypto-whale-modal" class="modal-overlay" style="display: none !important;">
     <div class="modal-content">
       <div class="modal-header">
         <h3 id="crypto-whale-modal-title">Tambah Smart Money Wallet</h3>
@@ -1248,7 +1250,7 @@
   </div>
 
   <!-- Modal Dialog for Security & 2FA Settings -->
-  <div id="tm-security-modal" class="modal-overlay">
+  <div id="tm-security-modal" class="modal-overlay" style="display: none !important;">
     <div class="modal-content" style="max-width: 540px;">
       <div class="modal-header">
         <h3 style="display:flex; align-items:center; gap:8px;">
@@ -1439,17 +1441,17 @@
   <script src="https://unpkg.com/lucide@latest"></script>
 
   <!-- Core App Scripts (Explicit dependency order) -->
-  <script src="src/js/auth.js?v=3.4"></script>
-  <script src="src/js/api.js?v=3.4"></script>
-  <script src="src/js/ta.js?v=3.4"></script>
-  <script src="src/js/impact.js?v=3.4"></script>
-  <script src="src/js/macro.js?v=3.4"></script>
-  <script src="src/js/app.js?v=3.4"></script>
+  <script src="src/js/auth.js?v=3.5"></script>
+  <script src="src/js/api.js?v=3.5"></script>
+  <script src="src/js/ta.js?v=3.5"></script>
+  <script src="src/js/impact.js?v=3.5"></script>
+  <script src="src/js/macro.js?v=3.5"></script>
+  <script src="src/js/app.js?v=3.5"></script>
 
   <!-- Self-Contained Inline Telegram Controller (Cache-Proof & Zero-Dependency) -->
   <script>
     (function() {
-      console.log('Mounting TradeMaster Telegram Controller...');
+      console.log('Mounting TradeMaster Telegram Controller & Bulletproof Navigator...');
 
       function getSavedConfig() {
         try {
@@ -1459,6 +1461,51 @@
           return null;
         }
       }
+
+      // Global Bulletproof Navigation Handler
+      window.navigateTo = function(pageId, assetSymbol) {
+        console.log('Navigating to page:', pageId);
+        // 1. Toggle Active Nav Item
+        document.querySelectorAll('.nav-item').forEach(item => {
+          item.classList.remove('active');
+          const oc = item.getAttribute('onclick') || '';
+          if (oc.includes("'" + pageId + "'") || oc.includes('"' + pageId + '"')) {
+            item.classList.add('active');
+          }
+        });
+
+        // 2. Toggle Active Page Section
+        document.querySelectorAll('.page-section').forEach(sec => {
+          sec.classList.remove('active');
+        });
+        const target = document.getElementById('page-' + pageId);
+        if (target) {
+          target.classList.add('active');
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // 3. Sync page-telegram fields if navigating to telegram
+        if (pageId === 'telegram') {
+          const cfg = getSavedConfig();
+          if (cfg) {
+            syncFieldsFromConfig(cfg);
+            updateBadges(cfg);
+          }
+        }
+
+        // 4. Delegate to TradeMasterApp if available
+        if (window.TradeMasterApp && typeof window.TradeMasterApp.navigateTo === 'function') {
+          try {
+            window.TradeMasterApp.navigateTo(pageId, assetSymbol);
+          } catch (e) {
+            console.warn('TradeMasterApp.navigateTo delegated call error:', e);
+          }
+        }
+      };
+
+      // Also ensure TradeMasterApp.navigateTo exists
+      window.TradeMasterApp = window.TradeMasterApp || {};
+      window.TradeMasterApp.navigateTo = window.navigateTo;
 
       function showStatus(msg, type, targetBoxId = 'telegram-modal-status-msg') {
         const box = document.getElementById(targetBoxId);

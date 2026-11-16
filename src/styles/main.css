@@ -81,7 +81,9 @@ h1, h2, h3, h4, h5, h6, .page-title, .card-title, .logo-text {
   flex-direction: column;
   height: 100%;
   flex-shrink: 0;
-  z-index: 100;
+  z-index: 9999;
+  position: relative;
+  pointer-events: auto !important;
 }
 
 .logo-section {
@@ -132,10 +134,12 @@ h1, h2, h3, h4, h5, h6, .page-title, .card-title, .logo-text {
   border-radius: 8px;
   font-size: 0.95rem;
   font-weight: 500;
-  cursor: pointer;
+  cursor: pointer !important;
+  pointer-events: auto !important;
   position: relative;
   overflow: hidden;
   transition: var(--transition);
+  user-select: none;
 }
 
 .nav-item:hover {
