@@ -12,7 +12,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   
   <!-- Global Custom Stylesheets -->
-  <link rel="stylesheet" href="src/styles/main.css?v=3.0">
+  <link rel="stylesheet" href="src/styles/main.css?v=3.4">
 </head>
 <body>
   <div class="app-container">
@@ -49,7 +49,7 @@
           <i data-lucide="cpu"></i>
           <span>Strategy Center</span>
         </div>
-        <div class="nav-item" onclick="(window.openTelegramModal || (window.TradeMasterApp && TradeMasterApp.openTelegramModal))()">
+        <div class="nav-item" onclick="TradeMasterApp.navigateTo('telegram')">
           <i data-lucide="bell-ring"></i>
           <span>Telegram Alerts</span>
         </div>
@@ -993,6 +993,164 @@
           </div>
         </div>
 
+        <!-- 6. TELEGRAM WHALE ALERT CONFIGURATION FULL PAGE -->
+        <div id="page-telegram" class="page-section">
+          <div class="page-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 24px;">
+            <div>
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <span style="font-size: 1.8rem;">✈️</span>
+                <h1 class="page-title" style="margin: 0; font-size: 1.4rem;">Telegram Whale Alert Center</h1>
+                <span class="whale-gold-badge" style="background: rgba(0, 136, 204, 0.2); border-color: rgba(0, 136, 204, 0.5); color: #0088cc; font-size: 0.72rem; padding: 4px 8px; border-radius: 4px;">
+                  Realtime Push Notif
+                </span>
+              </div>
+              <p class="page-subtitle" style="margin-top: 6px; font-size: 0.85rem; color: var(--text-muted);">
+                Koneksikan bot Telegram Anda untuk menerima alert real-time instan setiap kali <b>Whale Smart Money ($500k+ PnL, 90%+ Win Rate)</b> membuka posisi baru atau melakukan take profit.
+              </p>
+            </div>
+            <div id="page-telegram-badge" style="padding: 8px 16px; border-radius: 20px; font-weight: 700; font-size: 0.85rem; background: rgba(255,255,255,0.05); border: 1px solid var(--card-border); color: #b0bec5; display: flex; align-items: center; gap: 8px;">
+              <span class="dot" style="background: #b0bec5; width: 8px; height: 8px; border-radius: 50%;"></span>
+              <span>Status: <b id="page-telegram-badge-text">Belum Terkoneksi</b></span>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 24px;">
+            
+            <!-- Left Column: Form Setup -->
+            <div class="whale-hub-card" style="padding: 24px; border-radius: 14px; background: var(--card-bg); border: 1px solid var(--card-border);">
+              <h3 style="font-size: 1.1rem; font-weight: 800; color: #fff; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
+                <span>⚙️</span> Pengaturan Kredensial Bot
+              </h3>
+
+              <form id="form-telegram-page" onsubmit="event.preventDefault(); savePageTelegramConfig();" style="display: flex; flex-direction: column; gap: 16px;">
+                <!-- Toggle Switch -->
+                <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.03); border: 1px solid var(--card-border); padding: 12px 16px; border-radius: 10px;">
+                  <div>
+                    <div style="font-weight: 700; font-size: 0.9rem; color: #fff;">Aktifkan Push Notifikasi</div>
+                    <div style="font-size: 0.72rem; color: var(--text-muted);">Sistem akan otomatis mengirim pesan ke Telegram saat sinyal terdeteksi</div>
+                  </div>
+                  <label style="position: relative; display: inline-block; width: 48px; height: 26px; cursor: pointer;">
+                    <input type="checkbox" id="page-telegram-enable-toggle" checked style="opacity: 0; width: 0; height: 0;">
+                    <span class="toggle-slider"></span>
+                  </label>
+                </div>
+
+                <div>
+                  <label style="font-size: 0.78rem; color: var(--text-muted); font-weight: bold; display: block; margin-bottom: 6px;">Telegram Bot Token</label>
+                  <input type="text" id="page-telegram-bot-token" placeholder="Contoh: 1234567890:ABCdefGhIJKlmNoPQRsTUVwxyZ" class="select-asset" style="width: 100%; padding: 12px 14px; background: rgba(0,0,0,0.35); font-family: monospace; font-size: 0.85rem; border-radius: 8px;">
+                </div>
+
+                <div>
+                  <label style="font-size: 0.78rem; color: var(--text-muted); font-weight: bold; display: block; margin-bottom: 6px;">Telegram Chat ID Anda</label>
+                  <input type="text" id="page-telegram-chat-id" placeholder="Contoh: 987654321 (Dapatkan dari @userinfobot)" class="select-asset" style="width: 100%; padding: 12px 14px; background: rgba(0,0,0,0.35); font-family: monospace; font-size: 0.85rem; border-radius: 8px;">
+                </div>
+
+                <!-- Event Triggers -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                  <div style="background: rgba(0, 230, 118, 0.05); border: 1px solid rgba(0, 230, 118, 0.25); padding: 12px; border-radius: 10px;">
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.8rem; font-weight: bold; color: var(--success);">
+                      <input type="checkbox" id="page-telegram-alert-open" checked>
+                      <span>🟢 Buka Posisi (OPEN)</span>
+                    </label>
+                    <div style="font-size: 0.68rem; color: var(--text-muted); margin-top: 4px;">Kirim saat Whale entry/akumulasi aset</div>
+                  </div>
+                  <div style="background: rgba(238, 82, 83, 0.05); border: 1px solid rgba(238, 82, 83, 0.25); padding: 12px; border-radius: 10px;">
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.8rem; font-weight: bold; color: #ff7675;">
+                      <input type="checkbox" id="page-telegram-alert-close" checked>
+                      <span>🔴 Tutup Posisi (CLOSE)</span>
+                    </label>
+                    <div style="font-size: 0.68rem; color: var(--text-muted); margin-top: 4px;">Kirim saat Whale take profit/exit</div>
+                  </div>
+                </div>
+
+                <!-- Live Status Feedback Message Box -->
+                <div id="page-telegram-status-msg" style="display: none; padding: 14px; border-radius: 10px; font-size: 0.82rem; line-height: 1.5;"></div>
+
+                <!-- Action Buttons -->
+                <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 6px;">
+                  <button type="button" id="page-btn-send-test" onclick="sendPageTestAlert()" class="btn btn-secondary" style="flex: 1; padding: 12px; font-weight: bold; color: #0088cc; border-color: rgba(0,136,204,0.5); background: rgba(0,136,204,0.12); cursor: pointer; border-radius: 8px;">
+                    <span>🚀 Kirim Test Notifikasi</span>
+                  </button>
+                  <button type="submit" class="btn btn-primary" style="flex: 1; padding: 12px; font-weight: bold; cursor: pointer; border-radius: 8px;">
+                    <span>💾 Simpan Pengaturan</span>
+                  </button>
+                </div>
+
+                <!-- Simulation Trigger -->
+                <div style="margin-top: 10px; padding-top: 14px; border-top: 1px solid var(--card-border);">
+                  <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 8px; font-weight: 600;">SIMULASI NOTIFIKASI REAL-TIME:</div>
+                  <div style="display: flex; gap: 8px;">
+                    <button type="button" onclick="simulateWhaleSignalFromPage('OPEN')" class="btn btn-secondary" style="flex: 1; font-size: 0.72rem; padding: 8px; border-color: rgba(0,230,118,0.3); color: var(--success); cursor: pointer;">
+                      Simulasi Whale OPEN 🟢
+                    </button>
+                    <button type="button" onclick="simulateWhaleSignalFromPage('CLOSE')" class="btn btn-secondary" style="flex: 1; font-size: 0.72rem; padding: 8px; border-color: rgba(238,82,83,0.3); color: #ff7675; cursor: pointer;">
+                      Simulasi Whale TP/CLOSE 🔴
+                    </button>
+                  </div>
+                </div>
+              </form>
+            </div>
+
+            <!-- Right Column: Step-by-Step Guide & Whale Specs -->
+            <div style="display: flex; flex-direction: column; gap: 20px;">
+              
+              <!-- 3 Easy Steps Card -->
+              <div class="whale-hub-card" style="padding: 24px; border-radius: 14px; background: rgba(0, 136, 204, 0.05); border: 1px solid rgba(0, 136, 204, 0.3);">
+                <h3 style="font-size: 1.05rem; font-weight: 800; color: #fff; margin-bottom: 14px; display: flex; align-items: center; gap: 8px;">
+                  <span>💡</span> Panduan Menghubungkan (3 Langkah Mudah)
+                </h3>
+
+                <div style="display: flex; flex-direction: column; gap: 14px; font-size: 0.8rem; color: #b8e6ff; line-height: 1.5;">
+                  <div style="display: flex; gap: 12px;">
+                    <span style="background: rgba(0,136,204,0.3); color: #fff; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0;">1</span>
+                    <div>
+                      <b style="color: #fff;">Buat Bot Baru di @BotFather:</b>
+                      <div style="margin-top: 2px;">Buka Telegram, ketik <code>/newbot</code>, ikuti instruksi, lalu copy <b>HTTP API Token</b>.</div>
+                      <a href="https://t.me/BotFather" target="_blank" style="margin-top: 6px; display: inline-flex; align-items: center; gap: 4px; background: rgba(0,136,204,0.25); border: 1px solid rgba(0,136,204,0.6); color: #fff; padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; text-decoration: none; font-weight: bold;">
+                        👉 Buka @BotFather di Telegram ↗
+                      </a>
+                    </div>
+                  </div>
+
+                  <div style="display: flex; gap: 12px;">
+                    <span style="background: #ff9800; color: #000; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0;">2</span>
+                    <div>
+                      <b style="color: #ffd166;">PENTING: Tekan START pada Bot Anda:</b>
+                      <div style="margin-top: 2px;">Buka bot yang baru saja Anda buat di Telegram, lalu klik tombol <b>START</b> (atau kirim <code>/start</code>). Ini wajib agar Telegram mengizinkan bot mengirim pesan ke Anda.</div>
+                    </div>
+                  </div>
+
+                  <div style="display: flex; gap: 12px;">
+                    <span style="background: rgba(0,136,204,0.3); color: #fff; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0;">3</span>
+                    <div>
+                      <b style="color: #fff;">Cek Chat ID Anda di @userinfobot:</b>
+                      <div style="margin-top: 2px;">Buka @userinfobot, klik start, lalu copy deretan angka pada baris <b>Id:</b> (misal: <code>582910481</code>).</div>
+                      <a href="https://t.me/userinfobot" target="_blank" style="margin-top: 6px; display: inline-flex; align-items: center; gap: 4px; background: rgba(0,136,204,0.25); border: 1px solid rgba(0,136,204,0.6); color: #fff; padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; text-decoration: none; font-weight: bold;">
+                        👉 Buka @userinfobot di Telegram ↗
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Filter Spec Summary Card -->
+              <div class="whale-hub-card" style="padding: 20px; border-radius: 14px; background: var(--card-bg); border: 1px solid var(--card-border);">
+                <h4 style="font-size: 0.9rem; font-weight: 800; color: #fff; margin-bottom: 10px; display: flex; align-items: center; gap: 6px;">
+                  <span>🎯</span> Kriteria Whale yang Dikirim ke Telegram:
+                </h4>
+                <ul style="font-size: 0.78rem; color: var(--text-muted); margin-left: 18px; display: flex; flex-direction: column; gap: 6px;">
+                  <li>Minimal Realized Profit: <b style="color: var(--success);">$500,000 USD</b></li>
+                  <li>Minimal Win Rate Historis: <b style="color: #ffd700;">90.0%</b></li>
+                  <li>Cakupan Aset: <b>BTC, ETH, SOL, & High-Conviction Alts</b></li>
+                  <li>Tipe Notifikasi: Entry Price, Sizing, SL/TP target, & On-chain Wallet Address</li>
+                </ul>
+              </div>
+
+            </div>
+
+          </div>
+        </div>
+
       </section>
     </main>
 
@@ -1109,8 +1267,8 @@
   </div>
 
   <!-- Modal Tambah Custom Whale (Criteria: Profit >= $500k USD & Win Rate >= 90%) -->
-  <div id="modal-add-whale" class="whale-modal-overlay" style="display: none;">
-    <div class="whale-modal-container">
+  <div id="modal-add-whale" class="whale-modal-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(5, 7, 12, 0.92); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); z-index: 99999999; align-items: center; justify-content: center; padding: 20px; box-sizing: border-box;">
+    <div class="whale-modal-container" style="background: #141929; border: 1px solid rgba(108, 92, 231, 0.5); border-radius: 16px; box-shadow: 0 25px 70px rgba(0, 0, 0, 0.85); width: 100%; max-width: 540px; padding: 24px; max-height: 90vh; overflow-y: auto; color: #fff; box-sizing: border-box;">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid var(--card-border); padding-bottom: 12px;">
         <div style="display: flex; align-items: center; gap: 8px;">
           <span style="font-size: 1.3rem;">🐋</span>
@@ -1175,8 +1333,8 @@
   </div>
 
   <!-- Modal Konfigurasi Notifikasi Telegram Whale Alerts -->
-  <div id="modal-telegram-config" class="whale-modal-overlay" style="display: none;">
-    <div class="whale-modal-container" style="max-width: 560px;">
+  <div id="modal-telegram-config" class="whale-modal-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(5, 7, 12, 0.92); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); z-index: 99999999; align-items: center; justify-content: center; padding: 20px; box-sizing: border-box;">
+    <div class="whale-modal-container" style="background: #141929; border: 1px solid rgba(108, 92, 231, 0.5); border-radius: 16px; box-shadow: 0 25px 70px rgba(0, 0, 0, 0.85), 0 0 40px rgba(108, 92, 231, 0.25); width: 100%; max-width: 580px; padding: 24px; max-height: 90vh; overflow-y: auto; color: #fff; box-sizing: border-box;">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid var(--card-border); padding-bottom: 12px;">
         <div style="display: flex; align-items: center; gap: 8px;">
           <span style="font-size: 1.4rem;">✈️</span>
@@ -1281,12 +1439,12 @@
   <script src="https://unpkg.com/lucide@latest"></script>
 
   <!-- Core App Scripts (Explicit dependency order) -->
-  <script src="src/js/auth.js?v=3.3"></script>
-  <script src="src/js/api.js?v=3.3"></script>
-  <script src="src/js/ta.js?v=3.3"></script>
-  <script src="src/js/impact.js?v=3.3"></script>
-  <script src="src/js/macro.js?v=3.3"></script>
-  <script src="src/js/app.js?v=3.3"></script>
+  <script src="src/js/auth.js?v=3.4"></script>
+  <script src="src/js/api.js?v=3.4"></script>
+  <script src="src/js/ta.js?v=3.4"></script>
+  <script src="src/js/impact.js?v=3.4"></script>
+  <script src="src/js/macro.js?v=3.4"></script>
+  <script src="src/js/app.js?v=3.4"></script>
 
   <!-- Self-Contained Inline Telegram Controller (Cache-Proof & Zero-Dependency) -->
   <script>
@@ -1302,8 +1460,8 @@
         }
       }
 
-      function showStatus(msg, type) {
-        const box = document.getElementById('telegram-modal-status-msg');
+      function showStatus(msg, type, targetBoxId = 'telegram-modal-status-msg') {
+        const box = document.getElementById(targetBoxId);
         if (!box) return;
         box.style.display = 'block';
         if (type === 'success') {
@@ -1324,6 +1482,8 @@
 
       function updateBadges(cfg) {
         const isEnabled = cfg && cfg.enabled && cfg.botToken && cfg.chatId;
+        
+        // Modal & Dashboard status badge
         const txt = document.getElementById('telegram-status-text');
         if (txt) {
           txt.innerHTML = isEnabled ? 'AKTIF 🟢' : 'Setup ⚙️';
@@ -1334,28 +1494,62 @@
           topbarBtn.style.borderColor = isEnabled ? '#00e676' : 'rgba(0, 136, 204, 0.4)';
           topbarBtn.style.color = isEnabled ? '#00e676' : '#0088cc';
         }
+
+        // Full Page Badge
+        const pageBadge = document.getElementById('page-telegram-badge');
+        const pageBadgeText = document.getElementById('page-telegram-badge-text');
+        if (pageBadge && pageBadgeText) {
+          if (isEnabled) {
+            pageBadge.style.borderColor = 'rgba(0, 230, 118, 0.5)';
+            pageBadge.style.background = 'rgba(0, 230, 118, 0.1)';
+            pageBadge.style.color = '#00e676';
+            pageBadgeText.innerHTML = `Terkoneksi & Aktif 🟢 (Chat ID: ${cfg.chatId})`;
+          } else {
+            pageBadge.style.borderColor = 'var(--card-border)';
+            pageBadge.style.background = 'rgba(255,255,255,0.05)';
+            pageBadge.style.color = '#b0bec5';
+            pageBadgeText.innerHTML = 'Belum Terkoneksi';
+          }
+        }
+      }
+
+      function syncFieldsFromConfig(cfg) {
+        if (!cfg) return;
+        // Sync modal fields
+        const mToken = document.getElementById('telegram-bot-token');
+        const mChat = document.getElementById('telegram-chat-id');
+        const mToggle = document.getElementById('telegram-enable-toggle');
+        const mOpen = document.getElementById('telegram-alert-open');
+        const mClose = document.getElementById('telegram-alert-close');
+        if (mToken && cfg.botToken) mToken.value = cfg.botToken;
+        if (mChat && cfg.chatId) mChat.value = cfg.chatId;
+        if (mToggle) mToggle.checked = (cfg.botToken && cfg.chatId) ? (cfg.enabled !== false) : true;
+        if (mOpen) mOpen.checked = cfg.alertOpen !== false;
+        if (mClose) mClose.checked = cfg.alertClose !== false;
+
+        // Sync full page fields
+        const pToken = document.getElementById('page-telegram-bot-token');
+        const pChat = document.getElementById('page-telegram-chat-id');
+        const pToggle = document.getElementById('page-telegram-enable-toggle');
+        const pOpen = document.getElementById('page-telegram-alert-open');
+        const pClose = document.getElementById('page-telegram-alert-close');
+        if (pToken && cfg.botToken) pToken.value = cfg.botToken;
+        if (pChat && cfg.chatId) pChat.value = cfg.chatId;
+        if (pToggle) pToggle.checked = (cfg.botToken && cfg.chatId) ? (cfg.enabled !== false) : true;
+        if (pOpen) pOpen.checked = cfg.alertOpen !== false;
+        if (pClose) pClose.checked = cfg.alertClose !== false;
       }
 
       function openModal() {
         const modal = document.getElementById('modal-telegram-config');
         if (!modal) return;
         const cfg = getSavedConfig() || {};
-        const tokenInput = document.getElementById('telegram-bot-token');
-        const chatInput = document.getElementById('telegram-chat-id');
-        const enableToggle = document.getElementById('telegram-enable-toggle');
-        const alertOpen = document.getElementById('telegram-alert-open');
-        const alertClose = document.getElementById('telegram-alert-close');
+        syncFieldsFromConfig(cfg);
         const box = document.getElementById('telegram-modal-status-msg');
         if (box) box.style.display = 'none';
 
-        if (tokenInput && cfg.botToken) tokenInput.value = cfg.botToken;
-        if (chatInput && cfg.chatId) chatInput.value = cfg.chatId;
-        if (enableToggle) enableToggle.checked = (cfg.botToken && cfg.chatId) ? (cfg.enabled !== false) : true;
-        if (alertOpen) alertOpen.checked = cfg.alertOpen !== false;
-        if (alertClose) alertClose.checked = cfg.alertClose !== false;
-
         if (cfg.botToken && cfg.chatId) {
-          showStatus(`🟢 <b>Telegram Terkoneksi:</b> Chat ID <code>${cfg.chatId}</code> (Status: ${cfg.enabled ? 'AKTIF' : 'NON-AKTIF'})`, 'info');
+          showStatus(`🟢 <b>Telegram Terkoneksi:</b> Chat ID <code>${cfg.chatId}</code> (Status: ${cfg.enabled ? 'AKTIF' : 'NON-AKTIF'})`, 'info', 'telegram-modal-status-msg');
         }
 
         modal.style.display = 'flex';
@@ -1366,18 +1560,21 @@
         if (modal) modal.style.display = 'none';
       }
 
-      function saveConfig() {
-        const tokenInput = document.getElementById('telegram-bot-token');
-        const chatInput = document.getElementById('telegram-chat-id');
-        const enableToggle = document.getElementById('telegram-enable-toggle');
-        const alertOpen = document.getElementById('telegram-alert-open');
-        const alertClose = document.getElementById('telegram-alert-close');
+      function saveConfig(isPage = false) {
+        const prefix = isPage ? 'page-telegram-' : 'telegram-';
+        const boxId = isPage ? 'page-telegram-status-msg' : 'telegram-modal-status-msg';
+
+        const tokenInput = document.getElementById(isPage ? 'page-telegram-bot-token' : 'telegram-bot-token');
+        const chatInput = document.getElementById(isPage ? 'page-telegram-chat-id' : 'telegram-chat-id');
+        const enableToggle = document.getElementById(isPage ? 'page-telegram-enable-toggle' : 'telegram-enable-toggle');
+        const alertOpen = document.getElementById(isPage ? 'page-telegram-alert-open' : 'telegram-alert-open');
+        const alertClose = document.getElementById(isPage ? 'page-telegram-alert-close' : 'telegram-alert-close');
 
         const botToken = tokenInput ? tokenInput.value.trim() : '';
         const chatId = chatInput ? chatInput.value.trim() : '';
 
         if (!botToken || !chatId) {
-          showStatus('⚠️ <b>Perhatian:</b> Harap isi Bot Token dan Chat ID Telegram Anda sebelum menyimpan.<br>• Bot Token dari <b>@BotFather</b><br>• Chat ID dari <b>@userinfobot</b>', 'error');
+          showStatus('⚠️ <b>Perhatian:</b> Harap isi Bot Token dan Chat ID Telegram Anda sebelum menyimpan.<br>• Bot Token dari <b>@BotFather</b><br>• Chat ID dari <b>@userinfobot</b>', 'error', boxId);
           return;
         }
 
@@ -1398,82 +1595,63 @@
           localStorage.setItem('trademaster_telegram_config', JSON.stringify(newConfig));
         } catch (e) {}
 
+        syncFieldsFromConfig(newConfig);
+        updateBadges(newConfig);
+
         if (window.TradeMasterApp && window.TradeMasterApp.state) {
           window.TradeMasterApp.state.telegramConfig = newConfig;
         }
 
-        updateBadges(newConfig);
-        showStatus('🎉 <b>BERHASIL DISIMPAN!</b> Status notifikasi: <b>AKTIF 🟢</b>. Bot siap mengirim sinyal Whale live ke Telegram Anda.', 'success');
-        setTimeout(closeModal, 1200);
+        showStatus('🎉 <b>BERHASIL DISIMPAN!</b> Status notifikasi: <b>AKTIF 🟢</b>. Bot siap mengirim sinyal Whale live ke Telegram Anda.', 'success', boxId);
+        if (!isPage) {
+          setTimeout(closeModal, 1200);
+        }
       }
 
-      async function sendTestAlert() {
-        const tokenInput = document.getElementById('telegram-bot-token');
-        const chatInput = document.getElementById('telegram-chat-id');
-        const saved = getSavedConfig() || {};
-        const botToken = tokenInput && tokenInput.value.trim() ? tokenInput.value.trim() : (saved.botToken || '');
-        const chatId = chatInput && chatInput.value.trim() ? chatInput.value.trim() : (saved.chatId || '');
-
-        if (!botToken || !chatId) {
-          showStatus('⚠️ <b>Harap isi Bot Token dan Chat ID</b> terlebih dahulu sebelum mencoba test notifikasi.', 'error');
-          return;
-        }
-
-        const testBtn = document.getElementById('btn-send-telegram-test');
-        const origHtml = testBtn ? testBtn.innerHTML : '';
-        if (testBtn) testBtn.innerHTML = '<span>⏳ Mengirim ke Telegram...</span>';
-        showStatus('⏳ <b>Sedang mengirim pesan ke Telegram Anda...</b> Silakan tunggu.', 'info');
+      async function executeTelegramDelivery(botToken, chatId, messageHtml, btnEl, boxId) {
+        const origHtml = btnEl ? btnEl.innerHTML : '';
+        if (btnEl) btnEl.innerHTML = '<span>⏳ Mengirim ke Telegram...</span>';
+        showStatus('⏳ <b>Sedang mengirim pesan ke Telegram Anda...</b> Silakan tunggu.', 'info', boxId);
 
         const cleanToken = botToken.replace(/^bot/i, '').trim();
         const cleanChatId = chatId.trim();
-        const testText = `🚀 <b>TEST NOTIFIKASI TRADEMASTER BERHASIL!</b> 🐋\n` +
-          `----------------------------------------\n` +
-          `Halo Trader! Bot Telegram Anda telah terhubung ke <b>TradeMaster Whale Radar</b>.\n\n` +
-          `<b>Kriteria Sinyal Terverifikasi:</b>\n` +
-          `• Profit Realized: <b>≥ $500,000 USD</b>\n` +
-          `• Win Rate Minimal: <b>≥ 90.0%</b>\n` +
-          `• Jumlah Whale Terpantau: <b>8 Elite Smart Money</b>\n\n` +
-          `Anda akan menerima alert live setiap kali Whale buka/tutup posisi!\n` +
-          `----------------------------------------\n` +
-          `🕒 <i>Waktu Uji: ${new Date().toLocaleString('id-ID')} WIB</i>`;
-
-        const encodedText = encodeURIComponent(testText);
+        const encodedText = encodeURIComponent(messageHtml);
         const encodedChatId = encodeURIComponent(cleanChatId);
         const getUrl = `https://api.telegram.org/bot${cleanToken}/sendMessage?chat_id=${encodedChatId}&text=${encodedText}&parse_mode=HTML&disable_web_page_preview=true`;
 
         try {
-          // Attempt 1: Browser GET Request
+          // Tier 1: Browser GET Request
           const res = await fetch(getUrl, { method: 'GET' });
           const json = await res.json();
-          if (testBtn) testBtn.innerHTML = origHtml;
+          if (btnEl) btnEl.innerHTML = origHtml;
           if (json.ok) {
-            handleSuccess();
+            onSuccess();
           } else {
-            showStatus(`❌ <b>Telegram API Error:</b> ${json.description || 'Gagal mengirim pesan.'}<br><br><b>Periksa:</b><br>1. Apakah Bot Token sudah tepat?<br>2. <b>PENTING:</b> Sudahkah Anda membuka bot Anda di Telegram dan menekan tombol <b>START</b>?`, 'error');
+            showStatus(`❌ <b>Telegram API Error:</b> ${json.description || 'Gagal mengirim pesan.'}<br><br><b>Periksa:</b><br>1. Apakah Bot Token sudah tepat?<br>2. <b>PENTING:</b> Sudahkah Anda membuka bot Anda di Telegram dan menekan tombol <b>START</b>?`, 'error', boxId);
           }
         } catch (fetchErr) {
-          // Attempt 2: Fallback to direct no-cors dispatch
+          // Tier 2: Fallback to direct no-cors dispatch
           console.warn('Direct fetch failed, executing fallback no-cors dispatch...', fetchErr);
           try {
             await fetch(getUrl, { mode: 'no-cors', cache: 'no-store' });
-            if (testBtn) testBtn.innerHTML = origHtml;
-            handleSuccess(true);
+            if (btnEl) btnEl.innerHTML = origHtml;
+            onSuccess(true);
           } catch (noCorsErr) {
-            // Attempt 3: Image beacon fallback
+            // Tier 3: Image beacon ping
             try {
               const img = new Image();
               img.src = getUrl;
-              if (testBtn) testBtn.innerHTML = origHtml;
-              handleSuccess(true);
+              if (btnEl) btnEl.innerHTML = origHtml;
+              onSuccess(true);
             } catch (beaconErr) {
-              if (testBtn) testBtn.innerHTML = origHtml;
-              showStatus(`❌ <b>Gagal mengirim:</b> ${fetchErr.message}. Pastikan koneksi internet atau bot token Anda valid.`, 'error');
+              if (btnEl) btnEl.innerHTML = origHtml;
+              showStatus(`❌ <b>Gagal mengirim:</b> ${fetchErr.message}. Pastikan koneksi internet atau bot token Anda valid.`, 'error', boxId);
             }
           }
         }
 
-        function handleSuccess(isOpaque) {
-          showStatus('🎉 <b>BERHASIL!</b> Pesan notifikasi telah dikirim ke Telegram Anda! Silakan cek aplikasi Telegram Anda.<br><br><i>Konfigurasi otomatis disimpan dan diaktifkan 🟢.</i>', 'success');
+        function onSuccess(isOpaque = false) {
+          showStatus('🎉 <b>BERHASIL!</b> Pesan notifikasi telah dikirim ke Telegram Anda! Silakan cek aplikasi Telegram Anda.<br><br><i>Konfigurasi otomatis disimpan dan diaktifkan 🟢.</i>', 'success', boxId);
           const autoConfig = {
             botToken: cleanToken,
             chatId: cleanChatId,
@@ -1486,40 +1664,97 @@
           try {
             localStorage.setItem('trademaster_telegram_config', JSON.stringify(autoConfig));
           } catch (e) {}
+          syncFieldsFromConfig(autoConfig);
+          updateBadges(autoConfig);
           if (window.TradeMasterApp && window.TradeMasterApp.state) {
             window.TradeMasterApp.state.telegramConfig = autoConfig;
           }
-          updateBadges(autoConfig);
         }
       }
 
-      // Bind global functions
+      async function sendTestAlert(isPage = false) {
+        const tokenInput = document.getElementById(isPage ? 'page-telegram-bot-token' : 'telegram-bot-token');
+        const chatInput = document.getElementById(isPage ? 'page-telegram-chat-id' : 'telegram-chat-id');
+        const boxId = isPage ? 'page-telegram-status-msg' : 'telegram-modal-status-msg';
+        const btn = document.getElementById(isPage ? 'page-btn-send-test' : 'btn-send-telegram-test');
+
+        const saved = getSavedConfig() || {};
+        const botToken = tokenInput && tokenInput.value.trim() ? tokenInput.value.trim() : (saved.botToken || '');
+        const chatId = chatInput && chatInput.value.trim() ? chatInput.value.trim() : (saved.chatId || '');
+
+        if (!botToken || !chatId) {
+          showStatus('⚠️ <b>Harap isi Bot Token dan Chat ID</b> terlebih dahulu sebelum mencoba test notifikasi.', 'error', boxId);
+          return;
+        }
+
+        const testText = `🚀 <b>TEST NOTIFIKASI TRADEMASTER BERHASIL!</b> 🐋\n` +
+          `----------------------------------------\n` +
+          `Halo Trader! Bot Telegram Anda telah terhubung ke <b>TradeMaster Whale Radar</b>.\n\n` +
+          `<b>Kriteria Sinyal Terverifikasi:</b>\n` +
+          `• Profit Realized: <b>≥ $500,000 USD</b>\n` +
+          `• Win Rate Minimal: <b>≥ 90.0%</b>\n` +
+          `• Jumlah Whale Terpantau: <b>8 Elite Smart Money</b>\n\n` +
+          `Anda akan menerima alert live setiap kali Whale buka/tutup posisi!\n` +
+          `----------------------------------------\n` +
+          `🕒 <i>Waktu Uji: ${new Date().toLocaleString('id-ID')} WIB</i>`;
+
+        await executeTelegramDelivery(botToken, chatId, testText, btn, boxId);
+      }
+
+      async function simulateWhaleSignal(type = 'OPEN') {
+        const saved = getSavedConfig() || {};
+        const tokenInput = document.getElementById('page-telegram-bot-token');
+        const chatInput = document.getElementById('page-telegram-chat-id');
+        const botToken = tokenInput && tokenInput.value.trim() ? tokenInput.value.trim() : (saved.botToken || '');
+        const chatId = chatInput && chatInput.value.trim() ? chatInput.value.trim() : (saved.chatId || '');
+        const boxId = 'page-telegram-status-msg';
+
+        if (!botToken || !chatId) {
+          showStatus('⚠️ Harap isi dan simpan Bot Token & Chat ID terlebih dahulu untuk menjalankan simulasi.', 'error', boxId);
+          return;
+        }
+
+        const isOpen = type === 'OPEN';
+        const msg = (isOpen 
+          ? `🟢 <b>WHALE BUKA POSISI BARU (OPEN)</b> 🐋\n`
+          : `🔴 <b>WHALE TAKE PROFIT / CLOSE</b> 🐋\n`) +
+          `----------------------------------------\n` +
+          `👤 <b>Whale:</b> Satoshi OG Accumulator #1\n` +
+          `📊 <b>Track Record:</b> Profit <b>+$18,450,000</b> | Win Rate <b>98.0%</b>\n` +
+          `💎 <b>Aset:</b> <b>BTC (Bitcoin)</b>\n` +
+          `⚡ <b>Aksi:</b> ${isOpen ? 'BUY & ACCUMULATION (Orderbook Fill)' : 'TAKE PROFIT PARTIAL (Scaling Out)'}\n` +
+          `💵 <b>Harga Eksekusi:</b> $${isOpen ? '88,420' : '94,650'} USD\n` +
+          `💰 <b>Estimasi Nilai Posisi:</b> $2,850,000 USD\n` +
+          `📝 <b>Catatan:</b> ${isOpen ? 'Akumulasi agresif di support struktural pasca breakout' : 'Realisasi profit bertahap mendekati zona target resistensi'}\n` +
+          `----------------------------------------\n` +
+          `🕒 <i>Waktu: ${new Date().toLocaleString('id-ID')} WIB</i>`;
+
+        await executeTelegramDelivery(botToken, chatId, msg, null, boxId);
+      }
+
+      // Bind global functions for Modal & Full Page
       window.openTelegramModal = openModal;
       window.closeTelegramModal = closeModal;
-      window.saveTelegramConfig = saveConfig;
-      window.sendTestTelegramAlert = sendTestAlert;
+      window.saveTelegramConfig = () => saveConfig(false);
+      window.savePageTelegramConfig = () => saveConfig(true);
+      window.sendTestTelegramAlert = () => sendTestAlert(false);
+      window.sendPageTestAlert = () => sendTestAlert(true);
+      window.simulateWhaleSignalFromPage = simulateWhaleSignal;
 
       // Also attach to window.TradeMasterApp
       window.TradeMasterApp = window.TradeMasterApp || {};
       window.TradeMasterApp.openTelegramModal = openModal;
       window.TradeMasterApp.closeTelegramModal = closeModal;
-      window.TradeMasterApp.saveTelegramConfig = saveConfig;
-      window.TradeMasterApp.sendTestTelegramAlert = sendTestAlert;
+      window.TradeMasterApp.saveTelegramConfig = () => saveConfig(false);
+      window.TradeMasterApp.sendTestTelegramAlert = () => sendTestAlert(false);
 
-      // Bind direct DOM event listeners
+      // On DOM ready, populate initial configuration across all pages
       document.addEventListener('DOMContentLoaded', () => {
-        const testBtn = document.getElementById('btn-send-telegram-test');
-        if (testBtn) {
-          testBtn.onclick = (e) => { e.preventDefault(); e.stopPropagation(); sendTestAlert(); };
-        }
-
-        const form = document.getElementById('form-telegram-config');
-        if (form) {
-          form.onsubmit = (e) => { e.preventDefault(); saveConfig(); };
-        }
-
         const initialCfg = getSavedConfig();
-        if (initialCfg) updateBadges(initialCfg);
+        if (initialCfg) {
+          syncFieldsFromConfig(initialCfg);
+          updateBadges(initialCfg);
+        }
       });
     })();
   </script>
