@@ -47,31 +47,73 @@ window.TradeMasterAPI = (function() {
   let currentWS = null;
 
   return {
-    // 1. Crypto API - Get Top Market Data (REST) with Bybit & Gate.io Failover
-    async getCryptoTickers() {
-      const symbols = ['BTCUSDT', 'ETHUSDT', 'SOLUSDT', 'BNBUSDT', 'ADAUSDT', 'XRPUSDT', 'DOGEUSDT', 'DOTUSDT'];
+    // 1. Crypto API - Get Live Market Data (REST) via Binance Data Vision (Unblocked in ID & CORS *) + CoinGecko Failover
+    async getCryptoTickers(forceFresh = true) {
+      const symbols = ['BTCUSDT', 'ETHUSDT', 'SOLUSDT', 'BNBUSDT', 'ADAUSDT', 'XRPUSDT', 'DOGEUSDT', 'DOTUSDT', 'SUIUSDT', 'PAXGUSDT'];
       
-      // 1. Try Binance
+      // 1. Primary: Binance Data Vision Public CDN (Unblocked in Indonesia, CORS: *, Always Fresh)
       try {
-        const data = await fetchJSON('https://api.binance.com/api/v3/ticker/24hr');
+        const symbolsParam = encodeURIComponent(JSON.stringify(symbols));
+        const url = `https://data-api.binance.vision/api/v3/ticker/24hr?symbols=${symbolsParam}`;
+        const data = await fetchJSON(url, false, forceFresh);
         if (Array.isArray(data) && data.length > 0) {
-          return data.filter(item => symbols.includes(item.symbol)).map(item => ({
+          return data.map(item => ({
             symbol: item.symbol.replace('USDT', ''),
             pair: item.symbol,
             price: parseFloat(item.lastPrice),
             change: parseFloat(item.priceChangePercent),
             high: parseFloat(item.highPrice),
             low: parseFloat(item.lowPrice),
-            volume: parseFloat(item.volume)
+            volume: parseFloat(item.volume),
+            source: 'Binance Vision Live'
           }));
         }
       } catch (err) {
-        console.warn('Primary Binance tickers fetch failed or blocked, attempting Bybit failover:', err);
+        console.warn('Binance Vision tickers fetch failed, attempting CoinGecko failover:', err);
       }
 
-      // 2. Failover to Bybit
+      // 2. Failover: CoinGecko Public API (Unblocked in Indonesia, CORS: *)
       try {
-        const data = await fetchJSON('https://api.bybit.com/v5/market/tickers?category=spot');
+        const cgMap = {
+          bitcoin: 'BTC',
+          ethereum: 'ETH',
+          solana: 'SOL',
+          binancecoin: 'BNB',
+          cardano: 'ADA',
+          ripple: 'XRP',
+          dogecoin: 'DOGE',
+          polkadot: 'DOT',
+          sui: 'SUI',
+          'pax-gold': 'PAXG'
+        };
+        const ids = Object.keys(cgMap).join(',');
+        const url = `https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usd&include_24hr_change=true`;
+        const data = await fetchJSON(url, false, forceFresh);
+        if (data && data.bitcoin && data.bitcoin.usd) {
+          return Object.entries(cgMap)
+            .filter(([id]) => data[id] && data[id].usd)
+            .map(([id, sym]) => {
+              const price = parseFloat(data[id].usd);
+              const change = parseFloat(data[id].usd_24h_change || 0);
+              return {
+                symbol: sym,
+                pair: sym + 'USDT',
+                price,
+                change,
+                high: price * 1.02,
+                low: price * 0.98,
+                volume: 0,
+                source: 'CoinGecko Live'
+              };
+            });
+        }
+      } catch (err) {
+        console.warn('CoinGecko tickers fetch failed, attempting Bybit failover:', err);
+      }
+
+      // 3. Failover to Bybit
+      try {
+        const data = await fetchJSON('https://api.bybit.com/v5/market/tickers?category=spot', false, forceFresh);
         const list = data?.result?.list || [];
         if (Array.isArray(list) && list.length > 0) {
           return list.filter(item => symbols.includes(item.symbol)).map(item => ({
@@ -81,46 +123,38 @@ window.TradeMasterAPI = (function() {
             change: parseFloat(item.price24hPcnt) * 100,
             high: parseFloat(item.highPrice24h),
             low: parseFloat(item.lowPrice24h),
-            volume: parseFloat(item.volume24h)
+            volume: parseFloat(item.volume24h),
+            source: 'Bybit Live'
           }));
         }
       } catch (err) {
-        console.warn('Bybit tickers fetch failed, attempting Gate.io failover:', err);
+        console.warn('Bybit tickers fetch failed, using fallback:', err);
       }
 
-      // 3. Failover to Gate.io
-      try {
-        const data = await fetchJSON('https://api.gateio.ws/api/v4/spot/tickers');
-        if (Array.isArray(data) && data.length > 0) {
-          const gatePairs = symbols.map(s => s.replace('USDT', '_USDT'));
-          return data.filter(item => gatePairs.includes(item.currency_pair)).map(item => ({
-            symbol: item.currency_pair.replace('_USDT', ''),
-            pair: item.currency_pair.replace('_', ''),
-            price: parseFloat(item.last),
-            change: parseFloat(item.change_percentage),
-            high: parseFloat(item.high_24h),
-            low: parseFloat(item.low_24h),
-            volume: parseFloat(item.base_volume)
-          }));
-        }
-      } catch (err) {
-        console.warn('Gate.io tickers fetch failed, using fallback:', err);
-      }
-
-      // 4. Fallback realistic snapshot if all CEX APIs blocked
+      // 4. Fallback snapshot if completely offline
       return symbols.map(sym => {
         const s = sym.replace('USDT', '');
-        const p = s === 'BTC' ? 88500 : s === 'ETH' ? 2650 : s === 'SOL' ? 142 : s === 'BNB' ? 580 : s === 'XRP' ? 1.85 : s === 'DOGE' ? 0.22 : 12;
+        const fallbackMap = { BTC: 63300, ETH: 1790, SOL: 142, BNB: 580, ADA: 0.45, XRP: 1.85, DOGE: 0.16, DOT: 5.2, SUI: 2.1, PAXG: 2680 };
+        const p = fallbackMap[s] || 10;
         return {
           symbol: s,
           pair: sym,
           price: p,
-          change: -1.2,
-          high: p * 1.03,
-          low: p * 0.96,
-          volume: 250000
+          change: 0,
+          high: p * 1.02,
+          low: p * 0.98,
+          volume: 0,
+          source: 'Offline Fallback'
         };
       });
+    },
+
+    // Alias helper for modules requesting specific symbols
+    async getCryptoPrices(requestedSymbols = []) {
+      const all = await this.getCryptoTickers(true);
+      if (!Array.isArray(requestedSymbols) || requestedSymbols.length === 0) return all;
+      const upper = requestedSymbols.map(s => s.toUpperCase());
+      return all.filter(item => upper.includes(item.symbol.toUpperCase()));
     },
 
     // 2. Crypto API - Live Trades Stream (WebSocket)
@@ -159,8 +193,8 @@ window.TradeMasterAPI = (function() {
       const pair = cleanSym + 'USDT';
       
       const fetchBinance = async () => {
-        const url = `https://api.binance.com/api/v3/klines?symbol=${pair}&interval=${interval}&limit=${limit}`;
-        const data = await fetchJSON(url);
+        const url = `https://data-api.binance.vision/api/v3/klines?symbol=${pair}&interval=${interval}&limit=${limit}`;
+        const data = await fetchJSON(url, false, true);
         if (!Array.isArray(data) || data.length === 0) return null;
         return data.map(item => ({
           time: item[0] / 1000,
