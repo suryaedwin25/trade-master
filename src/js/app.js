@@ -5922,8 +5922,10 @@ window.TradeMasterApp = (function() {
     // Auth gateway disabled
     // if (window.TradeMasterAuth) { TradeMasterAuth.init(); }
     
-    // 1. Navigation handlers
-    navigateTo('dashboard');
+    // 1. Default landing page: Arist MD Contrarian & PRZ (Simplified v5.0)
+    if (typeof window.navigateTo === 'function') {
+      window.navigateTo('contrarian');
+    }
 
     // 2. Crypto selector handler
     const cryptoSelect = document.getElementById('crypto-select');

@@ -12,7 +12,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   
   <!-- Global Custom Stylesheets -->
-  <link rel="stylesheet" href="src/styles/main.css?v=4.1">
+  <link rel="stylesheet" href="src/styles/main.css?v=5.0">
 </head>
 <body>
   <div class="app-container">
@@ -25,33 +25,17 @@
       </div>
       
       <nav class="nav-menu">
-        <div class="nav-item active" onclick="navigateTo('dashboard')">
-          <i data-lucide="layout-dashboard"></i>
-          <span>Dashboard</span>
+        <div class="nav-item active" onclick="navigateTo('contrarian')">
+          <i data-lucide="crosshair"></i>
+          <span>Arist MD (PRZ & 1:10)</span>
         </div>
-        <div class="nav-item" onclick="navigateTo('crypto')">
-          <i data-lucide="coins"></i>
-          <span>Crypto Terminal</span>
+        <div class="nav-item" onclick="navigateTo('astronacci')">
+          <i data-lucide="moon"></i>
+          <span>Astronacci (Time & Price)</span>
         </div>
-        <div class="nav-item" onclick="navigateTo('dashboard'); setTimeout(() => { const el = document.getElementById('dashboard-whale-hub'); if(el) el.scrollIntoView({behavior:'smooth'}); }, 100);">
+        <div class="nav-item" onclick="navigateTo('dashboard')">
           <i data-lucide="radar"></i>
           <span>Whale Radar (90%+ WR)</span>
-        </div>
-        <div class="nav-item" onclick="navigateTo('macro')">
-          <i data-lucide="globe-2"></i>
-          <span>Macro & Fund Flow</span>
-        </div>
-        <div class="nav-item" onclick="navigateTo('news')">
-          <i data-lucide="globe"></i>
-          <span>News & Geopolitics</span>
-        </div>
-        <div class="nav-item" onclick="navigateTo('strategy')">
-          <i data-lucide="cpu"></i>
-          <span>Strategy Center</span>
-        </div>
-        <div class="nav-item" onclick="navigateTo('contrarian')">
-          <i data-lucide="crosshair"></i>
-          <span>Contrarian & PRZ</span>
         </div>
         <div class="nav-item" onclick="navigateTo('telegram')">
           <i data-lucide="bell-ring"></i>
@@ -130,8 +114,8 @@
       <!-- Content Body -->
       <section class="content-body">
 
-        <!-- ================= PAGE 1: DASHBOARD ================= -->
-        <div id="page-dashboard" class="page-section active">
+        <!-- ================= PAGE 1: WHALE RADAR & MARKET OVERVIEW ================= -->
+        <div id="page-dashboard" class="page-section">
           <div class="page-header">
             <h1 class="page-title">Crypto Intelligence & Whale Terminal</h1>
             <p class="page-subtitle">Real-time crypto market dynamics, institutional whale accumulation (Profit ≥ $500k, Win Rate ≥ 90%), and macro cycle execution.</p>
@@ -1156,7 +1140,7 @@
         </div>
 
         <!-- 7. CONTRARIAN REVERSAL, HARMONIC PRZ & ASYMMETRIC RRR 1:10+ (ALA ARIST MD) -->
-        <div id="page-contrarian" class="page-section">
+        <div id="page-contrarian" class="page-section active">
           <div class="page-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 20px;">
             <div>
               <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
@@ -1333,6 +1317,73 @@
                   <span style="font-size: 1.4rem;">🛡️</span>
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 8. ASTRONACCI TIME & PRICE FORECASTING (ALA GEMA GOEYARDI) -->
+        <div id="page-astronacci" class="page-section">
+          <div class="page-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 20px;">
+            <div>
+              <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                <span style="font-size: 1.6rem;">🌙</span>
+                <h1 class="page-title" style="margin: 0; font-size: 1.45rem; color: var(--text-main);">Astronacci Time & Price Forecast</h1>
+                <span class="whale-gold-badge">Metode Gema Goeyardi</span>
+              </div>
+              <p class="page-subtitle" style="margin-top: 6px; font-size: 0.85rem; color: var(--text-muted);">
+                Sinergi <b>Price (Elliott Wave & Fibonacci)</b> + <b>Time (Lunar Cycle, Mercury Retrograde & Fibonacci Time Cluster)</b> untuk memetakan <i>KAPAN</i> dan <i>DI HARGA BERAPA</i> pasar berbalik arah.
+              </p>
+            </div>
+            <button type="button" onclick="TradeMasterAstronacci.refresh()" class="btn btn-secondary" style="display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 8px; background: #ffffff; border: 1px solid #cbd5e1; color: var(--text-main); font-weight: 600; cursor: pointer;">
+              <i data-lucide="refresh-cw" style="width: 14px; height: 14px;"></i> Refresh Time & Price
+            </button>
+          </div>
+
+          <!-- Top 3 Financial Astrology & Time Cycle Cards -->
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap: 16px; margin-bottom: 24px;">
+            <div id="astro-lunar-card" class="whale-hub-card" style="padding: 18px;">
+              <div style="color: var(--text-muted); font-size: 0.8rem;">Menghitung fase bulan astronomis...</div>
+            </div>
+            <div id="astro-mercury-card" class="whale-hub-card" style="padding: 18px;">
+              <div style="color: var(--text-muted); font-size: 0.8rem;">Memeriksa status Mercury Retrograde...</div>
+            </div>
+            <div id="astro-fibtime-card" class="whale-hub-card" style="padding: 18px;">
+              <div style="color: var(--text-muted); font-size: 0.8rem;">Menghitung Fibonacci Time Cluster...</div>
+            </div>
+          </div>
+
+          <!-- Combined Price + Time Reversal Forecast Table -->
+          <div class="whale-hub-card" style="padding: 22px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 14px;">
+              <div>
+                <h3 style="font-size: 1.08rem; font-weight: 800; color: var(--text-main); display: flex; align-items: center; gap: 8px;">
+                  <span>🔭</span> Eye of Future — Peta Price & Time Reversal Live
+                </h3>
+                <p style="font-size: 0.76rem; color: var(--text-muted); margin-top: 2px;">
+                  Harga live disinkronkan dari <b>OKX / Hyperliquid / CoinGecko</b> (~160ms). Fokus entry saat harga masuk <i>Buy Zone</i> tepat di jendela <i>Time Window</i>.
+                </p>
+              </div>
+              <span class="whale-profit-badge">🌙 Price + Time = Precision</span>
+            </div>
+
+            <div style="overflow-x: auto;">
+              <table style="width: 100%; border-collapse: collapse; font-size: 0.82rem;">
+                <thead>
+                  <tr style="border-bottom: 2px solid var(--card-border); background: #f8fafc; color: var(--text-muted); font-size: 0.72rem; text-transform: uppercase;">
+                    <th style="padding: 10px 14px; text-align: left;">Aset & Live Spot</th>
+                    <th style="padding: 10px 14px; text-align: left;">Fase Elliott Wave & Bias</th>
+                    <th style="padding: 10px 14px; text-align: left;">Time Reversal Window</th>
+                    <th style="padding: 10px 14px; text-align: right;">Price Buy Zone & Invalidasi</th>
+                    <th style="padding: 10px 14px; text-align: right;">Target TP1 / TP2</th>
+                    <th style="padding: 10px 14px; text-align: center;">Telegram</th>
+                  </tr>
+                </thead>
+                <tbody id="astro-forecast-body">
+                  <tr>
+                    <td colspan="6" style="padding: 24px; text-align: center; color: var(--text-muted);">Memuat forecast Astronacci live...</td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
           </div>
         </div>
@@ -1627,13 +1678,14 @@
   <script src="https://unpkg.com/lucide@latest"></script>
 
   <!-- Core App Scripts (Explicit dependency order) -->
-  <script src="src/js/auth.js?v=4.1"></script>
-  <script src="src/js/api.js?v=4.1"></script>
-  <script src="src/js/ta.js?v=4.1"></script>
-  <script src="src/js/impact.js?v=4.1"></script>
-  <script src="src/js/macro.js?v=4.1"></script>
-  <script src="src/js/contrarian.js?v=4.1"></script>
-  <script src="src/js/app.js?v=4.1"></script>
+  <script src="src/js/auth.js?v=5.0"></script>
+  <script src="src/js/api.js?v=5.0"></script>
+  <script src="src/js/ta.js?v=5.0"></script>
+  <script src="src/js/impact.js?v=5.0"></script>
+  <script src="src/js/macro.js?v=5.0"></script>
+  <script src="src/js/contrarian.js?v=5.0"></script>
+  <script src="src/js/astronacci.js?v=5.0"></script>
+  <script src="src/js/app.js?v=5.0"></script>
 
   <!-- Self-Contained Inline Telegram Controller (Cache-Proof & Zero-Dependency) -->
   <script>
@@ -1687,6 +1739,11 @@
         // 4. Refresh Contrarian Harmonic PRZ & RRR 1:10+ page
         if (pageId === 'contrarian' && window.TradeMasterContrarian) {
           window.TradeMasterContrarian.refresh();
+        }
+
+        // 4b. Refresh Astronacci Time & Price Forecast page
+        if (pageId === 'astronacci' && window.TradeMasterAstronacci) {
+          window.TradeMasterAstronacci.refresh();
         }
 
         // 5. Delegate to original TradeMasterApp.navigateTo (no recursion!)
@@ -2026,6 +2083,10 @@
         }
         refreshLiveTopbarTickers();
         setInterval(refreshLiveTopbarTickers, 15000);
+
+        // Immediately hydrate default landing page (Arist MD) + Astronacci in parallel
+        if (window.TradeMasterContrarian) window.TradeMasterContrarian.refresh();
+        if (window.TradeMasterAstronacci) window.TradeMasterAstronacci.refresh();
 
         // Connect Real-Time WebSocket Push Stream (Zero-Lag Second-by-Second Ticks!)
         if (window.TradeMasterAPI && typeof window.TradeMasterAPI.connectGlobalTickerWS === 'function') {
