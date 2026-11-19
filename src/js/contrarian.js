@@ -1,11 +1,11 @@
 /* C:\Users\surya\.gemini\antigravity\scratch\trademaster\src\js\contrarian.js */
 /* Contrarian Reversal, Harmonic PRZ Scanner (ALL 150+ Live Crypto Assets) & Asymmetric RRR (1:10+) Engine (Arist MD Style) */
 
-window.TradeMasterContrarian = (function() {
+window.TradeMasterContrarian = (function () {
   'use strict';
 
   const MAJOR_SET = new Set(['BTC', 'ETH', 'SOL', 'BNB', 'XRP', 'ADA', 'AVAX', 'DOT', 'LINK', 'TRX', 'TON', 'SUI', 'LTC', 'BCH', 'PAXG', 'XAUT']);
-  const MEME_AI_SET = new Set(['DOGE', 'SHIB', 'PEPE', 'WIF', 'BONK', 'FLOKI', 'PENGU', 'TRUMP', 'FARTCOIN', 'POPCAT', 'NEIRO', 'FET', 'RENDER', 'TAO', 'WLD', 'NEAR', 'VIRTUAL', 'AI16Z']);
+  const MEME_AI_SET = new Set(['DOGE', 'SHIB', 'PEPE', 'WIF', 'BONK', 'FLOKI', 'PENGU', 'TRUMP', 'FARTCOIN', 'POPCAT', 'NEIRO', 'FET', 'RENDER', 'TAO', 'WLD', 'NEAR', 'VIRTUAL', 'AI16Z', 'VVV']);
 
   let allSetups = [];
   let filteredSetups = [];
@@ -385,7 +385,7 @@ window.TradeMasterContrarian = (function() {
     try {
       const raw = localStorage.getItem('trademaster_telegram_config');
       cfg = raw ? JSON.parse(raw) : null;
-    } catch (e) {}
+    } catch (e) { }
 
     if (!cfg || !cfg.botToken || !cfg.chatId) {
       alert('Bot Telegram belum dikonfigurasi. Silakan buka menu Telegram Alerts di sidebar kiri terlebih dahulu.');
@@ -424,7 +424,7 @@ window.TradeMasterContrarian = (function() {
       } else if (window.TradeMasterAPI && typeof window.TradeMasterAPI.getCryptoTickers === 'function') {
         tickers = await window.TradeMasterAPI.getCryptoTickers(true);
       }
-    } catch (e) {}
+    } catch (e) { }
 
     allSetups = (tickers || []).map(buildDynamicSetup);
     applyFiltersAndRender();
