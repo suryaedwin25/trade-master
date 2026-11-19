@@ -23,8 +23,8 @@ window.TradeMasterAPI = (function() {
     }));
   }
 
-  // Fetch with Cache and optional CORS Proxy
-  async function fetchJSON(url, useProxy = false, skipCache = false) {
+  // Fetch with Strict Timeout (AbortController) so nothing can ever hang!
+  async function fetchJSON(url, useProxy = false, skipCache = false, timeoutMs = 4000) {
     const cacheKey = `cache_${url}`;
     if (!skipCache) {
       const cached = getCachedData(cacheKey);
@@ -32,48 +32,53 @@ window.TradeMasterAPI = (function() {
     }
 
     const fetchUrl = useProxy ? `${CORS_PROXY}${encodeURIComponent(url)}` : url;
-    const response = await fetch(fetchUrl);
-    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-    
-    const result = await response.json();
-    
-    if (!skipCache) {
-      setCachedData(cacheKey, result);
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+
+    try {
+      const response = await fetch(fetchUrl, { signal: controller.signal });
+      clearTimeout(timer);
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      
+      const result = await response.json();
+      
+      if (!skipCache) {
+        setCachedData(cacheKey, result);
+      }
+      return result;
+    } catch (err) {
+      clearTimeout(timer);
+      throw err;
     }
-    return result;
   }
 
   // Active WebSocket reference
   let currentWS = null;
+  let globalTickerWS = null;
 
   return {
-    // 1. Crypto API - Get Live Market Data (REST) via Binance Data Vision (Unblocked in ID & CORS *) + CoinGecko Failover
+    // 1. Crypto API - Parallel Race (Binance Vision + CoinGecko simultaneously, fastest wins!)
     async getCryptoTickers(forceFresh = true) {
       const symbols = ['BTCUSDT', 'ETHUSDT', 'SOLUSDT', 'BNBUSDT', 'ADAUSDT', 'XRPUSDT', 'DOGEUSDT', 'DOTUSDT', 'SUIUSDT', 'PAXGUSDT'];
-      
-      // 1. Primary: Binance Data Vision Public CDN (Unblocked in Indonesia, CORS: *, Always Fresh)
-      try {
+
+      const fetchBinanceVision = async () => {
         const symbolsParam = encodeURIComponent(JSON.stringify(symbols));
         const url = `https://data-api.binance.vision/api/v3/ticker/24hr?symbols=${symbolsParam}`;
-        const data = await fetchJSON(url, false, forceFresh);
-        if (Array.isArray(data) && data.length > 0) {
-          return data.map(item => ({
-            symbol: item.symbol.replace('USDT', ''),
-            pair: item.symbol,
-            price: parseFloat(item.lastPrice),
-            change: parseFloat(item.priceChangePercent),
-            high: parseFloat(item.highPrice),
-            low: parseFloat(item.lowPrice),
-            volume: parseFloat(item.volume),
-            source: 'Binance Vision Live'
-          }));
-        }
-      } catch (err) {
-        console.warn('Binance Vision tickers fetch failed, attempting CoinGecko failover:', err);
-      }
+        const data = await fetchJSON(url, false, forceFresh, 3500);
+        if (!Array.isArray(data) || data.length === 0) throw new Error('Empty Binance Vision response');
+        return data.map(item => ({
+          symbol: item.symbol.replace('USDT', ''),
+          pair: item.symbol,
+          price: parseFloat(item.lastPrice),
+          change: parseFloat(item.priceChangePercent),
+          high: parseFloat(item.highPrice),
+          low: parseFloat(item.lowPrice),
+          volume: parseFloat(item.volume),
+          source: 'Binance Vision Live'
+        }));
+      };
 
-      // 2. Failover: CoinGecko Public API (Unblocked in Indonesia, CORS: *)
-      try {
+      const fetchCoinGecko = async () => {
         const cgMap = {
           bitcoin: 'BTC',
           ethereum: 'ETH',
@@ -88,65 +93,114 @@ window.TradeMasterAPI = (function() {
         };
         const ids = Object.keys(cgMap).join(',');
         const url = `https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usd&include_24hr_change=true`;
-        const data = await fetchJSON(url, false, forceFresh);
-        if (data && data.bitcoin && data.bitcoin.usd) {
-          return Object.entries(cgMap)
-            .filter(([id]) => data[id] && data[id].usd)
-            .map(([id, sym]) => {
-              const price = parseFloat(data[id].usd);
-              const change = parseFloat(data[id].usd_24h_change || 0);
-              return {
-                symbol: sym,
-                pair: sym + 'USDT',
-                price,
-                change,
-                high: price * 1.02,
-                low: price * 0.98,
-                volume: 0,
-                source: 'CoinGecko Live'
-              };
-            });
-        }
-      } catch (err) {
-        console.warn('CoinGecko tickers fetch failed, attempting Bybit failover:', err);
-      }
+        const data = await fetchJSON(url, false, forceFresh, 3500);
+        if (!data || !data.bitcoin || !data.bitcoin.usd) throw new Error('Empty CoinGecko response');
+        return Object.entries(cgMap)
+          .filter(([id]) => data[id] && data[id].usd)
+          .map(([id, sym]) => {
+            const price = parseFloat(data[id].usd);
+            const change = parseFloat(data[id].usd_24h_change || 0);
+            return {
+              symbol: sym,
+              pair: sym + 'USDT',
+              price,
+              change,
+              high: price * 1.02,
+              low: price * 0.98,
+              volume: 0,
+              source: 'CoinGecko Live'
+            };
+          });
+      };
 
-      // 3. Failover to Bybit
       try {
-        const data = await fetchJSON('https://api.bybit.com/v5/market/tickers?category=spot', false, forceFresh);
-        const list = data?.result?.list || [];
-        if (Array.isArray(list) && list.length > 0) {
-          return list.filter(item => symbols.includes(item.symbol)).map(item => ({
-            symbol: item.symbol.replace('USDT', ''),
-            pair: item.symbol,
-            price: parseFloat(item.lastPrice),
-            change: parseFloat(item.price24hPcnt) * 100,
-            high: parseFloat(item.highPrice24h),
-            low: parseFloat(item.lowPrice24h),
-            volume: parseFloat(item.volume24h),
-            source: 'Bybit Live'
-          }));
-        }
-      } catch (err) {
-        console.warn('Bybit tickers fetch failed, using fallback:', err);
+        // Race both fast CORS-enabled APIs in parallel — fastest response wins in ~250-500ms!
+        return await Promise.any([fetchBinanceVision(), fetchCoinGecko()]);
+      } catch (raceErr) {
+        console.warn('All parallel crypto feeds failed, using offline fallback:', raceErr);
+        return symbols.map(sym => {
+          const s = sym.replace('USDT', '');
+          const fallbackMap = { BTC: 63300, ETH: 1790, SOL: 142, BNB: 580, ADA: 0.45, XRP: 1.85, DOGE: 0.16, DOT: 5.2, SUI: 2.1, PAXG: 2680 };
+          const p = fallbackMap[s] || 10;
+          return {
+            symbol: s,
+            pair: sym,
+            price: p,
+            change: 0,
+            high: p * 1.02,
+            low: p * 0.98,
+            volume: 0,
+            source: 'Offline Fallback'
+          };
+        });
       }
+    },
 
-      // 4. Fallback snapshot if completely offline
-      return symbols.map(sym => {
-        const s = sym.replace('USDT', '');
-        const fallbackMap = { BTC: 63300, ETH: 1790, SOL: 142, BNB: 580, ADA: 0.45, XRP: 1.85, DOGE: 0.16, DOT: 5.2, SUI: 2.1, PAXG: 2680 };
-        const p = fallbackMap[s] || 10;
-        return {
-          symbol: s,
-          pair: sym,
-          price: p,
-          change: 0,
-          high: p * 1.02,
-          low: p * 0.98,
-          volume: 0,
-          source: 'Offline Fallback'
+    // Live Real-Time WebSocket Multi-Ticker Stream (Unblocked Binance Data Stream CDN)
+    connectGlobalTickerWS(onTick) {
+      try {
+        if (globalTickerWS) {
+          globalTickerWS.close();
+          globalTickerWS = null;
+        }
+        const wsUrl = 'wss://data-stream.binance.vision/stream?streams=btcusdt@ticker/ethusdt@ticker/solusdt@ticker';
+        const ws = new WebSocket(wsUrl);
+        ws.onmessage = (event) => {
+          try {
+            const msg = JSON.parse(event.data);
+            const d = msg.data;
+            if (d && d.s && d.c) {
+              onTick({
+                symbol: d.s.replace('USDT', ''),
+                price: parseFloat(d.c),
+                change: parseFloat(d.P)
+              });
+            }
+          } catch (e) {}
         };
-      });
+        ws.onerror = () => { /* Silent fallback to REST polling */ };
+        globalTickerWS = ws;
+        return ws;
+      } catch (e) {
+        return null;
+      }
+    },
+
+    // Live Crypto Fear & Greed Index (Alternative.me — CORS: *)
+    async getFearAndGreed() {
+      try {
+        const data = await fetchJSON('https://api.alternative.me/fng/?limit=1', false, false, 3500);
+        const item = data?.data?.[0];
+        if (item) {
+          return {
+            value: parseInt(item.value, 10),
+            classification: item.value_classification || 'Neutral',
+            timestamp: item.timestamp
+          };
+        }
+      } catch (e) {
+        console.warn('Live Fear & Greed fetch failed:', e);
+      }
+      return null;
+    },
+
+    // Live Global Crypto Stats (BTC Dominance & Total Market Cap via CoinGecko — CORS: *)
+    async getGlobalCryptoStats() {
+      try {
+        const res = await fetchJSON('https://api.coingecko.com/api/v3/global', false, false, 3500);
+        const d = res?.data;
+        if (d) {
+          return {
+            btcDominance: d.market_cap_percentage?.btc || 58.4,
+            ethDominance: d.market_cap_percentage?.eth || 12.1,
+            totalMarketCapUsd: d.total_market_cap?.usd || 0,
+            marketCapChange24h: d.market_cap_change_percentage_24h_usd || 0
+          };
+        }
+      } catch (e) {
+        console.warn('Live Global Crypto Stats fetch failed:', e);
+      }
+      return null;
     },
 
     // Alias helper for modules requesting specific symbols
@@ -164,9 +218,9 @@ window.TradeMasterAPI = (function() {
       }
 
       const wsSymbol = symbol.toLowerCase() + 'usdt';
-      const wsUrl = `wss://stream.binance.com:9443/ws/${wsSymbol}@trade`;
+      const wsUrl = `wss://data-stream.binance.vision/ws/${wsSymbol}@trade`;
       
-      console.log(`Connecting to Binance WS: ${wsUrl}`);
+      console.log(`Connecting to Binance Vision Live WS: ${wsUrl}`);
       const ws = new WebSocket(wsUrl);
       
       ws.onmessage = (event) => {
@@ -393,56 +447,37 @@ window.TradeMasterAPI = (function() {
       }
     },
 
-    // 5. Global News API - Fetch Financial & Geopolitical News
-    async getGlobalNews(queries = ['financial market', 'geopolitics', 'saham indonesia', 'crypto regulation', 'crypto security hack']) {
-      // Use Google News RSS feed search wrapped in CORS proxy
-      const searchQuery = queries.join(' OR ');
-      const url = `https://news.google.com/rss/search?q=${encodeURIComponent(searchQuery)}&hl=id&gl=ID&ceid=ID:id`;
-      
-      try {
-        const cacheKey = `cache_news_${searchQuery}`;
-        let xmlText = getCachedData(cacheKey);
-        
-        if (!xmlText) {
-          const proxyUrl = `${CORS_PROXY}${encodeURIComponent(url)}`;
-          const response = await fetch(proxyUrl);
-          const raw = await response.json();
-          xmlText = raw.contents;
-          setCachedData(cacheKey, xmlText);
-        }
+    // 5. Global News API - Fast Live Crypto & Market News (RSS2JSON Cointelegraph ~300ms, full CORS)
+    async getGlobalNews() {
+      const feedUrls = [
+        'https://api.rss2json.com/v1/api.json?rss_url=https%3A%2F%2Fcointelegraph.com%2Frss',
+        'https://api.rss2json.com/v1/api.json?rss_url=https%3A%2F%2Fwww.coindesk.com%2Farc%2Foutboundfeeds%2Frss%2F'
+      ];
 
-        const parser = new DOMParser();
-        const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
-        const items = xmlDoc.getElementsByTagName('item');
-        
-        const news = [];
-        for (let i = 0; i < Math.min(items.length, 25); i++) {
-          const item = items[i];
-          news.push({
-            title: item.getElementsByTagName('title')[0]?.textContent || '',
-            link: item.getElementsByTagName('link')[0]?.textContent || '#',
-            pubDate: new Date(item.getElementsByTagName('pubDate')[0]?.textContent).toLocaleString('id-ID'),
-            source: item.getElementsByTagName('source')[0]?.textContent || 'Google News'
-          });
-        }
-        return news;
-      } catch (err) {
-        console.error('Failed to fetch global news RSS:', err);
-        return [
-          {
-            title: "IHSG Ditutup Menguat Tipis di Tengah Sentimen Suku Bunga Global",
-            link: "#",
-            pubDate: new Date().toLocaleString(),
-            source: "MarketNews Fallback"
-          },
-          {
-            title: "Bitcoin Bertahan di Level Support Kuat Menjelang Keputusan Fed",
-            link: "#",
-            pubDate: new Date().toLocaleString(),
-            source: "CryptoNews Fallback"
+      for (const apiUrl of feedUrls) {
+        try {
+          const data = await fetchJSON(apiUrl, false, false, 3500);
+          if (data && data.status === 'ok' && Array.isArray(data.items) && data.items.length > 0) {
+            return data.items.slice(0, 20).map(item => ({
+              title: item.title || '',
+              link: item.link || '#',
+              pubDate: item.pubDate ? new Date(item.pubDate.replace(' ', 'T') + 'Z').toLocaleString('id-ID') : new Date().toLocaleString('id-ID'),
+              source: data.feed?.title || 'Crypto Live News'
+            }));
           }
-        ];
+        } catch (err) {
+          console.warn('News feed failover:', apiUrl, err);
+        }
       }
+
+      return [
+        {
+          title: "Bitcoin & Crypto Market Live Feed — Menunggu sinkronisasi berita terbaru",
+          link: "#",
+          pubDate: new Date().toLocaleString('id-ID'),
+          source: "TradeMaster Live"
+        }
+      ];
     },
 
     // 6. Telegram Bot API - Send Realtime Whale Position Alerts (Multi-Tier Robust Delivery)

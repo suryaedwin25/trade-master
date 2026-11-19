@@ -1303,87 +1303,14 @@ window.TradeMasterApp = (function() {
 
   // 3. Page Rendering Logic
   async function renderDashboard() {
-    console.log('Rendering Dashboard page...');
+    console.log('Rendering Dashboard page (Instant Non-Blocking Parallel Load)...');
     const parent = document.getElementById('page-dashboard');
     if (!parent) return;
 
-    // Update Telegram Status in Whale Radar Header
+    // 1. Render Instant UI First (0ms — never wait for network!)
     updateTelegramStatusBadge();
-
-    // Load top crypto prices
-    const cryptos = await TradeMasterAPI.getCryptoTickers();
-    const cryptoContainer = document.getElementById('dashboard-crypto-list');
-    if (cryptoContainer) {
-      cryptoContainer.innerHTML = cryptos.map(c => `
-        <div class="card" style="padding: 16px; cursor: pointer;" onclick="TradeMasterApp.navigateTo('crypto', '${c.symbol}')">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-            <span style="font-weight: 700; font-size: 1.1rem; display: flex; align-items: center; gap: 8px;">
-              <span class="logo-icon" style="width: 24px; height: 24px; font-size: 0.8rem; box-shadow: none;">${c.symbol[0]}</span>
-              ${c.symbol} <span style="font-size: 0.8rem; color: var(--text-muted);">/USDT</span>
-            </span>
-            <span class="badge ${c.change >= 0 ? 'badge-success' : 'badge-danger'}">${c.change >= 0 ? '+' : ''}${c.change.toFixed(2)}%</span>
-          </div>
-          <div style="font-size: 1.4rem; font-weight: 700; margin-bottom: 4px;">$${c.price.toLocaleString()}</div>
-          <div style="font-size: 0.75rem; color: var(--text-muted)">Vol: $${(c.volume * c.price / 1000).toFixed(0)}K</div>
-        </div>
-      `).join('');
-    }
-
-    // Calculate dynamic Fear & Greed based on watchlist performance
-    let cryptoChangeSum = 0;
-    if (cryptos && cryptos.length > 0) {
-      cryptos.forEach(c => { cryptoChangeSum += c.change; });
-      const avgCryptoChange = cryptoChangeSum / cryptos.length;
-      
-      let fgValue = Math.round(55 + (avgCryptoChange * 2.5) + (state.sentimentScorecard ? state.sentimentScorecard.score * 5 : 0));
-      fgValue = Math.max(10, Math.min(95, fgValue));
-      
-      let fgLabel = 'NEUTRAL';
-      let fgBadge = 'badge-warning';
-      let fgColor = 'var(--warning)';
-      let fgAdv = 'DCA: Hold / Akumulasi Lemah';
-      
-      if (fgValue >= 75) {
-        fgLabel = 'EXTREME GREED';
-        fgBadge = 'badge-danger';
-        fgColor = 'var(--danger)';
-        fgAdv = 'DCA: Tunda / Amankan Profit';
-      } else if (fgValue >= 55) {
-        fgLabel = 'GREED';
-        fgBadge = 'badge-warning';
-        fgColor = 'var(--warning)';
-        fgAdv = 'DCA: Hold / Pasang Target Jual';
-      } else if (fgValue <= 25) {
-        fgLabel = 'EXTREME FEAR';
-        fgBadge = 'badge-success';
-        fgColor = 'var(--success)';
-        fgAdv = 'DCA: AGRESIF / SEROK AKUMULASI';
-      } else if (fgValue <= 45) {
-        fgLabel = 'FEAR';
-        fgBadge = 'badge-info';
-        fgColor = 'var(--primary)';
-        fgAdv = 'DCA: Beli Cicil Bertahap';
-      }
-
-      const fgValEl = document.getElementById('crypto-fear-greed-val');
-      const fgLabelEl = document.getElementById('crypto-fear-greed-label');
-      if (fgValEl) {
-        fgValEl.innerText = fgValue;
-        fgValEl.style.color = fgColor;
-      }
-      if (fgLabelEl) {
-        fgLabelEl.innerText = fgLabel;
-        fgLabelEl.className = `badge ${fgBadge}`;
-        const advEl = fgLabelEl.parentElement.querySelector('div:last-child');
-        if (advEl) advEl.innerText = fgAdv;
-      }
-    }
-
-    // Load static Indonesian Stocks for Watchlist
-    // (Deprecated: Workspace now 100% focused on Crypto & Smart Money Whale Radar)
     renderDashboardWhaleTracker();
 
-    // Calculate Whale Accumulation Index Meter (Replaces old IDX temperature)
     const whaleValEl = document.getElementById('whale-acc-val');
     const whaleLabelEl = document.getElementById('whale-acc-label');
     if (whaleValEl) {
@@ -1397,8 +1324,84 @@ window.TradeMasterApp = (function() {
       if (advEl) advEl.innerText = 'Whales WR ≥ 90% agresif serok BTC & SOL';
     }
 
-    // Render global issues news teaser
-    renderGlobalNewsSummary();
+    // 2. Fetch ALL Live Data in PARALLEL (Prices + Fear & Greed + Global BTC Dom + Live News)
+    const [tickersRes, fgRes, globalRes] = await Promise.allSettled([
+      TradeMasterAPI.getCryptoTickers(true),
+      TradeMasterAPI.getFearAndGreed ? TradeMasterAPI.getFearAndGreed() : Promise.resolve(null),
+      TradeMasterAPI.getGlobalCryptoStats ? TradeMasterAPI.getGlobalCryptoStats() : Promise.resolve(null),
+      renderGlobalNewsSummary()
+    ]);
+
+    const cryptos = tickersRes.status === 'fulfilled' && Array.isArray(tickersRes.value) ? tickersRes.value : [];
+    const cryptoContainer = document.getElementById('dashboard-crypto-list');
+    if (cryptoContainer && cryptos.length > 0) {
+      cryptoContainer.innerHTML = cryptos.slice(0, 8).map(c => `
+        <div class="card" style="padding: 16px; cursor: pointer;" onclick="TradeMasterApp.navigateTo('crypto', '${c.symbol}')">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <span style="font-weight: 700; font-size: 1.1rem; display: flex; align-items: center; gap: 8px;">
+              <span class="logo-icon" style="width: 24px; height: 24px; font-size: 0.8rem; box-shadow: none;">${c.symbol[0]}</span>
+              ${c.symbol} <span style="font-size: 0.8rem; color: var(--text-muted);">/USDT</span>
+            </span>
+            <span class="badge ${c.change >= 0 ? 'badge-success' : 'badge-danger'}">${c.change >= 0 ? '+' : ''}${c.change.toFixed(2)}%</span>
+          </div>
+          <div style="font-size: 1.4rem; font-weight: 700; margin-bottom: 4px;">$${c.price >= 100 ? c.price.toLocaleString('en-US', { maximumFractionDigits: 2 }) : c.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 4 })}</div>
+          <div style="font-size: 0.72rem; color: var(--text-muted)">${c.source || 'Live Feed'} ${c.volume > 0 ? `• Vol: $${(c.volume * c.price / 1000000).toFixed(1)}M` : ''}</div>
+        </div>
+      `).join('');
+    }
+
+    // Update Live BTC Dominance in Top Bar if available
+    const globalStats = globalRes.status === 'fulfilled' ? globalRes.value : null;
+    if (globalStats && globalStats.btcDominance) {
+      const domEl = document.getElementById('top-btc-dom');
+      if (domEl) {
+        domEl.innerHTML = `<span class="ticker-label">BTC Dom:</span> <span class="ticker-val up">${globalStats.btcDominance.toFixed(1)}%</span>`;
+      }
+    }
+
+    // Update REAL Live Fear & Greed Index (Alternative.me) with fallback to ticker avg
+    const liveFG = fgRes.status === 'fulfilled' ? fgRes.value : null;
+    let fgValue = liveFG ? liveFG.value : 50;
+    if (!liveFG && cryptos.length > 0) {
+      const avgCryptoChange = cryptos.reduce((s, c) => s + c.change, 0) / cryptos.length;
+      fgValue = Math.max(10, Math.min(95, Math.round(50 + avgCryptoChange * 2.5)));
+    }
+
+    let fgLabel = liveFG ? liveFG.classification.toUpperCase() : 'NEUTRAL';
+    let fgBadge = 'badge-warning';
+    let fgColor = 'var(--warning)';
+    let fgAdv = 'DCA: Hold / Akumulasi Lemah';
+
+    if (fgValue >= 75) {
+      fgBadge = 'badge-danger';
+      fgColor = 'var(--danger)';
+      fgAdv = 'DCA: Tunda / Amankan Profit (Waspada Exit Liquidity)';
+    } else if (fgValue >= 55) {
+      fgBadge = 'badge-warning';
+      fgColor = 'var(--warning)';
+      fgAdv = 'DCA: Hold / Pasang Target Jual';
+    } else if (fgValue <= 25) {
+      fgBadge = 'badge-success';
+      fgColor = 'var(--success)';
+      fgAdv = 'DCA: AGRESIF / ZONA MANCING BOTTOM';
+    } else if (fgValue <= 45) {
+      fgBadge = 'badge-info';
+      fgColor = 'var(--primary)';
+      fgAdv = 'DCA: Beli Cicil Bertahap';
+    }
+
+    const fgValEl = document.getElementById('crypto-fear-greed-val');
+    const fgLabelEl = document.getElementById('crypto-fear-greed-label');
+    if (fgValEl) {
+      fgValEl.innerText = fgValue;
+      fgValEl.style.color = fgColor;
+    }
+    if (fgLabelEl) {
+      fgLabelEl.innerText = fgLabel;
+      fgLabelEl.className = `badge ${fgBadge}`;
+      const advEl = fgLabelEl.parentElement.querySelector('div:last-child');
+      if (advEl) advEl.innerText = fgAdv;
+    }
   }
 
   async function renderCryptoPage() {

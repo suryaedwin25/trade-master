@@ -12,7 +12,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   
   <!-- Global Custom Stylesheets -->
-  <link rel="stylesheet" href="src/styles/main.css?v=3.8">
+  <link rel="stylesheet" href="src/styles/main.css?v=4.0">
 </head>
 <body>
   <div class="app-container">
@@ -97,9 +97,9 @@
             <span class="ticker-label">SOL:</span>
             <span class="ticker-val up">Loading...</span>
           </div>
-          <div class="ticker-item">
+          <div class="ticker-item" id="top-btc-dom">
             <span class="ticker-label">BTC Dom:</span>
-            <span class="ticker-val up">58.4%</span>
+            <span class="ticker-val up">Loading...</span>
           </div>
           <div class="ticker-item">
             <span class="ticker-label">Whale Inflow (24h):</span>
@@ -1627,13 +1627,13 @@
   <script src="https://unpkg.com/lucide@latest"></script>
 
   <!-- Core App Scripts (Explicit dependency order) -->
-  <script src="src/js/auth.js?v=3.8"></script>
-  <script src="src/js/api.js?v=3.8"></script>
-  <script src="src/js/ta.js?v=3.8"></script>
-  <script src="src/js/impact.js?v=3.8"></script>
-  <script src="src/js/macro.js?v=3.8"></script>
-  <script src="src/js/contrarian.js?v=3.8"></script>
-  <script src="src/js/app.js?v=3.8"></script>
+  <script src="src/js/auth.js?v=4.0"></script>
+  <script src="src/js/api.js?v=4.0"></script>
+  <script src="src/js/ta.js?v=4.0"></script>
+  <script src="src/js/impact.js?v=4.0"></script>
+  <script src="src/js/macro.js?v=4.0"></script>
+  <script src="src/js/contrarian.js?v=4.0"></script>
+  <script src="src/js/app.js?v=4.0"></script>
 
   <!-- Self-Contained Inline Telegram Controller (Cache-Proof & Zero-Dependency) -->
   <script>
@@ -1991,33 +1991,33 @@
       window.TradeMasterApp.saveTelegramConfig = () => saveConfig(false);
       window.TradeMasterApp.sendTestTelegramAlert = () => sendTestAlert(false);
 
-      // Live 15-Second Auto-Refresh for Topbar BTC / ETH / SOL Tickers
+      function renderSingleTopbarTicker(elId, label, item) {
+        const el = document.getElementById(elId);
+        if (!el || !item) return;
+        const isUp = item.change >= 0;
+        const arrow = isUp ? '▲' : '▼';
+        const priceStr = item.price >= 1000
+          ? item.price.toLocaleString('en-US', { maximumFractionDigits: 0 })
+          : item.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        el.innerHTML = `<span class="ticker-label">${label}:</span> <span class="ticker-val ${isUp ? 'up' : 'down'}">${arrow} $${priceStr} (${isUp ? '+' : ''}${item.change.toFixed(2)}%)</span>`;
+      }
+
+      // Live Auto-Refresh + Real-Time WebSocket Stream for Topbar BTC / ETH / SOL Tickers
       async function refreshLiveTopbarTickers() {
         try {
           if (!window.TradeMasterAPI || typeof window.TradeMasterAPI.getCryptoTickers !== 'function') return;
           const tickers = await window.TradeMasterAPI.getCryptoTickers(true);
           if (!Array.isArray(tickers) || tickers.length === 0) return;
 
-          const updateTickerEl = (elId, label, item) => {
-            const el = document.getElementById(elId);
-            if (!el || !item) return;
-            const isUp = item.change >= 0;
-            const arrow = isUp ? '▲' : '▼';
-            const priceStr = item.price >= 1000
-              ? item.price.toLocaleString('en-US', { maximumFractionDigits: 0 })
-              : item.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-            el.innerHTML = `<span class="ticker-label">${label}:</span> <span class="ticker-val ${isUp ? 'up' : 'down'}">${arrow} $${priceStr} (${isUp ? '+' : ''}${item.change.toFixed(2)}%)</span>`;
-          };
-
-          updateTickerEl('top-crypto-ticker', 'BTC', tickers.find(t => t.symbol === 'BTC'));
-          updateTickerEl('top-eth-ticker', 'ETH', tickers.find(t => t.symbol === 'ETH'));
-          updateTickerEl('top-sol-ticker', 'SOL', tickers.find(t => t.symbol === 'SOL'));
+          renderSingleTopbarTicker('top-crypto-ticker', 'BTC', tickers.find(t => t.symbol === 'BTC'));
+          renderSingleTopbarTicker('top-eth-ticker', 'ETH', tickers.find(t => t.symbol === 'ETH'));
+          renderSingleTopbarTicker('top-sol-ticker', 'SOL', tickers.find(t => t.symbol === 'SOL'));
         } catch (e) {
           console.warn('Live topbar ticker refresh error:', e);
         }
       }
 
-      // On DOM ready, populate initial configuration & start live ticker sync
+      // On DOM ready, populate initial configuration & start real-time WS + REST live sync
       document.addEventListener('DOMContentLoaded', () => {
         const initialCfg = getSavedConfig();
         if (initialCfg) {
@@ -2026,6 +2026,15 @@
         }
         refreshLiveTopbarTickers();
         setInterval(refreshLiveTopbarTickers, 15000);
+
+        // Connect Real-Time WebSocket Push Stream (Zero-Lag Second-by-Second Ticks!)
+        if (window.TradeMasterAPI && typeof window.TradeMasterAPI.connectGlobalTickerWS === 'function') {
+          window.TradeMasterAPI.connectGlobalTickerWS((tick) => {
+            if (tick.symbol === 'BTC') renderSingleTopbarTicker('top-crypto-ticker', 'BTC', tick);
+            else if (tick.symbol === 'ETH') renderSingleTopbarTicker('top-eth-ticker', 'ETH', tick);
+            else if (tick.symbol === 'SOL') renderSingleTopbarTicker('top-sol-ticker', 'SOL', tick);
+          });
+        }
       });
     })();
   </script>
