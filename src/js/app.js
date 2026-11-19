@@ -932,7 +932,7 @@ window.TradeMasterApp = (function() {
                 🐋
               </div>
               <div>
-                <div style="font-weight: 800; font-size: 0.88rem; color: #fff; display: flex; align-items: center; gap: 6px;">
+                <div style="font-weight: 800; font-size: 0.88rem; color: var(--text-main); display: flex; align-items: center; gap: 6px;">
                   ${w.label}
                   <span class="badge ${w.category === 'BTC' ? 'badge-warning' : w.category === 'SOL' ? 'badge-info' : 'badge-success'}" style="font-size: 0.6rem; padding: 1px 5px;">${w.chain || w.token}</span>
                 </div>
@@ -965,7 +965,7 @@ window.TradeMasterApp = (function() {
             </div>
           </td>
           <td style="padding: 12px 14px;">
-            <div style="font-size: 0.85rem; font-weight: 700; color: #fff;">$${w.entry >= 1000 ? w.entry.toLocaleString() : w.entry}</div>
+            <div style="font-size: 0.85rem; font-weight: 700; color: var(--text-main);">$${w.entry >= 1000 ? w.entry.toLocaleString() : w.entry}</div>
             <div style="font-size: 0.68rem; color: var(--text-muted);">Live: $${livePrice >= 1000 ? livePrice.toLocaleString() : livePrice}</div>
           </td>
           <td style="padding: 12px 14px;">
@@ -981,7 +981,7 @@ window.TradeMasterApp = (function() {
               <button class="btn btn-primary" onclick="TradeMasterApp.navigateTo('crypto', '${w.token}')" style="padding: 4px 10px; font-size: 0.72rem; font-weight: bold; border-radius: 6px; cursor: pointer; display: inline-flex; align-items: center; gap: 4px;" title="Buka chart & analisa ${w.token}">
                 Analisa
               </button>
-              <button class="btn btn-secondary" onclick="TradeMasterApp.simulateWhaleAlert('${w.id}', 'OPEN')" style="padding: 4px 8px; font-size: 0.7rem; border-radius: 6px; background: rgba(0,136,204,0.15); border: 1px solid rgba(0,136,204,0.4); color: #0088cc; font-weight: bold; cursor: pointer;" title="Kirim simulasi sinyal Whale ini ke Telegram Anda">
+              <button class="btn btn-secondary" onclick="TradeMasterApp.simulateWhaleAlert('${w.id}', 'OPEN')" style="padding: 4px 8px; font-size: 0.7rem; border-radius: 6px; background: #f0f9ff; border: 1px solid #0284c7; color: #0369a1; font-weight: bold; cursor: pointer;" title="Kirim simulasi sinyal Whale ini ke Telegram Anda">
                 ✈️ Alert
               </button>
             </div>
@@ -1081,17 +1081,17 @@ window.TradeMasterApp = (function() {
     if (!box) return;
     box.style.display = 'block';
     if (type === 'success') {
-      box.style.background = 'rgba(0, 230, 118, 0.12)';
-      box.style.border = '1px solid #00e676';
-      box.style.color = '#00e676';
+      box.style.background = '#ecfdf5';
+      box.style.border = '1px solid #10b981';
+      box.style.color = '#065f46';
     } else if (type === 'error') {
-      box.style.background = 'rgba(238, 82, 83, 0.12)';
-      box.style.border = '1px solid #ee5253';
-      box.style.color = '#ff7675';
+      box.style.background = '#fef2f2';
+      box.style.border = '1px solid #ef4444';
+      box.style.color = '#991b1b';
     } else {
-      box.style.background = 'rgba(0, 136, 204, 0.12)';
-      box.style.border = '1px solid #0088cc';
-      box.style.color = '#64b5f6';
+      box.style.background = '#f0f9ff';
+      box.style.border = '1px solid #0284c7';
+      box.style.color = '#075985';
     }
     box.innerHTML = msg;
   }
@@ -3138,49 +3138,49 @@ window.TradeMasterApp = (function() {
           </div>
 
           <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 8px; margin-top: 10px;">
-            <div style="background: rgba(0,230,118,0.15); padding: 8px 10px; border-radius: 8px; border-left: 3px solid var(--success);">
+            <div style="background: #ecfdf5; padding: 8px 10px; border-radius: 8px; border-left: 3px solid var(--success);">
               <div style="display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--text-muted); font-weight: 600;">
                 <span>BTC DI-HOLD SAAT INI</span>
                 <span style="color: var(--success); font-weight: bold;">0.0474505 BTC</span>
               </div>
-              <div style="font-size: 1rem; font-weight: 900; color: #fff; margin: 2px 0;">$3,976 USD <span style="font-size: 0.75rem; font-weight: bold; color: var(--success);">(+10.26%)</span></div>
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px; padding-top: 4px; border-top: 1px dashed rgba(255,255,255,0.08); font-size: 0.68rem;">
+              <div style="font-size: 1rem; font-weight: 900; color: var(--text-main); margin: 2px 0;">$3,976 USD <span style="font-size: 0.75rem; font-weight: bold; color: var(--success);">(+10.26%)</span></div>
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px; padding-top: 4px; border-top: 1px dashed rgba(0,0,0,0.08); font-size: 0.68rem;">
                 <span style="color: var(--success); font-weight: bold;">Avg Cost: $76,000</span>
                 <span style="color: var(--text-muted);">HODL ke 2029</span>
               </div>
             </div>
 
-            <div style="background: rgba(0,0,0,0.3); padding: 8px 10px; border-radius: 8px; border-left: 3px solid var(--warning);">
+            <div style="background: #f8fafc; padding: 8px 10px; border-radius: 8px; border-left: 3px solid var(--warning);">
               <div style="display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--text-muted); font-weight: 600;">
                 <span>DCA TERJADWAL (Rutin)</span>
                 <span style="color: var(--warning); font-weight: bold;">40% (Rp 20 Jt)</span>
               </div>
-              <div style="font-size: 1rem; font-weight: 900; color: #fff; margin: 2px 0;">Rp 2,5 Jt / Minggu <span style="font-size: 0.75rem; font-weight: normal; color: var(--text-muted);">(8x Beli)</span></div>
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px; padding-top: 4px; border-top: 1px dashed rgba(255,255,255,0.08); font-size: 0.68rem;">
+              <div style="font-size: 1rem; font-weight: 900; color: var(--text-main); margin: 2px 0;">Rp 2,5 Jt / Minggu <span style="font-size: 0.75rem; font-weight: normal; color: var(--text-muted);">(8x Beli)</span></div>
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px; padding-top: 4px; border-top: 1px dashed rgba(0,0,0,0.08); font-size: 0.68rem;">
                 <span style="color: var(--warning); font-weight: bold;">Akumulasi Tanpa Stres</span>
                 <span style="color: var(--text-muted);">Abaikan Noise</span>
               </div>
             </div>
 
-            <div style="background: rgba(0,0,0,0.3); padding: 8px 10px; border-radius: 8px; border-left: 3px solid var(--warning);">
+            <div style="background: #f8fafc; padding: 8px 10px; border-radius: 8px; border-left: 3px solid var(--warning);">
               <div style="display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--text-muted); font-weight: 600;">
                 <span>SEROK DISKON (Dip Sniping)</span>
                 <span style="color: var(--warning); font-weight: bold;">40% (Rp 20 Jt)</span>
               </div>
-              <div style="font-size: 1rem; font-weight: 900; color: #fff; margin: 2px 0;">$81.5k & $75.0k <span style="font-size: 0.75rem; font-weight: normal; color: var(--text-muted);">(Limit)</span></div>
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px; padding-top: 4px; border-top: 1px dashed rgba(255,255,255,0.08); font-size: 0.68rem;">
+              <div style="font-size: 1rem; font-weight: 900; color: var(--text-main); margin: 2px 0;">$81.5k & $75.0k <span style="font-size: 0.75rem; font-weight: normal; color: var(--text-muted);">(Limit)</span></div>
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px; padding-top: 4px; border-top: 1px dashed rgba(0,0,0,0.08); font-size: 0.68rem;">
                 <span style="color: var(--warning); font-weight: bold;">Jaring Flash Dip</span>
                 <span style="color: var(--text-muted);">Diskon Otomatis</span>
               </div>
             </div>
 
-            <div style="background: rgba(0,0,0,0.3); padding: 8px 10px; border-radius: 8px; border-left: 3px solid var(--primary);">
+            <div style="background: #f8fafc; padding: 8px 10px; border-radius: 8px; border-left: 3px solid var(--primary);">
               <div style="display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--text-muted); font-weight: 600;">
                 <span>KAS SIAGA (Simple Earn)</span>
                 <span style="color: var(--primary); font-weight: bold;">20% (Rp 10 Jt)</span>
               </div>
               <div style="font-size: 1rem; font-weight: 900; color: var(--primary); margin: 2px 0;">Flexible Earn <span style="font-size: 0.75rem; font-weight: normal; color: var(--text-muted);">(Bunga Harian)</span></div>
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px; padding-top: 4px; border-top: 1px dashed rgba(255,255,255,0.08); font-size: 0.68rem;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px; padding-top: 4px; border-top: 1px dashed rgba(0,0,0,0.08); font-size: 0.68rem;">
                 <span style="color: var(--primary); font-weight: bold;">⚡ 5% - 10% APY</span>
                 <span style="color: var(--text-muted);">Cadangan Darurat</span>
               </div>

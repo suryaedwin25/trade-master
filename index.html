@@ -12,7 +12,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   
   <!-- Global Custom Stylesheets -->
-  <link rel="stylesheet" href="src/styles/main.css?v=3.5">
+  <link rel="stylesheet" href="src/styles/main.css?v=3.6">
 </head>
 <body>
   <div class="app-container">
@@ -154,7 +154,7 @@
                   <div>
                     <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
                       <span style="font-size: 1.4rem;">🐋</span>
-                      <h3 style="font-size: 1.2rem; font-weight: 800; letter-spacing: -0.3px; color: #fff;">Smart Money Whale Radar</h3>
+                      <h3 style="font-size: 1.2rem; font-weight: 800; letter-spacing: -0.3px; color: var(--text-main);">Smart Money Whale Radar</h3>
                       <span class="whale-gold-badge">🏆 Win Rate ≥ 90%</span>
                       <span class="whale-profit-badge">💰 PnL ≥ $500k USD</span>
                     </div>
@@ -163,15 +163,15 @@
                     </p>
                   </div>
                   <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
-                    <button class="btn btn-secondary" onclick="(window.openTelegramModal || (window.TradeMasterApp && TradeMasterApp.openTelegramModal))()" id="btn-telegram-status" style="font-size: 0.75rem; padding: 6px 12px; display: flex; align-items: center; gap: 6px; border-radius: 6px; background: rgba(0, 136, 204, 0.15); border: 1px solid #0088cc; color: #fff; cursor: pointer;">
+                    <button class="btn btn-secondary" onclick="(window.openTelegramModal || (window.TradeMasterApp && TradeMasterApp.openTelegramModal))()" id="btn-telegram-status" style="font-size: 0.75rem; padding: 6px 12px; display: flex; align-items: center; gap: 6px; border-radius: 6px; background: #f0f9ff; border: 1px solid #0284c7; color: #0369a1; font-weight: 600; cursor: pointer;">
                       <span style="font-size: 0.9rem;">✈️</span>
-                      <span>Notif Telegram: <b id="telegram-status-text" style="color: #00e676;">Setup ⚙️</b></span>
+                      <span>Notif Telegram: <b id="telegram-status-text" style="color: var(--success);">Setup ⚙️</b></span>
                     </button>
-                    <button class="btn btn-secondary" onclick="TradeMasterApp.openAddWhaleModal()" style="font-size: 0.75rem; padding: 6px 12px; display: flex; align-items: center; gap: 6px; border-radius: 6px; background: rgba(108, 92, 231, 0.15); border: 1px solid var(--primary); color: #fff; cursor: pointer;">
+                    <button class="btn btn-secondary" onclick="TradeMasterApp.openAddWhaleModal()" style="font-size: 0.75rem; padding: 6px 12px; display: flex; align-items: center; gap: 6px; border-radius: 6px; background: #eef2ff; border: 1px solid var(--primary); color: var(--primary); font-weight: 600; cursor: pointer;">
                       <i data-lucide="plus-circle" style="width: 14px; height: 14px; color: var(--primary);"></i>
                       + Tambah Wallet Whale
                     </button>
-                    <button class="btn btn-secondary" onclick="TradeMasterApp.renderDashboardWhaleTracker()" title="Refresh Whale Tracker" style="padding: 6px 10px; border-radius: 6px; background: rgba(255,255,255,0.03); border: 1px solid var(--card-border); color: var(--text-muted); cursor: pointer;">
+                    <button class="btn btn-secondary" onclick="TradeMasterApp.renderDashboardWhaleTracker()" title="Refresh Whale Tracker" style="padding: 6px 10px; border-radius: 6px; background: #f8fafc; border: 1px solid var(--card-border); color: var(--text-muted); cursor: pointer;">
                       <i data-lucide="refresh-cw" style="width: 14px; height: 14px;"></i>
                     </button>
                   </div>
@@ -181,7 +181,7 @@
                 <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px;">
                   <div class="whale-kpi-pill">
                     <span style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; font-weight: bold;">Whale Memenuhi Kriteria</span>
-                    <span id="kpi-whale-count" style="font-size: 1.35rem; font-weight: 800; color: #fff;">8 Elite Wallets</span>
+                    <span id="kpi-whale-count" style="font-size: 1.35rem; font-weight: 800; color: var(--text-main);">8 Elite Wallets</span>
                     <span style="font-size: 0.65rem; color: var(--success);">100% Lolos Kurasi</span>
                   </div>
                   <div class="whale-kpi-pill">
@@ -191,7 +191,7 @@
                   </div>
                   <div class="whale-kpi-pill">
                     <span style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; font-weight: bold;">Rata-rata Win Rate</span>
-                    <span id="kpi-whale-winrate" style="font-size: 1.35rem; font-weight: 800; color: #ffd700;">93.9%</span>
+                    <span id="kpi-whale-winrate" style="font-size: 1.35rem; font-weight: 800; color: #b45309;">93.9%</span>
                     <span style="font-size: 0.65rem; color: var(--text-muted);">Rentang: 90.2% – 98.0%</span>
                   </div>
                   <div class="whale-kpi-pill">
@@ -1008,8 +1008,8 @@
                 Koneksikan bot Telegram Anda untuk menerima alert real-time instan setiap kali <b>Whale Smart Money ($500k+ PnL, 90%+ Win Rate)</b> membuka posisi baru atau melakukan take profit.
               </p>
             </div>
-            <div id="page-telegram-badge" style="padding: 8px 16px; border-radius: 20px; font-weight: 700; font-size: 0.85rem; background: rgba(255,255,255,0.05); border: 1px solid var(--card-border); color: #b0bec5; display: flex; align-items: center; gap: 8px;">
-              <span class="dot" style="background: #b0bec5; width: 8px; height: 8px; border-radius: 50%;"></span>
+            <div id="page-telegram-badge" style="padding: 8px 16px; border-radius: 20px; font-weight: 700; font-size: 0.85rem; background: #f1f5f9; border: 1px solid var(--card-border); color: var(--text-muted); display: flex; align-items: center; gap: 8px;">
+              <span class="dot" style="background: #94a3b8; width: 8px; height: 8px; border-radius: 50%;"></span>
               <span>Status: <b id="page-telegram-badge-text">Belum Terkoneksi</b></span>
             </div>
           </div>
@@ -1018,15 +1018,15 @@
             
             <!-- Left Column: Form Setup -->
             <div class="whale-hub-card" style="padding: 24px; border-radius: 14px; background: var(--card-bg); border: 1px solid var(--card-border);">
-              <h3 style="font-size: 1.1rem; font-weight: 800; color: #fff; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
+              <h3 style="font-size: 1.1rem; font-weight: 800; color: var(--text-main); margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
                 <span>⚙️</span> Pengaturan Kredensial Bot
               </h3>
 
               <form id="form-telegram-page" onsubmit="event.preventDefault(); savePageTelegramConfig();" style="display: flex; flex-direction: column; gap: 16px;">
                 <!-- Toggle Switch -->
-                <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.03); border: 1px solid var(--card-border); padding: 12px 16px; border-radius: 10px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; background: #f8fafc; border: 1px solid var(--card-border); padding: 12px 16px; border-radius: 10px;">
                   <div>
-                    <div style="font-weight: 700; font-size: 0.9rem; color: #fff;">Aktifkan Push Notifikasi</div>
+                    <div style="font-weight: 700; font-size: 0.9rem; color: var(--text-main);">Aktifkan Push Notifikasi</div>
                     <div style="font-size: 0.72rem; color: var(--text-muted);">Sistem akan otomatis mengirim pesan ke Telegram saat sinyal terdeteksi</div>
                   </div>
                   <label style="position: relative; display: inline-block; width: 48px; height: 26px; cursor: pointer;">
@@ -1037,25 +1037,25 @@
 
                 <div>
                   <label style="font-size: 0.78rem; color: var(--text-muted); font-weight: bold; display: block; margin-bottom: 6px;">Telegram Bot Token</label>
-                  <input type="text" id="page-telegram-bot-token" placeholder="Contoh: 1234567890:ABCdefGhIJKlmNoPQRsTUVwxyZ" class="select-asset" style="width: 100%; padding: 12px 14px; background: rgba(0,0,0,0.35); font-family: monospace; font-size: 0.85rem; border-radius: 8px;">
+                  <input type="text" id="page-telegram-bot-token" placeholder="Contoh: 1234567890:ABCdefGhIJKlmNoPQRsTUVwxyZ" class="select-asset" style="width: 100%; padding: 12px 14px; background: #ffffff; color: var(--text-main); border: 1px solid #cbd5e1; font-family: monospace; font-size: 0.85rem; border-radius: 8px;">
                 </div>
 
                 <div>
                   <label style="font-size: 0.78rem; color: var(--text-muted); font-weight: bold; display: block; margin-bottom: 6px;">Telegram Chat ID Anda</label>
-                  <input type="text" id="page-telegram-chat-id" placeholder="Contoh: 987654321 (Dapatkan dari @userinfobot)" class="select-asset" style="width: 100%; padding: 12px 14px; background: rgba(0,0,0,0.35); font-family: monospace; font-size: 0.85rem; border-radius: 8px;">
+                  <input type="text" id="page-telegram-chat-id" placeholder="Contoh: 987654321 (Dapatkan dari @userinfobot)" class="select-asset" style="width: 100%; padding: 12px 14px; background: #ffffff; color: var(--text-main); border: 1px solid #cbd5e1; font-family: monospace; font-size: 0.85rem; border-radius: 8px;">
                 </div>
 
                 <!-- Event Triggers -->
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-                  <div style="background: rgba(0, 230, 118, 0.05); border: 1px solid rgba(0, 230, 118, 0.25); padding: 12px; border-radius: 10px;">
+                  <div style="background: #ecfdf5; border: 1px solid #a7f3d0; padding: 12px; border-radius: 10px;">
                     <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.8rem; font-weight: bold; color: var(--success);">
                       <input type="checkbox" id="page-telegram-alert-open" checked>
                       <span>🟢 Buka Posisi (OPEN)</span>
                     </label>
                     <div style="font-size: 0.68rem; color: var(--text-muted); margin-top: 4px;">Kirim saat Whale entry/akumulasi aset</div>
                   </div>
-                  <div style="background: rgba(238, 82, 83, 0.05); border: 1px solid rgba(238, 82, 83, 0.25); padding: 12px; border-radius: 10px;">
-                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.8rem; font-weight: bold; color: #ff7675;">
+                  <div style="background: #fef2f2; border: 1px solid #fecaca; padding: 12px; border-radius: 10px;">
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.8rem; font-weight: bold; color: var(--danger);">
                       <input type="checkbox" id="page-telegram-alert-close" checked>
                       <span>🔴 Tutup Posisi (CLOSE)</span>
                     </label>
@@ -1068,7 +1068,7 @@
 
                 <!-- Action Buttons -->
                 <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 6px;">
-                  <button type="button" id="page-btn-send-test" onclick="sendPageTestAlert()" class="btn btn-secondary" style="flex: 1; padding: 12px; font-weight: bold; color: #0088cc; border-color: rgba(0,136,204,0.5); background: rgba(0,136,204,0.12); cursor: pointer; border-radius: 8px;">
+                  <button type="button" id="page-btn-send-test" onclick="sendPageTestAlert()" class="btn btn-secondary" style="flex: 1; padding: 12px; font-weight: bold; color: #0369a1; border-color: #0284c7; background: #f0f9ff; cursor: pointer; border-radius: 8px;">
                     <span>🚀 Kirim Test Notifikasi</span>
                   </button>
                   <button type="submit" class="btn btn-primary" style="flex: 1; padding: 12px; font-weight: bold; cursor: pointer; border-radius: 8px;">
@@ -1080,10 +1080,10 @@
                 <div style="margin-top: 10px; padding-top: 14px; border-top: 1px solid var(--card-border);">
                   <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 8px; font-weight: 600;">SIMULASI NOTIFIKASI REAL-TIME:</div>
                   <div style="display: flex; gap: 8px;">
-                    <button type="button" onclick="simulateWhaleSignalFromPage('OPEN')" class="btn btn-secondary" style="flex: 1; font-size: 0.72rem; padding: 8px; border-color: rgba(0,230,118,0.3); color: var(--success); cursor: pointer;">
+                    <button type="button" onclick="simulateWhaleSignalFromPage('OPEN')" class="btn btn-secondary" style="flex: 1; font-size: 0.72rem; padding: 8px; background: #ecfdf5; border-color: #6ee7b7; color: var(--success); font-weight: 600; cursor: pointer;">
                       Simulasi Whale OPEN 🟢
                     </button>
-                    <button type="button" onclick="simulateWhaleSignalFromPage('CLOSE')" class="btn btn-secondary" style="flex: 1; font-size: 0.72rem; padding: 8px; border-color: rgba(238,82,83,0.3); color: #ff7675; cursor: pointer;">
+                    <button type="button" onclick="simulateWhaleSignalFromPage('CLOSE')" class="btn btn-secondary" style="flex: 1; font-size: 0.72rem; padding: 8px; background: #fef2f2; border-color: #fca5a5; color: var(--danger); font-weight: 600; cursor: pointer;">
                       Simulasi Whale TP/CLOSE 🔴
                     </button>
                   </div>
@@ -1095,37 +1095,37 @@
             <div style="display: flex; flex-direction: column; gap: 20px;">
               
               <!-- 3 Easy Steps Card -->
-              <div class="whale-hub-card" style="padding: 24px; border-radius: 14px; background: rgba(0, 136, 204, 0.05); border: 1px solid rgba(0, 136, 204, 0.3);">
-                <h3 style="font-size: 1.05rem; font-weight: 800; color: #fff; margin-bottom: 14px; display: flex; align-items: center; gap: 8px;">
+              <div class="whale-hub-card" style="padding: 24px; border-radius: 14px; background: #f0f9ff; border: 1px solid #bae6fd;">
+                <h3 style="font-size: 1.05rem; font-weight: 800; color: #0c4a6e; margin-bottom: 14px; display: flex; align-items: center; gap: 8px;">
                   <span>💡</span> Panduan Menghubungkan (3 Langkah Mudah)
                 </h3>
 
-                <div style="display: flex; flex-direction: column; gap: 14px; font-size: 0.8rem; color: #b8e6ff; line-height: 1.5;">
+                <div style="display: flex; flex-direction: column; gap: 14px; font-size: 0.8rem; color: #334155; line-height: 1.5;">
                   <div style="display: flex; gap: 12px;">
-                    <span style="background: rgba(0,136,204,0.3); color: #fff; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0;">1</span>
+                    <span style="background: #0284c7; color: #fff; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0;">1</span>
                     <div>
-                      <b style="color: #fff;">Buat Bot Baru di @BotFather:</b>
+                      <b style="color: #0f172a;">Buat Bot Baru di @BotFather:</b>
                       <div style="margin-top: 2px;">Buka Telegram, ketik <code>/newbot</code>, ikuti instruksi, lalu copy <b>HTTP API Token</b>.</div>
-                      <a href="https://t.me/BotFather" target="_blank" style="margin-top: 6px; display: inline-flex; align-items: center; gap: 4px; background: rgba(0,136,204,0.25); border: 1px solid rgba(0,136,204,0.6); color: #fff; padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; text-decoration: none; font-weight: bold;">
+                      <a href="https://t.me/BotFather" target="_blank" style="margin-top: 6px; display: inline-flex; align-items: center; gap: 4px; background: #0284c7; border: 1px solid #0369a1; color: #fff; padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; text-decoration: none; font-weight: bold;">
                         👉 Buka @BotFather di Telegram ↗
                       </a>
                     </div>
                   </div>
 
                   <div style="display: flex; gap: 12px;">
-                    <span style="background: #ff9800; color: #000; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0;">2</span>
+                    <span style="background: #d97706; color: #fff; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0;">2</span>
                     <div>
-                      <b style="color: #ffd166;">PENTING: Tekan START pada Bot Anda:</b>
+                      <b style="color: #b45309;">PENTING: Tekan START pada Bot Anda:</b>
                       <div style="margin-top: 2px;">Buka bot yang baru saja Anda buat di Telegram, lalu klik tombol <b>START</b> (atau kirim <code>/start</code>). Ini wajib agar Telegram mengizinkan bot mengirim pesan ke Anda.</div>
                     </div>
                   </div>
 
                   <div style="display: flex; gap: 12px;">
-                    <span style="background: rgba(0,136,204,0.3); color: #fff; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0;">3</span>
+                    <span style="background: #0284c7; color: #fff; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0;">3</span>
                     <div>
-                      <b style="color: #fff;">Cek Chat ID Anda di @userinfobot:</b>
+                      <b style="color: #0f172a;">Cek Chat ID Anda di @userinfobot:</b>
                       <div style="margin-top: 2px;">Buka @userinfobot, klik start, lalu copy deretan angka pada baris <b>Id:</b> (misal: <code>582910481</code>).</div>
-                      <a href="https://t.me/userinfobot" target="_blank" style="margin-top: 6px; display: inline-flex; align-items: center; gap: 4px; background: rgba(0,136,204,0.25); border: 1px solid rgba(0,136,204,0.6); color: #fff; padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; text-decoration: none; font-weight: bold;">
+                      <a href="https://t.me/userinfobot" target="_blank" style="margin-top: 6px; display: inline-flex; align-items: center; gap: 4px; background: #0284c7; border: 1px solid #0369a1; color: #fff; padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; text-decoration: none; font-weight: bold;">
                         👉 Buka @userinfobot di Telegram ↗
                       </a>
                     </div>
@@ -1135,13 +1135,13 @@
 
               <!-- Filter Spec Summary Card -->
               <div class="whale-hub-card" style="padding: 20px; border-radius: 14px; background: var(--card-bg); border: 1px solid var(--card-border);">
-                <h4 style="font-size: 0.9rem; font-weight: 800; color: #fff; margin-bottom: 10px; display: flex; align-items: center; gap: 6px;">
+                <h4 style="font-size: 0.9rem; font-weight: 800; color: var(--text-main); margin-bottom: 10px; display: flex; align-items: center; gap: 6px;">
                   <span>🎯</span> Kriteria Whale yang Dikirim ke Telegram:
                 </h4>
                 <ul style="font-size: 0.78rem; color: var(--text-muted); margin-left: 18px; display: flex; flex-direction: column; gap: 6px;">
                   <li>Minimal Realized Profit: <b style="color: var(--success);">$500,000 USD</b></li>
-                  <li>Minimal Win Rate Historis: <b style="color: #ffd700;">90.0%</b></li>
-                  <li>Cakupan Aset: <b>BTC, ETH, SOL, & High-Conviction Alts</b></li>
+                  <li>Minimal Win Rate Historis: <b style="color: #b45309;">90.0%</b></li>
+                  <li>Cakupan Aset: <b style="color: var(--text-main);">BTC, ETH, SOL, & High-Conviction Alts</b></li>
                   <li>Tipe Notifikasi: Entry Price, Sizing, SL/TP target, & On-chain Wallet Address</li>
                 </ul>
               </div>
@@ -1269,33 +1269,33 @@
   </div>
 
   <!-- Modal Tambah Custom Whale (Criteria: Profit >= $500k USD & Win Rate >= 90%) -->
-  <div id="modal-add-whale" class="whale-modal-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(5, 7, 12, 0.92); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); z-index: 99999999; align-items: center; justify-content: center; padding: 20px; box-sizing: border-box;">
-    <div class="whale-modal-container" style="background: #141929; border: 1px solid rgba(108, 92, 231, 0.5); border-radius: 16px; box-shadow: 0 25px 70px rgba(0, 0, 0, 0.85); width: 100%; max-width: 540px; padding: 24px; max-height: 90vh; overflow-y: auto; color: #fff; box-sizing: border-box;">
+  <div id="modal-add-whale" class="whale-modal-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(15, 23, 42, 0.45); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); z-index: 99999999; align-items: center; justify-content: center; padding: 20px; box-sizing: border-box;">
+    <div class="whale-modal-container" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; box-shadow: 0 25px 60px rgba(15, 23, 42, 0.18); width: 100%; max-width: 540px; padding: 24px; max-height: 90vh; overflow-y: auto; color: #0f172a; box-sizing: border-box;">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid var(--card-border); padding-bottom: 12px;">
         <div style="display: flex; align-items: center; gap: 8px;">
           <span style="font-size: 1.3rem;">🐋</span>
-          <h3 style="font-size: 1.1rem; font-weight: 800; color: #fff;">Tambah Wallet Whale Baru</h3>
+          <h3 style="font-size: 1.1rem; font-weight: 800; color: var(--text-main);">Tambah Wallet Whale Baru</h3>
         </div>
         <button onclick="TradeMasterApp.closeAddWhaleModal()" style="background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 1.2rem;">✕</button>
       </div>
 
-      <div style="background: rgba(108, 92, 231, 0.12); border: 1px solid var(--primary); padding: 10px 12px; border-radius: 8px; margin-bottom: 16px; font-size: 0.76rem; color: #d2caff; line-height: 1.4;">
+      <div style="background: #eef2ff; border: 1px solid #c7d2fe; padding: 10px 12px; border-radius: 8px; margin-bottom: 16px; font-size: 0.76rem; color: #3730a3; line-height: 1.4;">
         <b>⚠️ Persyaratan Kurasi Smart Money:</b> Wallet wajib memiliki rekam jejak <b>Total Realized Profit minimal $500,000 USD</b> dan <b>Win Rate minimal 90.0%</b> untuk menjaga integritas radar sinyal.
       </div>
 
       <form id="form-add-whale" onsubmit="event.preventDefault(); TradeMasterApp.saveNewWhale();" style="display: flex; flex-direction: column; gap: 12px;">
         <div>
           <label style="font-size: 0.75rem; color: var(--text-muted); font-weight: bold; display: block; margin-bottom: 4px;">Nama / Label Alias Whale</label>
-          <input type="text" id="new-whale-label" placeholder="Contoh: HyperLiquid Sniper Alpha #3" required class="select-asset" style="width: 100%; padding: 8px 12px; background: rgba(0,0,0,0.3);">
+          <input type="text" id="new-whale-label" placeholder="Contoh: HyperLiquid Sniper Alpha #3" required class="select-asset" style="width: 100%; padding: 8px 12px; background: #ffffff; color: var(--text-main); border: 1px solid #cbd5e1;">
         </div>
         <div>
           <label style="font-size: 0.75rem; color: var(--text-muted); font-weight: bold; display: block; margin-bottom: 4px;">Alamat Wallet / ENS / Solscan</label>
-          <input type="text" id="new-whale-address" placeholder="Contoh: 0x82a... atau bc1q..." required class="select-asset" style="width: 100%; padding: 8px 12px; background: rgba(0,0,0,0.3); font-family: monospace;">
+          <input type="text" id="new-whale-address" placeholder="Contoh: 0x82a... atau bc1q..." required class="select-asset" style="width: 100%; padding: 8px 12px; background: #ffffff; color: var(--text-main); border: 1px solid #cbd5e1; font-family: monospace;">
         </div>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
           <div>
             <label style="font-size: 0.75rem; color: var(--text-muted); font-weight: bold; display: block; margin-bottom: 4px;">Token Posisi</label>
-            <select id="new-whale-token" class="select-asset" style="width: 100%; padding: 8px 12px; background: rgba(0,0,0,0.3);">
+            <select id="new-whale-token" class="select-asset" style="width: 100%; padding: 8px 12px; background: #ffffff; color: var(--text-main); border: 1px solid #cbd5e1;">
               <option value="BTC" selected>BTC (Bitcoin)</option>
               <option value="ETH">ETH (Ethereum)</option>
               <option value="SOL">SOL (Solana)</option>
@@ -1306,22 +1306,22 @@
           </div>
           <div>
             <label style="font-size: 0.75rem; color: var(--text-muted); font-weight: bold; display: block; margin-bottom: 4px;">Harga Entry ($)</label>
-            <input type="number" step="any" id="new-whale-entry" placeholder="Contoh: 81800" required class="select-asset" style="width: 100%; padding: 8px 12px; background: rgba(0,0,0,0.3);">
+            <input type="number" step="any" id="new-whale-entry" placeholder="Contoh: 81800" required class="select-asset" style="width: 100%; padding: 8px 12px; background: #ffffff; color: var(--text-main); border: 1px solid #cbd5e1;">
           </div>
         </div>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
           <div>
             <label style="font-size: 0.75rem; color: var(--success); font-weight: bold; display: block; margin-bottom: 4px;">Realized Profit (USD) *Min $500k</label>
-            <input type="number" id="new-whale-profit" placeholder="Contoh: 750000" min="500000" required class="select-asset" style="width: 100%; padding: 8px 12px; background: rgba(0,0,0,0.3); border-color: rgba(0,230,118,0.4); color: var(--success); font-weight: bold;">
+            <input type="number" id="new-whale-profit" placeholder="Contoh: 750000" min="500000" required class="select-asset" style="width: 100%; padding: 8px 12px; background: #ecfdf5; border: 1px solid #6ee7b7; color: var(--success); font-weight: bold;">
           </div>
           <div>
-            <label style="font-size: 0.75rem; color: #ffd700; font-weight: bold; display: block; margin-bottom: 4px;">Win Rate (%) *Min 90%</label>
-            <input type="number" step="0.1" id="new-whale-winrate" placeholder="Contoh: 94.5" min="90" max="100" required class="select-asset" style="width: 100%; padding: 8px 12px; background: rgba(0,0,0,0.3); border-color: rgba(255,215,0,0.4); color: #ffd700; font-weight: bold;">
+            <label style="font-size: 0.75rem; color: #b45309; font-weight: bold; display: block; margin-bottom: 4px;">Win Rate (%) *Min 90%</label>
+            <input type="number" step="0.1" id="new-whale-winrate" placeholder="Contoh: 94.5" min="90" max="100" required class="select-asset" style="width: 100%; padding: 8px 12px; background: #fffbeb; border: 1px solid #fcd34d; color: #b45309; font-weight: bold;">
           </div>
         </div>
         <div>
           <label style="font-size: 0.75rem; color: var(--text-muted); font-weight: bold; display: block; margin-bottom: 4px;">Catatan Strategi & Sinyal</label>
-          <input type="text" id="new-whale-strategy" placeholder="Contoh: Akumulasi dip $81.5k, pasang take profit bertahap" class="select-asset" style="width: 100%; padding: 8px 12px; background: rgba(0,0,0,0.3);">
+          <input type="text" id="new-whale-strategy" placeholder="Contoh: Akumulasi dip $81.5k, pasang take profit bertahap" class="select-asset" style="width: 100%; padding: 8px 12px; background: #ffffff; color: var(--text-main); border: 1px solid #cbd5e1;">
         </div>
 
         <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 10px;">
@@ -1335,13 +1335,13 @@
   </div>
 
   <!-- Modal Konfigurasi Notifikasi Telegram Whale Alerts -->
-  <div id="modal-telegram-config" class="whale-modal-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(5, 7, 12, 0.92); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); z-index: 99999999; align-items: center; justify-content: center; padding: 20px; box-sizing: border-box;">
-    <div class="whale-modal-container" style="background: #141929; border: 1px solid rgba(108, 92, 231, 0.5); border-radius: 16px; box-shadow: 0 25px 70px rgba(0, 0, 0, 0.85), 0 0 40px rgba(108, 92, 231, 0.25); width: 100%; max-width: 580px; padding: 24px; max-height: 90vh; overflow-y: auto; color: #fff; box-sizing: border-box;">
+  <div id="modal-telegram-config" class="whale-modal-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(15, 23, 42, 0.45); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); z-index: 99999999; align-items: center; justify-content: center; padding: 20px; box-sizing: border-box;">
+    <div class="whale-modal-container" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; box-shadow: 0 25px 60px rgba(15, 23, 42, 0.18); width: 100%; max-width: 580px; padding: 24px; max-height: 90vh; overflow-y: auto; color: #0f172a; box-sizing: border-box;">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid var(--card-border); padding-bottom: 12px;">
         <div style="display: flex; align-items: center; gap: 8px;">
           <span style="font-size: 1.4rem;">✈️</span>
           <div>
-            <h3 style="font-size: 1.15rem; font-weight: 800; color: #fff;">Telegram Whale Alert Bot</h3>
+            <h3 style="font-size: 1.15rem; font-weight: 800; color: var(--text-main);">Telegram Whale Alert Bot</h3>
             <div style="font-size: 0.72rem; color: var(--text-muted);">Terima sinyal instan saat Whale buka atau tutup posisi secara live</div>
           </div>
         </div>
@@ -1349,26 +1349,26 @@
       </div>
 
       <!-- Quick Step-by-Step Instructions -->
-      <div style="background: rgba(0, 136, 204, 0.08); border: 1px solid rgba(0, 136, 204, 0.35); border-radius: 10px; padding: 14px; margin-bottom: 16px; font-size: 0.78rem; color: #b8e6ff; line-height: 1.5;">
-        <div style="font-weight: 800; font-size: 0.85rem; margin-bottom: 6px; color: #fff; display: flex; align-items: center; gap: 6px;">
+      <div style="background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 10px; padding: 14px; margin-bottom: 16px; font-size: 0.78rem; color: #334155; line-height: 1.5;">
+        <div style="font-weight: 800; font-size: 0.85rem; margin-bottom: 6px; color: #0c4a6e; display: flex; align-items: center; gap: 6px;">
           <span>💡</span> Cara Menghubungkan Telegram (Hanya 3 Langkah):
         </div>
         <ol style="margin-left: 20px; display: flex; flex-direction: column; gap: 8px;">
           <li>
-            <b>Buat Bot:</b> Buka Telegram ke <b>@BotFather</b>, klik Start, lalu kirim perintah <code>/newbot</code>. Beri nama & username bot. Copy <b>HTTP API Token</b> yang diberikan.
+            <b style="color: #0f172a;">Buat Bot:</b> Buka Telegram ke <b>@BotFather</b>, klik Start, lalu kirim perintah <code>/newbot</code>. Beri nama & username bot. Copy <b>HTTP API Token</b> yang diberikan.
             <div style="margin-top: 4px;">
-              <a href="https://t.me/BotFather" target="_blank" style="background: rgba(0, 136, 204, 0.2); border: 1px solid rgba(0, 136, 204, 0.5); color: #fff; padding: 3px 8px; border-radius: 4px; font-size: 0.72rem; text-decoration: none; font-weight: bold; display: inline-flex; align-items: center; gap: 4px;">
+              <a href="https://t.me/BotFather" target="_blank" style="background: #0284c7; border: 1px solid #0369a1; color: #fff; padding: 3px 8px; border-radius: 4px; font-size: 0.72rem; text-decoration: none; font-weight: bold; display: inline-flex; align-items: center; gap: 4px;">
                 👉 Buka @BotFather di Telegram ↗
               </a>
             </div>
           </li>
           <li>
-            <b>Start Bot Anda:</b> Buka bot baru yang barusan Anda buat, lalu tekan tombol <b>START</b> (wajib agar bot bisa mengirim pesan ke Anda).
+            <b style="color: #b45309;">Start Bot Anda:</b> Buka bot baru yang barusan Anda buat, lalu tekan tombol <b>START</b> (wajib agar bot bisa mengirim pesan ke Anda).
           </li>
           <li>
-            <b>Dapatkan Chat ID:</b> Buka <b>@userinfobot</b> di Telegram, klik Start. Salin deretan angka <b>Id</b> Anda.
+            <b style="color: #0f172a;">Dapatkan Chat ID:</b> Buka <b>@userinfobot</b> di Telegram, klik Start. Salin deretan angka <b>Id</b> Anda.
             <div style="margin-top: 4px;">
-              <a href="https://t.me/userinfobot" target="_blank" style="background: rgba(0, 136, 204, 0.2); border: 1px solid rgba(0, 136, 204, 0.5); color: #fff; padding: 3px 8px; border-radius: 4px; font-size: 0.72rem; text-decoration: none; font-weight: bold; display: inline-flex; align-items: center; gap: 4px;">
+              <a href="https://t.me/userinfobot" target="_blank" style="background: #0284c7; border: 1px solid #0369a1; color: #fff; padding: 3px 8px; border-radius: 4px; font-size: 0.72rem; text-decoration: none; font-weight: bold; display: inline-flex; align-items: center; gap: 4px;">
                 👉 Buka @userinfobot (Cek Chat ID) ↗
               </a>
             </div>
@@ -1378,9 +1378,9 @@
 
       <form id="form-telegram-config" onsubmit="event.preventDefault(); TradeMasterApp.saveTelegramConfig();" style="display: flex; flex-direction: column; gap: 14px;">
         <!-- Toggle Enable/Disable -->
-        <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.03); border: 1px solid var(--card-border); padding: 10px 14px; border-radius: 8px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; background: #f8fafc; border: 1px solid var(--card-border); padding: 10px 14px; border-radius: 8px;">
           <div>
-            <div style="font-weight: 700; font-size: 0.85rem; color: #fff;">Status Notifikasi Telegram</div>
+            <div style="font-weight: 700; font-size: 0.85rem; color: var(--text-main);">Status Notifikasi Telegram</div>
             <div style="font-size: 0.7rem; color: var(--text-muted);">Aktifkan push alert otomatis ke akun Telegram Anda</div>
           </div>
           <label style="position: relative; display: inline-block; width: 44px; height: 24px; cursor: pointer;">
@@ -1391,25 +1391,25 @@
 
         <div>
           <label style="font-size: 0.75rem; color: var(--text-muted); font-weight: bold; display: block; margin-bottom: 4px;">Telegram Bot Token</label>
-          <input type="text" id="telegram-bot-token" placeholder="Contoh: 1234567890:ABCdefGhIJKlmNoPQRsTUVwxyZ" class="select-asset" style="width: 100%; padding: 10px 12px; background: rgba(0,0,0,0.3); font-family: monospace; font-size: 0.82rem;">
+          <input type="text" id="telegram-bot-token" placeholder="Contoh: 1234567890:ABCdefGhIJKlmNoPQRsTUVwxyZ" class="select-asset" style="width: 100%; padding: 10px 12px; background: #ffffff; color: var(--text-main); border: 1px solid #cbd5e1; font-family: monospace; font-size: 0.82rem;">
         </div>
 
         <div>
           <label style="font-size: 0.75rem; color: var(--text-muted); font-weight: bold; display: block; margin-bottom: 4px;">Telegram Chat ID Anda</label>
-          <input type="text" id="telegram-chat-id" placeholder="Contoh: 987654321 (Dapatkan dari @userinfobot)" class="select-asset" style="width: 100%; padding: 10px 12px; background: rgba(0,0,0,0.3); font-family: monospace; font-size: 0.82rem;">
+          <input type="text" id="telegram-chat-id" placeholder="Contoh: 987654321 (Dapatkan dari @userinfobot)" class="select-asset" style="width: 100%; padding: 10px 12px; background: #ffffff; color: var(--text-main); border: 1px solid #cbd5e1; font-family: monospace; font-size: 0.82rem;">
         </div>
 
         <!-- Notification Event Triggers -->
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-          <div style="background: rgba(0, 230, 118, 0.05); border: 1px solid rgba(0, 230, 118, 0.2); padding: 10px 12px; border-radius: 8px;">
+          <div style="background: #ecfdf5; border: 1px solid #a7f3d0; padding: 10px 12px; border-radius: 8px;">
             <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.78rem; font-weight: bold; color: var(--success);">
               <input type="checkbox" id="telegram-alert-open" checked>
               <span>🟢 Buka Posisi Baru (Open)</span>
             </label>
             <div style="font-size: 0.65rem; color: var(--text-muted); margin-top: 4px;">Kirim sinyal saat Whale entry/akumulasi aset</div>
           </div>
-          <div style="background: rgba(238, 82, 83, 0.05); border: 1px solid rgba(238, 82, 83, 0.2); padding: 10px 12px; border-radius: 8px;">
-            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.78rem; font-weight: bold; color: #ff7675;">
+          <div style="background: #fef2f2; border: 1px solid #fecaca; padding: 10px 12px; border-radius: 8px;">
+            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.78rem; font-weight: bold; color: var(--danger);">
               <input type="checkbox" id="telegram-alert-close" checked>
               <span>🔴 Tutup / Take Profit (Close)</span>
             </label>
@@ -1422,7 +1422,7 @@
 
         <!-- Buttons -->
         <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px; border-top: 1px solid var(--card-border); padding-top: 14px; flex-wrap: wrap; gap: 10px;">
-          <button type="button" id="btn-send-telegram-test" class="btn btn-secondary" onclick="(window.sendTestTelegramAlert || (window.TradeMasterApp && TradeMasterApp.sendTestTelegramAlert))()" style="display: flex; align-items: center; gap: 6px; font-size: 0.78rem; border-color: rgba(0,136,204,0.4); background: rgba(0,136,204,0.1); color: #0088cc; font-weight: bold; cursor: pointer;">
+          <button type="button" id="btn-send-telegram-test" class="btn btn-secondary" onclick="(window.sendTestTelegramAlert || (window.TradeMasterApp && TradeMasterApp.sendTestTelegramAlert))()" style="display: flex; align-items: center; gap: 6px; font-size: 0.78rem; border-color: #0284c7; background: #f0f9ff; color: #0369a1; font-weight: bold; cursor: pointer;">
             <span>🚀 Kirim Test Notifikasi</span>
           </button>
           <div style="display: flex; gap: 8px;">
@@ -1441,12 +1441,12 @@
   <script src="https://unpkg.com/lucide@latest"></script>
 
   <!-- Core App Scripts (Explicit dependency order) -->
-  <script src="src/js/auth.js?v=3.5"></script>
-  <script src="src/js/api.js?v=3.5"></script>
-  <script src="src/js/ta.js?v=3.5"></script>
-  <script src="src/js/impact.js?v=3.5"></script>
-  <script src="src/js/macro.js?v=3.5"></script>
-  <script src="src/js/app.js?v=3.5"></script>
+  <script src="src/js/auth.js?v=3.6"></script>
+  <script src="src/js/api.js?v=3.6"></script>
+  <script src="src/js/ta.js?v=3.6"></script>
+  <script src="src/js/impact.js?v=3.6"></script>
+  <script src="src/js/macro.js?v=3.6"></script>
+  <script src="src/js/app.js?v=3.6"></script>
 
   <!-- Self-Contained Inline Telegram Controller (Cache-Proof & Zero-Dependency) -->
   <script>
@@ -1512,17 +1512,17 @@
         if (!box) return;
         box.style.display = 'block';
         if (type === 'success') {
-          box.style.background = 'rgba(0, 230, 118, 0.15)';
-          box.style.border = '1px solid #00e676';
-          box.style.color = '#00e676';
+          box.style.background = '#ecfdf5';
+          box.style.border = '1px solid #10b981';
+          box.style.color = '#065f46';
         } else if (type === 'error') {
-          box.style.background = 'rgba(238, 82, 83, 0.15)';
-          box.style.border = '1px solid #ee5253';
-          box.style.color = '#ff7675';
+          box.style.background = '#fef2f2';
+          box.style.border = '1px solid #ef4444';
+          box.style.color = '#991b1b';
         } else {
-          box.style.background = 'rgba(0, 136, 204, 0.15)';
-          box.style.border = '1px solid #0088cc';
-          box.style.color = '#64b5f6';
+          box.style.background = '#f0f9ff';
+          box.style.border = '1px solid #0284c7';
+          box.style.color = '#075985';
         }
         box.innerHTML = msg;
       }
@@ -1534,12 +1534,12 @@
         const txt = document.getElementById('telegram-status-text');
         if (txt) {
           txt.innerHTML = isEnabled ? 'AKTIF 🟢' : 'Setup ⚙️';
-          txt.style.color = isEnabled ? '#00e676' : '#b0bec5';
+          txt.style.color = isEnabled ? '#059669' : '#64748b';
         }
         const topbarBtn = document.querySelector('.btn-topbar-lock[title*="Telegram"]');
         if (topbarBtn) {
-          topbarBtn.style.borderColor = isEnabled ? '#00e676' : 'rgba(0, 136, 204, 0.4)';
-          topbarBtn.style.color = isEnabled ? '#00e676' : '#0088cc';
+          topbarBtn.style.borderColor = isEnabled ? '#059669' : '#0284c7';
+          topbarBtn.style.color = isEnabled ? '#059669' : '#0369a1';
         }
 
         // Full Page Badge
@@ -1547,14 +1547,14 @@
         const pageBadgeText = document.getElementById('page-telegram-badge-text');
         if (pageBadge && pageBadgeText) {
           if (isEnabled) {
-            pageBadge.style.borderColor = 'rgba(0, 230, 118, 0.5)';
-            pageBadge.style.background = 'rgba(0, 230, 118, 0.1)';
-            pageBadge.style.color = '#00e676';
+            pageBadge.style.borderColor = '#6ee7b7';
+            pageBadge.style.background = '#ecfdf5';
+            pageBadge.style.color = '#047857';
             pageBadgeText.innerHTML = `Terkoneksi & Aktif 🟢 (Chat ID: ${cfg.chatId})`;
           } else {
             pageBadge.style.borderColor = 'var(--card-border)';
-            pageBadge.style.background = 'rgba(255,255,255,0.05)';
-            pageBadge.style.color = '#b0bec5';
+            pageBadge.style.background = '#f1f5f9';
+            pageBadge.style.color = '#64748b';
             pageBadgeText.innerHTML = 'Belum Terkoneksi';
           }
         }
