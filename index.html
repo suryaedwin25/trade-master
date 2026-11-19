@@ -12,7 +12,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   
   <!-- Global Custom Stylesheets -->
-  <link rel="stylesheet" href="src/styles/main.css?v=3.6">
+  <link rel="stylesheet" href="src/styles/main.css?v=3.7">
 </head>
 <body>
   <div class="app-container">
@@ -48,6 +48,10 @@
         <div class="nav-item" onclick="navigateTo('strategy')">
           <i data-lucide="cpu"></i>
           <span>Strategy Center</span>
+        </div>
+        <div class="nav-item" onclick="navigateTo('contrarian')">
+          <i data-lucide="crosshair"></i>
+          <span>Contrarian & PRZ</span>
         </div>
         <div class="nav-item" onclick="navigateTo('telegram')">
           <i data-lucide="bell-ring"></i>
@@ -1151,6 +1155,188 @@
           </div>
         </div>
 
+        <!-- 7. CONTRARIAN REVERSAL, HARMONIC PRZ & ASYMMETRIC RRR 1:10+ (ALA ARIST MD) -->
+        <div id="page-contrarian" class="page-section">
+          <div class="page-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 20px;">
+            <div>
+              <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                <span style="font-size: 1.6rem;">🎯</span>
+                <h1 class="page-title" style="margin: 0; font-size: 1.45rem; color: var(--text-main);">Contrarian Harmonic PRZ & RRR 1:10+</h1>
+                <span class="whale-gold-badge">Filosofi "Mancing" (Arist MD)</span>
+              </div>
+              <p class="page-subtitle" style="margin-top: 6px; font-size: 0.85rem; color: var(--text-muted);">
+                Analisa murni struktur harga & rasio Fibonacci (<i>Harmonic PRZ</i>) secara kontrarian melawan konsensus ritel, dipadukan dengan <b>Asymmetric Risk-to-Reward 1:10 hingga 1:12</b>.
+              </p>
+            </div>
+            <button type="button" onclick="TradeMasterContrarian.refresh()" class="btn btn-secondary" style="display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 8px; background: #ffffff; border: 1px solid #cbd5e1; color: var(--text-main); font-weight: 600; cursor: pointer;">
+              <i data-lucide="refresh-cw" style="width: 14px; height: 14px;"></i> Refresh Live PRZ
+            </button>
+          </div>
+
+          <!-- 3 Pillar Principles Strip -->
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin-bottom: 20px;">
+            <div class="whale-kpi-pill" style="background: #ffffff;">
+              <span style="font-size: 0.7rem; color: var(--primary); font-weight: 800; text-transform: uppercase;">1. Pure Chart & Anti-Noise</span>
+              <span style="font-size: 0.82rem; font-weight: 700; color: var(--text-main);">Abaikan Berita & FOMO Ritel</span>
+              <span style="font-size: 0.7rem; color: var(--text-muted);">Berita sering menjadi jebakan <i>exit liquidity</i> bandar. Fokus di struktur harga & rasio Fibonacci.</span>
+            </div>
+            <div class="whale-kpi-pill" style="background: #ffffff;">
+              <span style="font-size: 0.7rem; color: #b45309; font-weight: 800; text-transform: uppercase;">2. Filosofi "Mancing" di PRZ</span>
+              <span style="font-size: 0.82rem; font-weight: 700; color: var(--text-main);">Tunggu di Titik Ekstrem (Top/Bottom)</span>
+              <span style="font-size: 0.7rem; color: var(--text-muted);">Pasang umpan kecil (SL ketat) di zona <i>Harmonic PRZ</i> (0.786 / 0.886 / 1.272 / 1.618).</span>
+            </div>
+            <div class="whale-kpi-pill" style="background: #ffffff;">
+              <span style="font-size: 0.7rem; color: var(--success); font-weight: 800; text-transform: uppercase;">3. Asymmetric RRR (1:10 – 1:12)</span>
+              <span style="font-size: 0.82rem; font-weight: 700; color: var(--text-main);">Mental Defense, Profit Asimetris</span>
+              <span style="font-size: 0.7rem; color: var(--text-muted);">Pada RRR 1:10, cukup <b>9.1% Win Rate</b> untuk impas. 1x kena tren besar menutup 10x stop loss.</span>
+            </div>
+          </div>
+
+          <!-- Module 1: Harmonic PRZ & Contrarian Reversal Scanner -->
+          <div class="whale-hub-card" style="padding: 22px; margin-bottom: 24px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 14px;">
+              <div>
+                <h3 style="font-size: 1.08rem; font-weight: 800; color: var(--text-main); display: flex; align-items: center; gap: 8px;">
+                  <span>📡</span> Harmonic PRZ & Contrarian Reversal Scanner
+                </h3>
+                <p style="font-size: 0.76rem; color: var(--text-muted); margin-top: 2px;">
+                  Klik <b>"📐 Hitung RRR"</b> pada aset mana pun untuk langsung mengisi Kalkulator Position Sizing 1:10 di bawah.
+                </p>
+              </div>
+              <span class="whale-profit-badge">⚡ Auto-Sync Live Price</span>
+            </div>
+
+            <div style="overflow-x: auto;">
+              <table style="width: 100%; border-collapse: collapse; font-size: 0.82rem;">
+                <thead>
+                  <tr style="border-bottom: 2px solid var(--card-border); background: #f8fafc; color: var(--text-muted); font-size: 0.72rem; text-transform: uppercase;">
+                    <th style="padding: 10px 14px; text-align: left;">Aset & Live Spot</th>
+                    <th style="padding: 10px 14px; text-align: left;">Pola Harmonic & Confluence</th>
+                    <th style="padding: 10px 14px; text-align: center;">Arah Mancing</th>
+                    <th style="padding: 10px 14px; text-align: right;">Zona PRZ (Entry)</th>
+                    <th style="padding: 10px 14px; text-align: right;">SL Ketat & Target TP</th>
+                    <th style="padding: 10px 14px; text-align: left;">Sentimen Crowd & Aksi Kontrarian</th>
+                    <th style="padding: 10px 14px; text-align: center;">Aksi</th>
+                  </tr>
+                </thead>
+                <tbody id="contrarian-scanner-body">
+                  <tr>
+                    <td colspan="7" style="padding: 24px; text-align: center; color: var(--text-muted);">Memuat data Harmonic PRZ live...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Module 2: Asymmetric RRR 1:10+ Calculator -->
+          <div id="contrarian-rrr-calculator" class="whale-hub-card" style="padding: 24px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 18px; border-bottom: 1px solid var(--card-border); padding-bottom: 12px;">
+              <div>
+                <h3 style="font-size: 1.12rem; font-weight: 800; color: var(--text-main); display: flex; align-items: center; gap: 8px;">
+                  <span>📐</span> Kalkulator Asymmetric RRR 1:10+ (<span id="rrr-asset-label" style="color: var(--primary);">BTC</span>)
+                </h3>
+                <p style="font-size: 0.76rem; color: var(--text-muted); margin-top: 2px;">
+                  Hitung otomatis ukuran posisi (*position sizing*), batas risiko maksimal ("umpan"), dan target profit asimetris.
+                </p>
+              </div>
+              <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                <button type="button" class="rrr-preset-btn" data-rrr="5" onclick="TradeMasterContrarian.setRRRPreset(5)" style="padding: 5px 10px; border-radius: 6px; border: 1px solid #e2e8f0; background: #f1f5f9; color: #475569; font-size: 0.74rem; font-weight: 700; cursor: pointer;">1:5</button>
+                <button type="button" class="rrr-preset-btn" data-rrr="10" onclick="TradeMasterContrarian.setRRRPreset(10)" style="padding: 5px 10px; border-radius: 6px; border: 1px solid var(--primary); background: var(--primary); color: #ffffff; font-size: 0.74rem; font-weight: 700; cursor: pointer;">1:10 (Standar)</button>
+                <button type="button" class="rrr-preset-btn" data-rrr="12" onclick="TradeMasterContrarian.setRRRPreset(12)" style="padding: 5px 10px; border-radius: 6px; border: 1px solid #e2e8f0; background: #f1f5f9; color: #475569; font-size: 0.74rem; font-weight: 700; cursor: pointer;">1:12 (Elite)</button>
+                <button type="button" class="rrr-preset-btn" data-rrr="15" onclick="TradeMasterContrarian.setRRRPreset(15)" style="padding: 5px 10px; border-radius: 6px; border: 1px solid #e2e8f0; background: #f1f5f9; color: #475569; font-size: 0.74rem; font-weight: 700; cursor: pointer;">1:15</button>
+              </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px;">
+              <!-- Left: Inputs -->
+              <div style="display: flex; flex-direction: column; gap: 12px;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                  <div>
+                    <label style="font-size: 0.75rem; color: var(--text-muted); font-weight: 700; display: block; margin-bottom: 4px;">Modal Trading (USD)</label>
+                    <input type="number" id="rrr-capital" value="10000" min="100" step="100" oninput="TradeMasterContrarian.calculateRRR()" style="width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid #cbd5e1; background: #ffffff; color: var(--text-main); font-weight: 700;">
+                  </div>
+                  <div>
+                    <label style="font-size: 0.75rem; color: var(--text-muted); font-weight: 700; display: block; margin-bottom: 4px;">Risiko per Umpan (%)</label>
+                    <input type="number" id="rrr-risk-pct" value="1" min="0.1" max="10" step="0.1" oninput="TradeMasterContrarian.calculateRRR()" style="width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid #cbd5e1; background: #ffffff; color: var(--danger); font-weight: 700;">
+                  </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                  <div>
+                    <label style="font-size: 0.75rem; color: var(--text-muted); font-weight: 700; display: block; margin-bottom: 4px;">Arah Posisi</label>
+                    <select id="rrr-direction" onchange="TradeMasterContrarian.calculateRRR()" style="width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid #cbd5e1; background: #ffffff; color: var(--text-main); font-weight: 700;">
+                      <option value="LONG">🟢 LONG (Bottom Fishing)</option>
+                      <option value="SHORT">🔴 SHORT (Top Reversal)</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label style="font-size: 0.75rem; color: var(--text-muted); font-weight: 700; display: block; margin-bottom: 4px;">Target RRR (1 : X)</label>
+                    <input type="number" id="rrr-ratio" value="10" min="1" max="50" step="1" oninput="TradeMasterContrarian.calculateRRR()" style="width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid #cbd5e1; background: #ffffff; color: var(--primary); font-weight: 800;">
+                  </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                  <div>
+                    <label style="font-size: 0.75rem; color: var(--text-muted); font-weight: 700; display: block; margin-bottom: 4px;">Harga Entry (PRZ $)</label>
+                    <input type="number" id="rrr-entry" value="86450" step="any" oninput="TradeMasterContrarian.calculateRRR()" style="width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid #cbd5e1; background: #ffffff; color: var(--text-main); font-family: monospace; font-weight: 700;">
+                  </div>
+                  <div>
+                    <label style="font-size: 0.75rem; color: var(--danger); font-weight: 700; display: block; margin-bottom: 4px;">Harga Stop Loss Ketat ($)</label>
+                    <input type="number" id="rrr-sl" value="84720" step="any" oninput="TradeMasterContrarian.calculateRRR()" style="width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid #fca5a5; background: #fef2f2; color: var(--danger); font-family: monospace; font-weight: 700;">
+                  </div>
+                </div>
+
+                <div id="rrr-calc-error" style="display: none; padding: 10px 12px; border-radius: 8px; background: #fef2f2; border: 1px solid #fca5a5; color: #991b1b; font-size: 0.78rem;"></div>
+              </div>
+
+              <!-- Right: Outputs -->
+              <div style="display: flex; flex-direction: column; gap: 12px; background: #f8fafc; border: 1px solid var(--card-border); border-radius: 12px; padding: 18px;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                  <div style="background: #fef2f2; border: 1px solid #fecaca; border-radius: 10px; padding: 12px;">
+                    <div style="font-size: 0.68rem; color: #991b1b; font-weight: 700; text-transform: uppercase;">Max Risk ("Umpan")</div>
+                    <div id="res-risk-usd" style="font-size: 1.25rem; font-weight: 900; color: var(--danger); margin-top: 2px;">-$100</div>
+                    <div id="res-risk-sub" style="font-size: 0.68rem; color: var(--text-muted); margin-top: 2px;">1% modal | Jarak SL: 2.00%</div>
+                  </div>
+                  <div style="background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 10px; padding: 12px;">
+                    <div style="font-size: 0.68rem; color: #065f46; font-weight: 700; text-transform: uppercase;">Potensi Profit ("Ikan Besar")</div>
+                    <div id="res-reward-usd" style="font-size: 1.25rem; font-weight: 900; color: var(--success); margin-top: 2px;">+$1,000</div>
+                    <div id="res-reward-sub" style="font-size: 0.68rem; color: var(--text-muted); margin-top: 2px;">+10.0% pertumbuhan modal (1:10)</div>
+                  </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                  <div style="background: #ffffff; border: 1px solid var(--card-border); border-radius: 10px; padding: 12px;">
+                    <div style="font-size: 0.68rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">Target Take Profit (TP)</div>
+                    <div id="res-tp-price" style="font-size: 1.15rem; font-weight: 900; color: var(--success); font-family: monospace; margin-top: 2px;">$103,750</div>
+                  </div>
+                  <div style="background: #ffffff; border: 1px solid var(--card-border); border-radius: 10px; padding: 12px;">
+                    <div style="font-size: 0.68rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">Ukuran Posisi (Position Size)</div>
+                    <div id="res-pos-size" style="font-size: 0.92rem; font-weight: 800; color: var(--text-main); font-family: monospace; margin-top: 4px;">$5,000 (0.0578 BTC)</div>
+                  </div>
+                </div>
+
+                <!-- Visual Risk vs Reward Bar -->
+                <div>
+                  <div style="font-size: 0.7rem; color: var(--text-muted); font-weight: 700; margin-bottom: 5px;">VISUALISASI RASIO ASIMETRIS (RISK vs REWARD):</div>
+                  <div style="display: flex; width: 100%; height: 24px; border-radius: 6px; overflow: hidden; font-size: 0.7rem; font-weight: 800; color: #fff;">
+                    <div id="rrr-bar-risk" style="width: 9%; background: #dc2626; display: flex; align-items: center; justify-content: center;">1R</div>
+                    <div id="rrr-bar-reward" style="width: 91%; background: #059669; display: flex; align-items: center; justify-content: center;">10R (Ikan Besar 🐋)</div>
+                  </div>
+                </div>
+
+                <!-- Break-Even Win Rate Highlight -->
+                <div style="background: #eef2ff; border: 1px solid #c7d2fe; border-radius: 10px; padding: 10px 14px; display: flex; justify-content: space-between; align-items: center; gap: 10px;">
+                  <div>
+                    <div style="font-size: 0.72rem; font-weight: 800; color: #3730a3;">Break-Even Win Rate (Impas): <span id="res-bep-wr" style="font-size: 0.95rem; color: var(--primary);">9.1%</span></div>
+                    <div id="res-bep-note" style="font-size: 0.7rem; color: #4338ca; margin-top: 2px;">Cukup 1x profit untuk menutup 10x stop loss beruntun!</div>
+                  </div>
+                  <span style="font-size: 1.4rem;">🛡️</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
       </section>
     </main>
 
@@ -1441,17 +1627,22 @@
   <script src="https://unpkg.com/lucide@latest"></script>
 
   <!-- Core App Scripts (Explicit dependency order) -->
-  <script src="src/js/auth.js?v=3.6"></script>
-  <script src="src/js/api.js?v=3.6"></script>
-  <script src="src/js/ta.js?v=3.6"></script>
-  <script src="src/js/impact.js?v=3.6"></script>
-  <script src="src/js/macro.js?v=3.6"></script>
-  <script src="src/js/app.js?v=3.6"></script>
+  <script src="src/js/auth.js?v=3.7"></script>
+  <script src="src/js/api.js?v=3.7"></script>
+  <script src="src/js/ta.js?v=3.7"></script>
+  <script src="src/js/impact.js?v=3.7"></script>
+  <script src="src/js/macro.js?v=3.7"></script>
+  <script src="src/js/contrarian.js?v=3.7"></script>
+  <script src="src/js/app.js?v=3.7"></script>
 
   <!-- Self-Contained Inline Telegram Controller (Cache-Proof & Zero-Dependency) -->
   <script>
     (function() {
       console.log('Mounting TradeMaster Telegram Controller & Bulletproof Navigator...');
+
+      const origAppNavigateTo = (window.TradeMasterApp && typeof window.TradeMasterApp.navigateTo === 'function')
+        ? window.TradeMasterApp.navigateTo
+        : null;
 
       function getSavedConfig() {
         try {
@@ -1493,17 +1684,22 @@
           }
         }
 
-        // 4. Delegate to TradeMasterApp if available
-        if (window.TradeMasterApp && typeof window.TradeMasterApp.navigateTo === 'function') {
+        // 4. Refresh Contrarian Harmonic PRZ & RRR 1:10+ page
+        if (pageId === 'contrarian' && window.TradeMasterContrarian) {
+          window.TradeMasterContrarian.refresh();
+        }
+
+        // 5. Delegate to original TradeMasterApp.navigateTo (no recursion!)
+        if (origAppNavigateTo) {
           try {
-            window.TradeMasterApp.navigateTo(pageId, assetSymbol);
+            origAppNavigateTo(pageId, assetSymbol);
           } catch (e) {
             console.warn('TradeMasterApp.navigateTo delegated call error:', e);
           }
         }
       };
 
-      // Also ensure TradeMasterApp.navigateTo exists
+      // Also ensure TradeMasterApp.navigateTo points to our wrapper
       window.TradeMasterApp = window.TradeMasterApp || {};
       window.TradeMasterApp.navigateTo = window.navigateTo;
 
