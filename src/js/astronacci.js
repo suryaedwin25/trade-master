@@ -25,12 +25,18 @@ window.TradeMasterAstronacci = (function() {
   ];
 
   let latestForecasts = [];
+  let filteredForecasts = [];
+  let astroFilter = 'ALL';
+  let astroSearch = '';
+  let astroDisplayLimit = 40;
+  const ASTRO_MAJOR_SET = new Set(['BTC', 'ETH', 'SOL', 'BNB', 'XRP', 'ADA', 'AVAX', 'DOT', 'LINK', 'SUI', 'TON', 'PAXG', 'XAUT']);
 
   function formatPrice(val) {
-    if (!isFinite(val)) return '0';
+    if (!isFinite(val) || val <= 0) return '0';
     if (val >= 1000) return val.toLocaleString('en-US', { maximumFractionDigits: 0 });
     if (val >= 10) return val.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    return val.toLocaleString('en-US', { minimumFractionDigits: 4, maximumFractionDigits: 4 });
+    if (val >= 0.1) return val.toLocaleString('en-US', { minimumFractionDigits: 4, maximumFractionDigits: 4 });
+    return val.toLocaleString('en-US', { minimumFractionDigits: 6, maximumFractionDigits: 7 });
   }
 
   function formatDateID(dateObj) {
@@ -232,129 +238,186 @@ window.TradeMasterAstronacci = (function() {
     }
   }
 
-  function renderForecastTable(tickers, lunar, fibClusters) {
-    const tbody = document.getElementById('astro-forecast-body');
-    if (!tbody) return;
-
-    const priceOf = (sym, fallback) => {
-      const f = (tickers || []).find(t => t.symbol === sym);
-      return f && f.price > 0 ? f.price : fallback;
-    };
-
+  function buildDynamicAstroForecast(ticker, lunar, fibClusters) {
+    const live = ticker.price;
+    const chg = ticker.change || 0;
     const nextWindowDate = lunar.daysToNewMoon <= lunar.daysToFullMoon
       ? `🌑 ${formatDateID(lunar.nextNewMoonDate)} (±2h)`
       : `🌕 ${formatDateID(lunar.nextFullMoonDate)} (±2h)`;
-
     const nearestFib = fibClusters[0]
       ? `Fib ${fibClusters[0].fibNumber}d (${formatDateID(fibClusters[0].targetDate)})`
       : nextWindowDate;
 
-    const assets = [
-      {
-        symbol: 'BTC',
-        name: 'Bitcoin',
-        live: priceOf('BTC', 63000),
-        wave: 'Wave C / Ending Diagonal (Akhir Koreksi)',
-        buyLow: 0.91,
-        buyHigh: 0.95,
-        tp1Mult: 1.18,
-        tp2Mult: 1.42,
-        slMult: 0.87,
-        timeWindow: `${nearestFib} & ${nextWindowDate}`,
-        bias: 'BUY ON REVERSAL WINDOW'
-      },
-      {
-        symbol: 'ETH',
-        name: 'Ethereum',
-        live: priceOf('ETH', 1785),
-        wave: 'Wave 2 Deep Retracement (0.786 Fib)',
-        buyLow: 0.92,
-        buyHigh: 0.96,
-        tp1Mult: 1.22,
-        tp2Mult: 1.50,
-        slMult: 0.88,
-        timeWindow: nextWindowDate,
-        bias: 'ACCUMULATE AT TIME CLUSTER'
-      },
-      {
-        symbol: 'SOL',
-        name: 'Solana',
-        live: priceOf('SOL', 142),
-        wave: 'Wave 4 Triangle / Retest Support',
-        buyLow: 0.90,
-        buyHigh: 0.95,
-        tp1Mult: 1.25,
-        tp2Mult: 1.55,
-        slMult: 0.86,
-        timeWindow: nextWindowDate,
-        bias: 'WAIT FOR LUNAR REVERSAL'
-      },
-      {
-        symbol: 'SUI',
-        name: 'Sui Network',
-        live: priceOf('SUI', 2.1),
-        wave: 'Wave B–C Flush (Oversold Zone)',
-        buyLow: 0.89,
-        buyHigh: 0.94,
-        tp1Mult: 1.28,
-        tp2Mult: 1.65,
-        slMult: 0.84,
-        timeWindow: nextWindowDate,
-        bias: 'SWING REVERSAL WATCH'
-      },
-      {
-        symbol: 'PAXG',
-        name: 'Gold (XAU)',
-        live: priceOf('PAXG', 2685),
-        wave: 'Primary Wave 5 Impulse (Safe Haven)',
-        buyLow: 0.965,
-        buyHigh: 0.985,
-        tp1Mult: 1.08,
-        tp2Mult: 1.16,
-        slMult: 0.945,
-        timeWindow: nextWindowDate,
-        bias: 'BUY ON DIP (GOLD CYCLE)'
-      }
-    ];
+    let wave = 'Wave 2 / 4 Retracement (0.618–0.786)';
+    let bias = 'BUY ON REVERSAL WINDOW';
+    let biasType = 'BUY';
+    let buyLow = 0.92;
+    let buyHigh = 0.96;
+    let tp1Mult = 1.20;
+    let tp2Mult = 1.45;
+    let slMult = 0.88;
 
-    latestForecasts = assets.map(a => ({
-      ...a,
-      zoneLow: a.live * a.buyLow,
-      zoneHigh: a.live * a.buyHigh,
-      tp1: a.live * a.tp1Mult,
-      tp2: a.live * a.tp2Mult,
-      sl: a.live * a.slMult
-    }));
+    if (chg >= 6.0) {
+      wave = 'Wave 5 Blow-Off / Overextended';
+      bias = 'TAKE PROFIT / SELL WINDOW';
+      biasType = 'SELL';
+      buyLow = 1.03;
+      buyHigh = 1.07;
+      tp1Mult = 0.88;
+      tp2Mult = 0.76;
+      slMult = 1.11;
+    } else if (chg >= 2.5) {
+      wave = 'Wave 3 Impulse Momentum';
+      bias = 'HOLD / WAIT PULLBACK';
+      biasType = 'BUY';
+      buyLow = 0.94;
+      buyHigh = 0.97;
+      tp1Mult = 1.18;
+      tp2Mult = 1.38;
+      slMult = 0.90;
+    } else if (chg <= -4.5) {
+      wave = 'Wave C Ending Diagonal (Kapitulasi)';
+      bias = 'STRONG BUY AT TIME CLUSTER';
+      biasType = 'BUY';
+      buyLow = 0.94;
+      buyHigh = 0.98;
+      tp1Mult = 1.28;
+      tp2Mult = 1.60;
+      slMult = 0.89;
+    }
 
-    tbody.innerHTML = latestForecasts.map((f, idx) => `
-      <tr style="border-bottom: 1px solid var(--card-border);">
-        <td style="padding: 12px 14px;">
-          <div style="font-weight: 800; color: var(--text-main); font-size: 0.9rem;">${f.symbol} <span style="font-weight: 500; color: var(--text-muted); font-size: 0.74rem;">${f.name}</span></div>
-          <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 2px;">Live: <b style="color: var(--text-main);">$${formatPrice(f.live)}</b></div>
-        </td>
-        <td style="padding: 12px 14px;">
-          <div style="font-weight: 700; color: var(--primary); font-size: 0.78rem;">${f.wave}</div>
-          <span style="display: inline-block; margin-top: 3px; background: #ecfdf5; border: 1px solid #6ee7b7; color: #047857; padding: 2px 7px; border-radius: 5px; font-size: 0.66rem; font-weight: 800;">${f.bias}</span>
-        </td>
-        <td style="padding: 12px 14px;">
-          <div style="font-weight: 700; color: #b45309; font-size: 0.78rem;">${f.timeWindow}</div>
-          <div style="font-size: 0.68rem; color: var(--text-muted); margin-top: 2px;">Jendela Time Reversal (±2 Hari)</div>
-        </td>
-        <td style="padding: 12px 14px; text-align: right; font-family: monospace;">
-          <div style="font-weight: 800; color: var(--text-main); font-size: 0.84rem;">$${formatPrice(f.zoneLow)} – $${formatPrice(f.zoneHigh)}</div>
-          <div style="font-size: 0.68rem; color: var(--danger); font-weight: 700;">Invalidasi SL: $${formatPrice(f.sl)}</div>
-        </td>
-        <td style="padding: 12px 14px; text-align: right; font-family: monospace;">
-          <div style="font-weight: 700; color: var(--success); font-size: 0.82rem;">TP1: $${formatPrice(f.tp1)}</div>
-          <div style="font-size: 0.72rem; color: #047857; font-weight: 800;">TP2: $${formatPrice(f.tp2)}</div>
-        </td>
-        <td style="padding: 12px 14px; text-align: center;">
-          <button type="button" onclick="TradeMasterAstronacci.sendToTelegram(${idx})" style="padding: 5px 10px; font-size: 0.72rem; font-weight: 700; border-radius: 6px; background: #f0f9ff; border: 1px solid #0284c7; color: #0369a1; cursor: pointer;">
-            ✈️ Kirim Alert
-          </button>
-        </td>
-      </tr>
-    `).join('');
+    const timeWindow = ticker.symbol === 'BTC' ? `${nearestFib} & ${nextWindowDate}` : nextWindowDate;
+
+    return {
+      symbol: ticker.symbol,
+      name: ticker.pair || `${ticker.symbol}USDT`,
+      live,
+      change: chg,
+      wave,
+      bias,
+      biasType,
+      timeWindow,
+      zoneLow: live * buyLow,
+      zoneHigh: live * buyHigh,
+      tp1: live * tp1Mult,
+      tp2: live * tp2Mult,
+      sl: live * slMult,
+      isMajor: ASTRO_MAJOR_SET.has(ticker.symbol)
+    };
+  }
+
+  function applyAstroFiltersAndRender() {
+    const q = astroSearch.trim().toUpperCase();
+    filteredForecasts = latestForecasts.filter(f => {
+      if (q && !f.symbol.includes(q)) return false;
+      if (astroFilter === 'BUY') return f.biasType === 'BUY';
+      if (astroFilter === 'SELL') return f.biasType === 'SELL';
+      if (astroFilter === 'MAJOR') return f.isMajor;
+      return true;
+    });
+
+    const countEl = document.getElementById('astro-asset-count');
+    if (countEl) {
+      countEl.textContent = `${filteredForecasts.length} dari ${latestForecasts.length} Aset Live`;
+    }
+
+    const tbody = document.getElementById('astro-forecast-body');
+    if (!tbody) return;
+
+    if (filteredForecasts.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="6" style="padding: 24px; text-align: center; color: var(--text-muted);">Tidak ada aset yang cocok dengan pencarian "<b>${astroSearch}</b>".</td></tr>`;
+      return;
+    }
+
+    const visible = filteredForecasts.slice(0, astroDisplayLimit);
+    let html = visible.map((f) => {
+      const origIdx = latestForecasts.indexOf(f);
+      const isSell = f.biasType === 'SELL';
+      const badgeStyle = isSell
+        ? 'background: #fef2f2; border: 1px solid #fca5a5; color: #b91c1c;'
+        : 'background: #ecfdf5; border: 1px solid #6ee7b7; color: #047857;';
+      const chgColor = f.change >= 0 ? 'var(--success)' : 'var(--danger)';
+      const chgSign = f.change >= 0 ? '+' : '';
+
+      return `
+        <tr style="border-bottom: 1px solid var(--card-border);">
+          <td style="padding: 10px 12px;">
+            <div style="font-weight: 800; color: var(--text-main); font-size: 0.88rem; display: flex; align-items: center; gap: 6px;">
+              <span>${f.symbol}</span>
+              <span style="font-size: 0.7rem; font-weight: 700; color: ${chgColor};">${chgSign}${f.change.toFixed(2)}%</span>
+            </div>
+            <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 2px;">Live: <b style="color: var(--text-main);">$${formatPrice(f.live)}</b></div>
+          </td>
+          <td style="padding: 10px 12px;">
+            <div style="font-weight: 700; color: var(--primary); font-size: 0.76rem;">${f.wave}</div>
+            <span style="display: inline-block; margin-top: 3px; ${badgeStyle} padding: 2px 7px; border-radius: 5px; font-size: 0.65rem; font-weight: 800;">${f.bias}</span>
+          </td>
+          <td style="padding: 10px 12px;">
+            <div style="font-weight: 700; color: #b45309; font-size: 0.76rem;">${f.timeWindow}</div>
+            <div style="font-size: 0.66rem; color: var(--text-muted); margin-top: 2px;">Jendela Time Reversal (±2 Hari)</div>
+          </td>
+          <td style="padding: 10px 12px; text-align: right; font-family: monospace;">
+            <div style="font-weight: 800; color: var(--text-main); font-size: 0.82rem;">$${formatPrice(f.zoneLow)} – $${formatPrice(f.zoneHigh)}</div>
+            <div style="font-size: 0.68rem; color: var(--danger); font-weight: 700;">SL: $${formatPrice(f.sl)}</div>
+          </td>
+          <td style="padding: 10px 12px; text-align: right; font-family: monospace;">
+            <div style="font-weight: 700; color: var(--success); font-size: 0.8rem;">TP1: $${formatPrice(f.tp1)}</div>
+            <div style="font-size: 0.7rem; color: #047857; font-weight: 800;">TP2: $${formatPrice(f.tp2)}</div>
+          </td>
+          <td style="padding: 10px 12px; text-align: center;">
+            <button type="button" onclick="TradeMasterAstronacci.sendToTelegram(${origIdx})" style="padding: 5px 10px; font-size: 0.7rem; font-weight: 700; border-radius: 6px; background: #f0f9ff; border: 1px solid #0284c7; color: #0369a1; cursor: pointer;">
+              ✈️ Alert
+            </button>
+          </td>
+        </tr>
+      `;
+    }).join('');
+
+    if (filteredForecasts.length > astroDisplayLimit) {
+      html += `
+        <tr>
+          <td colspan="6" style="padding: 14px; text-align: center;">
+            <button type="button" onclick="TradeMasterAstronacci.showMore()" style="padding: 8px 18px; border-radius: 8px; background: #f1f5f9; border: 1px solid #cbd5e1; color: var(--text-main); font-weight: 700; font-size: 0.78rem; cursor: pointer;">
+              ⬇️ Tampilkan Lebih Banyak (${filteredForecasts.length - astroDisplayLimit} aset tersisa)
+            </button>
+          </td>
+        </tr>
+      `;
+    }
+
+    tbody.innerHTML = html;
+  }
+
+  function setFilter(key, btnEl) {
+    astroFilter = key;
+    astroDisplayLimit = 40;
+    document.querySelectorAll('.astro-filter-btn').forEach(b => {
+      b.style.background = '#f1f5f9';
+      b.style.color = '#475569';
+      b.style.borderColor = '#e2e8f0';
+    });
+    if (btnEl) {
+      btnEl.style.background = 'var(--primary)';
+      btnEl.style.color = '#ffffff';
+      btnEl.style.borderColor = 'var(--primary)';
+    }
+    applyAstroFiltersAndRender();
+  }
+
+  function setSearch(val) {
+    astroSearch = val || '';
+    astroDisplayLimit = 50;
+    applyAstroFiltersAndRender();
+  }
+
+  function showMore() {
+    astroDisplayLimit += 50;
+    applyAstroFiltersAndRender();
+  }
+
+  function renderForecastTable(tickers, lunar, fibClusters) {
+    latestForecasts = (tickers || []).map(t => buildDynamicAstroForecast(t, lunar, fibClusters));
+    applyAstroFiltersAndRender();
   }
 
   async function sendToTelegram(index) {
@@ -404,10 +467,12 @@ window.TradeMasterAstronacci = (function() {
     // Render astronomical & time-cycle cards immediately (0ms!)
     renderAstroHeader(lunar, mercury, fibClusters);
 
-    // Fetch live non-Binance prices in parallel (~160ms via OKX / Hyperliquid / CoinGecko)
+    // Fetch ALL 150+ live non-Binance crypto prices (~160ms via OKX / Hyperliquid)
     let tickers = [];
     try {
-      if (window.TradeMasterAPI && typeof window.TradeMasterAPI.getCryptoTickers === 'function') {
+      if (window.TradeMasterAPI && typeof window.TradeMasterAPI.getAllCryptoTickers === 'function') {
+        tickers = await window.TradeMasterAPI.getAllCryptoTickers(150);
+      } else if (window.TradeMasterAPI && typeof window.TradeMasterAPI.getCryptoTickers === 'function') {
         tickers = await window.TradeMasterAPI.getCryptoTickers(true);
       }
     } catch (e) {}
@@ -417,6 +482,9 @@ window.TradeMasterAstronacci = (function() {
 
   return {
     refresh,
+    setFilter,
+    setSearch,
+    showMore,
     sendToTelegram
   };
 })();

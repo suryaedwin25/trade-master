@@ -267,6 +267,95 @@ window.TradeMasterAPI = (function() {
       return null;
     },
 
+    // 1b. Get ALL Live Crypto Tickers (100+–250+ USDT pairs sorted by 24h USD Volume — OKX + Hyperliquid Parallel Race)
+    async getAllCryptoTickers(limit = 150) {
+      const fetchOKXAll = async () => {
+        const url = 'https://www.okx.com/api/v5/market/tickers?instType=SPOT';
+        const res = await fetchJSON(url, false, true, 3500);
+        const list = res?.data || [];
+        if (!Array.isArray(list) || list.length === 0) throw new Error('Empty OKX all');
+        const stableExcludes = new Set(['USDC', 'FDUSD', 'TUSD', 'USDP', 'DAI', 'PYUSD', 'USDE', 'EURT', 'USDG', 'USDT']);
+        const mapped = list
+          .filter(item => item.instId && item.instId.endsWith('-USDT'))
+          .map(item => {
+            const sym = item.instId.replace('-USDT', '');
+            const last = parseFloat(item.last);
+            const open24 = parseFloat(item.open24h) || last;
+            const high24 = parseFloat(item.high24h) || last;
+            const low24 = parseFloat(item.low24h) || last;
+            const volUsd = parseFloat(item.volCcy24h) || (parseFloat(item.vol24h || 0) * last);
+            const change = open24 > 0 ? ((last - open24) / open24) * 100 : 0;
+            return {
+              symbol: sym,
+              pair: sym + 'USDT',
+              price: last,
+              change,
+              high: high24,
+              low: low24,
+              volume: parseFloat(item.vol24h) || 0,
+              volumeUsd: volUsd,
+              source: 'OKX Live'
+            };
+          })
+          .filter(c => c.price > 0 && !stableExcludes.has(c.symbol))
+          .sort((a, b) => b.volumeUsd - a.volumeUsd);
+        if (mapped.length === 0) throw new Error('No OKX USDT pairs');
+        return mapped.slice(0, limit);
+      };
+
+      const fetchHyperliquidAll = async () => {
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), 3500);
+        try {
+          const response = await fetch('https://api.hyperliquid.xyz/info', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ type: 'metaAndAssetCtxs' }),
+            signal: controller.signal
+          });
+          clearTimeout(timer);
+          if (!response.ok) throw new Error(`HL HTTP ${response.status}`);
+          const [meta, ctxs] = await response.json();
+          const universe = meta?.universe || [];
+          const result = [];
+          universe.forEach((u, i) => {
+            const sym = (u.name || '').toUpperCase();
+            if (sym && ctxs[i]) {
+              const markPx = parseFloat(ctxs[i].markPx || ctxs[i].midPx || 0);
+              const prevDayPx = parseFloat(ctxs[i].prevDayPx || markPx);
+              const volUsd = parseFloat(ctxs[i].dayNtlVlm || 0);
+              const change = prevDayPx > 0 ? ((markPx - prevDayPx) / prevDayPx) * 100 : 0;
+              if (markPx > 0) {
+                result.push({
+                  symbol: sym,
+                  pair: sym + 'USDT',
+                  price: markPx,
+                  change,
+                  high: markPx * 1.03,
+                  low: markPx * 0.97,
+                  volume: volUsd / markPx,
+                  volumeUsd: volUsd,
+                  source: 'Hyperliquid Live'
+                });
+              }
+            }
+          });
+          if (result.length === 0) throw new Error('Empty HL all');
+          result.sort((a, b) => b.volumeUsd - a.volumeUsd);
+          return result.slice(0, limit);
+        } catch (err) {
+          clearTimeout(timer);
+          throw err;
+        }
+      };
+
+      try {
+        return await Promise.any([fetchOKXAll(), fetchHyperliquidAll()]);
+      } catch (e) {
+        return await this.getCryptoTickers(true);
+      }
+    },
+
     // Alias helper for modules requesting specific symbols
     async getCryptoPrices(requestedSymbols = []) {
       const all = await this.getCryptoTickers(true);

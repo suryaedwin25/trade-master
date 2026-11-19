@@ -1,200 +1,238 @@
 /* C:\Users\surya\.gemini\antigravity\scratch\trademaster\src\js\contrarian.js */
-/* Contrarian Reversal, Harmonic PRZ Scanner & Asymmetric RRR (1:10+) Engine (Arist MD Style) */
+/* Contrarian Reversal, Harmonic PRZ Scanner (ALL 150+ Live Crypto Assets) & Asymmetric RRR (1:10+) Engine (Arist MD Style) */
 
 window.TradeMasterContrarian = (function() {
   'use strict';
 
-  const FALLBACK_PRICES = {
-    BTC: 91250,
-    ETH: 3180,
-    SOL: 218.5,
-    SUI: 3.42,
-    DOGE: 0.365,
-    PAXG: 2685
-  };
+  const MAJOR_SET = new Set(['BTC', 'ETH', 'SOL', 'BNB', 'XRP', 'ADA', 'AVAX', 'DOT', 'LINK', 'TRX', 'TON', 'SUI', 'LTC', 'BCH', 'PAXG', 'XAUT']);
+  const MEME_AI_SET = new Set(['DOGE', 'SHIB', 'PEPE', 'WIF', 'BONK', 'FLOKI', 'PENGU', 'TRUMP', 'FARTCOIN', 'POPCAT', 'NEIRO', 'FET', 'RENDER', 'TAO', 'WLD', 'NEAR', 'VIRTUAL', 'AI16Z']);
 
-  let currentSetups = [];
+  let allSetups = [];
+  let filteredSetups = [];
+  let currentFilter = 'ALL';
+  let currentSearch = '';
+  let displayLimit = 40;
+
   let calcState = {
     symbol: 'BTC',
     direction: 'LONG',
     capital: 10000,
     riskPercent: 1.0,
-    entry: 86450,
-    stopLoss: 84720,
+    entry: 60000,
+    stopLoss: 58800,
     rrrTarget: 10
   };
 
   function formatPrice(val) {
-    if (!isFinite(val)) return '0';
-    if (val >= 1000) return val.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+    if (!isFinite(val) || val <= 0) return '0';
+    if (val >= 1000) return val.toLocaleString('en-US', { maximumFractionDigits: 0 });
     if (val >= 10) return val.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    return val.toLocaleString('en-US', { minimumFractionDigits: 4, maximumFractionDigits: 4 });
+    if (val >= 0.1) return val.toLocaleString('en-US', { minimumFractionDigits: 4, maximumFractionDigits: 4 });
+    return val.toLocaleString('en-US', { minimumFractionDigits: 6, maximumFractionDigits: 7 });
   }
 
-  function buildHarmonicSetups(priceMap) {
-    const p = (sym) => (priceMap && priceMap[sym] ? priceMap[sym] : FALLBACK_PRICES[sym]);
-
-    const rawConfigs = [
-      {
-        symbol: 'BTC',
-        name: 'Bitcoin',
-        pattern: 'Bullish Bat (0.886 Fib)',
-        direction: 'LONG',
-        entryMult: 0.948,      // PRZ ~5.2% below spot (deep pullback fishing)
-        slMult: 0.930,         // Tight SL ~1.9% below PRZ
-        rrr: 10,
-        crowdState: 'Retail FOMO / Over-Leveraged Long',
-        contrarianAction: 'Sabar "Mancing" di PRZ 0.886 (Jangan Kejar Pucuk)',
-        confluence: 'D-Leg 0.886 XA + Liquidasi Long Cluster'
-      },
-      {
-        symbol: 'ETH',
-        name: 'Ethereum',
-        pattern: 'Bullish Gartley (0.786 Fib)',
-        direction: 'LONG',
-        entryMult: 0.955,
-        slMult: 0.936,
-        rrr: 12,
-        crowdState: 'Retail Apatis & Mulai Menyerah',
-        contrarianAction: 'Area Akumulasi Kontrarian (Umpan Kecil)',
-        confluence: 'PRZ 0.786 XA + 1.272 BC Extension'
-      },
-      {
-        symbol: 'SOL',
-        name: 'Solana',
-        pattern: 'Bearish Butterfly (1.272 Fib)',
-        direction: 'SHORT',
-        entryMult: 1.065,      // PRZ ~6.5% above spot (top reversal fishing)
-        slMult: 1.086,         // Tight SL ~2% above PRZ
-        rrr: 10,
-        crowdState: 'Euforia Ekstrem (Potensi Exit Liquidity)',
-        contrarianAction: 'Waspada Top Reversal — Siapkan Jaring Short di PRZ',
-        confluence: '1.272 XA Extension + Exhaustion Zone'
-      },
-      {
-        symbol: 'SUI',
-        name: 'Sui Network',
-        pattern: 'Bullish Deep Crab (1.618 Fib)',
-        direction: 'LONG',
-        entryMult: 0.925,
-        slMult: 0.905,
-        rrr: 12,
-        crowdState: 'Panic Dip / Shakeout Ritel',
-        contrarianAction: 'Zona Mancing Bottom Ekstrem (High Asymmetric)',
-        confluence: '1.618 XA Deep Extension + Demand Imbalance'
-      },
-      {
-        symbol: 'DOGE',
-        name: 'Dogecoin',
-        pattern: 'Bearish Crab (1.618 Fib)',
-        direction: 'SHORT',
-        entryMult: 1.085,
-        slMult: 1.110,
-        rrr: 10,
-        crowdState: 'Hype Media Sosial & FOMO Ritel',
-        contrarianAction: 'Anti-Konsensus: Tunggu Rejection di PRZ Atas',
-        confluence: '1.618 XA + Parabolic Exhaustion'
-      },
-      {
-        symbol: 'PAXG',
-        name: 'Gold (XAU)',
-        pattern: 'Bullish Cypher (0.786 XC)',
-        direction: 'LONG',
-        entryMult: 0.972,
-        slMult: 0.962,
-        rrr: 10,
-        crowdState: 'Koreksi Sehat / Profit Taking',
-        contrarianAction: 'Mancing Swing Jangka Menengah (Hold Multi-Minggu)',
-        confluence: '0.786 XC Reversal + Struktur Makro Naik'
-      }
-    ];
-
-    return rawConfigs.map(cfg => {
-      const live = p(cfg.symbol);
-      const entry = live * cfg.entryMult;
-      const sl = live * cfg.slMult;
-      const riskDist = Math.abs(entry - sl);
-      const tp = cfg.direction === 'LONG'
-        ? entry + (riskDist * cfg.rrr)
-        : Math.max(entry - (riskDist * cfg.rrr), entry * 0.15);
-      const distToPrzPct = ((entry - live) / live) * 100;
-      const slPct = (riskDist / entry) * 100;
-
-      return {
-        ...cfg,
-        live,
-        entry,
-        sl,
-        tp,
-        distToPrzPct,
-        slPct
-      };
-    });
+  function formatVol(volUsd) {
+    if (!volUsd || volUsd <= 0) return '-';
+    if (volUsd >= 1e9) return `$${(volUsd / 1e9).toFixed(2)}B`;
+    if (volUsd >= 1e6) return `$${(volUsd / 1e6).toFixed(1)}M`;
+    if (volUsd >= 1e3) return `$${(volUsd / 1e3).toFixed(0)}K`;
+    return `$${volUsd.toFixed(0)}`;
   }
 
-  async function fetchLivePrices() {
-    const map = { ...FALLBACK_PRICES };
-    try {
-      if (window.TradeMasterAPI && typeof window.TradeMasterAPI.getCryptoPrices === 'function') {
-        const res = await window.TradeMasterAPI.getCryptoPrices(['BTC', 'ETH', 'SOL', 'SUI', 'DOGE', 'PAXG']);
-        if (Array.isArray(res)) {
-          res.forEach(item => {
-            if (item && item.symbol && item.price > 0) {
-              map[item.symbol.toUpperCase()] = parseFloat(item.price);
-            }
-          });
-        }
-      }
-    } catch (e) {
-      console.warn('Contrarian live price fetch fallback used:', e);
+  // Dynamically compute Harmonic PRZ & Contrarian Crowd Signal from live 24h change & range
+  function buildDynamicSetup(ticker) {
+    const live = ticker.price;
+    const chg = ticker.change || 0;
+    const rangePct = ticker.high && ticker.low && live > 0
+      ? Math.max(0.025, Math.min(0.14, (ticker.high - ticker.low) / live))
+      : 0.045;
+
+    let direction = 'LONG';
+    let pattern = 'Bullish Gartley (0.786 Fib)';
+    let crowdState = 'Konsolidasi / Ritel Ragu';
+    let contrarianAction = 'Sabar Mancing di PRZ 0.786 (Umpan Kecil)';
+    let confluence = '0.786 XA + Demand Retest';
+    let entryMult = 1 - Math.max(0.032, rangePct * 0.75);
+    let slMult = entryMult * (1 - Math.max(0.018, rangePct * 0.35));
+    let rrr = 10;
+
+    if (chg >= 7.0) {
+      // Parabolic pump -> Contrarian SHORT Top Reversal
+      direction = 'SHORT';
+      pattern = 'Bearish Crab (1.618 Fib)';
+      crowdState = `🔥 FOMO Ekstrem (+${chg.toFixed(1)}%) — Potensi Exit Liquidity`;
+      contrarianAction = 'Anti-Konsensus: Tunggu Exhaustion / Short di PRZ Atas';
+      confluence = '1.618 XA Extension + Overbought Blow-off';
+      entryMult = 1 + Math.max(0.045, rangePct * 0.65);
+      slMult = entryMult * (1 + Math.max(0.022, rangePct * 0.32));
+      rrr = 10;
+    } else if (chg >= 3.0) {
+      // Strong green -> Bearish Butterfly watch
+      direction = 'SHORT';
+      pattern = 'Bearish Butterfly (1.272 Fib)';
+      crowdState = `Euforia Ritel (+${chg.toFixed(1)}%) — Jangan Kejar Pucuk`;
+      contrarianAction = 'Siapkan Jaring Top Reversal di PRZ 1.272';
+      confluence = '1.272 XA + Supply Rejection Zone';
+      entryMult = 1 + Math.max(0.04, rangePct * 0.7);
+      slMult = entryMult * (1 + Math.max(0.02, rangePct * 0.32));
+      rrr = 10;
+    } else if (chg <= -5.0) {
+      // Heavy dump / panic -> Deep Crab Bottom Fishing
+      direction = 'LONG';
+      pattern = 'Bullish Deep Crab (1.618 Fib)';
+      crowdState = `🩸 Panic Sell (${chg.toFixed(1)}%) — Kapitulasi Ritel`;
+      contrarianAction = 'ZONA MANCING BOTTOM EKSTREM (High Asymmetric 1:12)';
+      confluence = '1.618 Deep Extension + Likuidasi Long Sweep';
+      entryMult = 1 - Math.max(0.025, rangePct * 0.45);
+      slMult = entryMult * (1 - Math.max(0.02, rangePct * 0.32));
+      rrr = 12;
+    } else if (chg <= -1.5) {
+      // Pullback / Fear -> Bullish Bat 0.886
+      direction = 'LONG';
+      pattern = 'Bullish Bat (0.886 Fib)';
+      crowdState = `Ketakutan / Shakeout (${chg.toFixed(1)}%)`;
+      contrarianAction = 'Pasang Umpan Kecil di PRZ 0.886 (Bottom Fishing)';
+      confluence = 'D-Leg 0.886 XA + Stop Hunt Cluster';
+      entryMult = 1 - Math.max(0.03, rangePct * 0.6);
+      slMult = entryMult * (1 - Math.max(0.018, rangePct * 0.32));
+      rrr = 12;
     }
-    return map;
+
+    const entry = live * entryMult;
+    const sl = live * slMult;
+    const riskDist = Math.abs(entry - sl);
+    const tp = direction === 'LONG'
+      ? entry + (riskDist * rrr)
+      : Math.max(entry - (riskDist * rrr), entry * 0.15);
+    const distToPrzPct = ((entry - live) / live) * 100;
+    const slPct = (riskDist / entry) * 100;
+
+    return {
+      symbol: ticker.symbol,
+      live,
+      change: chg,
+      volumeUsd: ticker.volumeUsd || 0,
+      source: ticker.source || 'Live',
+      direction,
+      pattern,
+      crowdState,
+      contrarianAction,
+      confluence,
+      entry,
+      sl,
+      tp,
+      rrr,
+      distToPrzPct,
+      slPct,
+      isMajor: MAJOR_SET.has(ticker.symbol),
+      isMemeAi: MEME_AI_SET.has(ticker.symbol)
+    };
+  }
+
+  function applyFiltersAndRender() {
+    const q = currentSearch.trim().toUpperCase();
+    filteredSetups = allSetups.filter(s => {
+      if (q && !s.symbol.includes(q)) return false;
+      if (currentFilter === 'LONG') return s.direction === 'LONG';
+      if (currentFilter === 'SHORT') return s.direction === 'SHORT';
+      if (currentFilter === 'MAJOR') return s.isMajor;
+      if (currentFilter === 'MEME') return s.isMemeAi;
+      return true;
+    });
+
+    const countEl = document.getElementById('contrarian-asset-count');
+    if (countEl) {
+      countEl.textContent = `${filteredSetups.length} dari ${allSetups.length} Aset Live`;
+    }
+
+    renderScannerTable();
+  }
+
+  function setFilter(filterKey, btnEl) {
+    currentFilter = filterKey;
+    displayLimit = 40;
+    document.querySelectorAll('.contrarian-filter-btn').forEach(b => {
+      b.style.background = '#f1f5f9';
+      b.style.color = '#475569';
+      b.style.borderColor = '#e2e8f0';
+    });
+    if (btnEl) {
+      btnEl.style.background = 'var(--primary)';
+      btnEl.style.color = '#ffffff';
+      btnEl.style.borderColor = 'var(--primary)';
+    }
+    applyFiltersAndRender();
+  }
+
+  function setSearch(val) {
+    currentSearch = val || '';
+    displayLimit = 50;
+    applyFiltersAndRender();
+  }
+
+  function showMore() {
+    displayLimit += 50;
+    renderScannerTable();
   }
 
   function renderScannerTable() {
     const tbody = document.getElementById('contrarian-scanner-body');
     if (!tbody) return;
 
-    tbody.innerHTML = currentSetups.map((s, idx) => {
+    if (filteredSetups.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="7" style="padding: 24px; text-align: center; color: var(--text-muted);">Tidak ada aset yang cocok dengan pencarian "<b>${currentSearch}</b>".</td></tr>`;
+      return;
+    }
+
+    const visible = filteredSetups.slice(0, displayLimit);
+    let rowsHtml = visible.map((s) => {
+      const origIdx = allSetups.indexOf(s);
       const isLong = s.direction === 'LONG';
       const dirBadge = isLong
-        ? `<span style="background: #ecfdf5; color: #047857; border: 1px solid #6ee7b7; padding: 3px 8px; border-radius: 6px; font-size: 0.72rem; font-weight: 800;">🟢 LONG (Bottom)</span>`
-        : `<span style="background: #fef2f2; color: #b91c1c; border: 1px solid #fca5a5; padding: 3px 8px; border-radius: 6px; font-size: 0.72rem; font-weight: 800;">🔴 SHORT (Top)</span>`;
+        ? `<span style="background: #ecfdf5; color: #047857; border: 1px solid #6ee7b7; padding: 3px 8px; border-radius: 6px; font-size: 0.7rem; font-weight: 800;">🟢 LONG</span>`
+        : `<span style="background: #fef2f2; color: #b91c1c; border: 1px solid #fca5a5; padding: 3px 8px; border-radius: 6px; font-size: 0.7rem; font-weight: 800;">🔴 SHORT</span>`;
 
+      const chgColor = s.change >= 0 ? 'var(--success)' : 'var(--danger)';
+      const chgSign = s.change >= 0 ? '+' : '';
       const distColor = Math.abs(s.distToPrzPct) <= 4 ? '#059669' : '#b45309';
       const distSign = s.distToPrzPct > 0 ? '+' : '';
 
       return `
         <tr style="border-bottom: 1px solid var(--card-border);">
-          <td style="padding: 12px 14px;">
-            <div style="font-weight: 800; color: var(--text-main); font-size: 0.9rem;">${s.symbol} <span style="font-weight: 500; color: var(--text-muted); font-size: 0.75rem;">${s.name}</span></div>
-            <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 2px;">Live: <b style="color: var(--text-main);">$${formatPrice(s.live)}</b></div>
+          <td style="padding: 10px 12px;">
+            <div style="font-weight: 800; color: var(--text-main); font-size: 0.88rem; display: flex; align-items: center; gap: 6px;">
+              <span>${s.symbol}</span>
+              <span style="font-size: 0.7rem; font-weight: 700; color: ${chgColor};">${chgSign}${s.change.toFixed(2)}%</span>
+            </div>
+            <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 2px;">
+              Spot: <b style="color: var(--text-main);">$${formatPrice(s.live)}</b> • Vol: ${formatVol(s.volumeUsd)}
+            </div>
           </td>
-          <td style="padding: 12px 14px;">
-            <div style="font-weight: 700; color: var(--primary); font-size: 0.8rem;">${s.pattern}</div>
+          <td style="padding: 10px 12px;">
+            <div style="font-weight: 700; color: var(--primary); font-size: 0.78rem;">${s.pattern}</div>
             <div style="font-size: 0.68rem; color: var(--text-muted); margin-top: 2px;">${s.confluence}</div>
           </td>
-          <td style="padding: 12px 14px; text-align: center;">
+          <td style="padding: 10px 12px; text-align: center;">
             ${dirBadge}
           </td>
-          <td style="padding: 12px 14px; text-align: right; font-family: monospace;">
-            <div style="font-weight: 800; color: var(--text-main); font-size: 0.88rem;">$${formatPrice(s.entry)}</div>
+          <td style="padding: 10px 12px; text-align: right; font-family: monospace;">
+            <div style="font-weight: 800; color: var(--text-main); font-size: 0.85rem;">$${formatPrice(s.entry)}</div>
             <div style="font-size: 0.68rem; color: ${distColor}; font-weight: 600;">${distSign}${s.distToPrzPct.toFixed(1)}% dari spot</div>
           </td>
-          <td style="padding: 12px 14px; text-align: right; font-family: monospace;">
-            <div style="font-weight: 700; color: var(--danger); font-size: 0.82rem;">SL: $${formatPrice(s.sl)}</div>
+          <td style="padding: 10px 12px; text-align: right; font-family: monospace;">
+            <div style="font-weight: 700; color: var(--danger); font-size: 0.78rem;">SL: $${formatPrice(s.sl)}</div>
             <div style="font-size: 0.72rem; color: var(--success); font-weight: 700;">TP (1:${s.rrr}): $${formatPrice(s.tp)}</div>
           </td>
-          <td style="padding: 12px 14px;">
-            <div style="font-size: 0.74rem; font-weight: 700; color: #b45309;">${s.crowdState}</div>
+          <td style="padding: 10px 12px;">
+            <div style="font-size: 0.72rem; font-weight: 700; color: #b45309;">${s.crowdState}</div>
             <div style="font-size: 0.68rem; color: var(--text-muted); margin-top: 2px;">${s.contrarianAction}</div>
           </td>
-          <td style="padding: 12px 14px; text-align: center;">
-            <div style="display: flex; gap: 6px; justify-content: center; flex-wrap: wrap;">
-              <button type="button" onclick="TradeMasterContrarian.loadToCalculator(${idx})" style="padding: 5px 10px; font-size: 0.72rem; font-weight: 700; border-radius: 6px; background: #eef2ff; border: 1px solid var(--primary); color: var(--primary); cursor: pointer;">
-                📐 Hitung RRR
+          <td style="padding: 10px 12px; text-align: center;">
+            <div style="display: flex; gap: 5px; justify-content: center;">
+              <button type="button" onclick="TradeMasterContrarian.loadToCalculator(${origIdx})" style="padding: 5px 9px; font-size: 0.7rem; font-weight: 700; border-radius: 6px; background: #eef2ff; border: 1px solid var(--primary); color: var(--primary); cursor: pointer;">
+                📐 RRR
               </button>
-              <button type="button" onclick="TradeMasterContrarian.sendSetupToTelegram(${idx})" style="padding: 5px 8px; font-size: 0.72rem; font-weight: 700; border-radius: 6px; background: #f0f9ff; border: 1px solid #0284c7; color: #0369a1; cursor: pointer;" title="Kirim Setup PRZ ini ke Telegram">
+              <button type="button" onclick="TradeMasterContrarian.sendSetupToTelegram(${origIdx})" style="padding: 5px 8px; font-size: 0.7rem; font-weight: 700; border-radius: 6px; background: #f0f9ff; border: 1px solid #0284c7; color: #0369a1; cursor: pointer;" title="Kirim Setup ke Telegram">
                 ✈️
               </button>
             </div>
@@ -202,16 +240,31 @@ window.TradeMasterContrarian = (function() {
         </tr>
       `;
     }).join('');
+
+    if (filteredSetups.length > displayLimit) {
+      rowsHtml += `
+        <tr>
+          <td colspan="7" style="padding: 14px; text-align: center;">
+            <button type="button" onclick="TradeMasterContrarian.showMore()" style="padding: 8px 18px; border-radius: 8px; background: #f1f5f9; border: 1px solid #cbd5e1; color: var(--text-main); font-weight: 700; font-size: 0.78rem; cursor: pointer;">
+              ⬇️ Tampilkan Lebih Banyak (${filteredSetups.length - displayLimit} aset tersisa)
+            </button>
+          </td>
+        </tr>
+      `;
+    }
+
+    tbody.innerHTML = rowsHtml;
   }
 
   function loadToCalculator(index) {
-    const setup = currentSetups[index];
+    const setup = allSetups[index];
     if (!setup) return;
 
+    const dec = setup.entry >= 100 ? 0 : setup.entry >= 1 ? 3 : 6;
     calcState.symbol = setup.symbol;
     calcState.direction = setup.direction;
-    calcState.entry = Number(setup.entry.toFixed(setup.entry >= 100 ? 0 : 4));
-    calcState.stopLoss = Number(setup.sl.toFixed(setup.sl >= 100 ? 0 : 4));
+    calcState.entry = Number(setup.entry.toFixed(dec));
+    calcState.stopLoss = Number(setup.sl.toFixed(dec));
     calcState.rrrTarget = setup.rrr;
 
     syncCalculatorInputs();
@@ -240,7 +293,6 @@ window.TradeMasterContrarian = (function() {
     if (elSl) elSl.value = calcState.stopLoss;
     if (elTarget) elTarget.value = calcState.rrrTarget;
 
-    // Highlight active preset pill
     document.querySelectorAll('.rrr-preset-btn').forEach(btn => {
       const val = parseFloat(btn.getAttribute('data-rrr'));
       if (val === Number(calcState.rrrTarget)) {
@@ -307,17 +359,13 @@ window.TradeMasterContrarian = (function() {
 
     setTxt('res-risk-usd', `-$${riskUsd.toLocaleString('en-US', { maximumFractionDigits: 2 })}`);
     setTxt('res-risk-sub', `${riskPct}% modal | Jarak SL: ${slDistPct.toFixed(2)}%`);
-
     setTxt('res-reward-usd', `+$${rewardUsd.toLocaleString('en-US', { maximumFractionDigits: 2 })}`);
     setTxt('res-reward-sub', `+${rewardEquityPct.toFixed(1)}% pertumbuhan modal (1:${rrr})`);
-
     setTxt('res-tp-price', `$${formatPrice(tpPrice)}`);
-    setTxt('res-pos-size', `$${positionValueUsd.toLocaleString('en-US', { maximumFractionDigits: 0 })} (${units >= 1 ? units.toFixed(3) : units.toFixed(5)} ${calcState.symbol})`);
-
+    setTxt('res-pos-size', `$${positionValueUsd.toLocaleString('en-US', { maximumFractionDigits: 0 })} (${units >= 1 ? units.toFixed(2) : units.toFixed(5)} ${calcState.symbol})`);
     setTxt('res-bep-wr', `${breakevenWinRate}%`);
     setTxt('res-bep-note', `Cukup 1x profit untuk menutup ${maxConsecutiveLossesCovered}x stop loss beruntun!`);
 
-    // Update visual Risk vs Reward bar
     const riskBar = document.getElementById('rrr-bar-risk');
     const rewardBar = document.getElementById('rrr-bar-reward');
     if (riskBar && rewardBar) {
@@ -330,7 +378,7 @@ window.TradeMasterContrarian = (function() {
   }
 
   async function sendSetupToTelegram(index) {
-    const s = currentSetups[index];
+    const s = allSetups[index];
     if (!s) return;
 
     let cfg = null;
@@ -340,24 +388,23 @@ window.TradeMasterContrarian = (function() {
     } catch (e) {}
 
     if (!cfg || !cfg.botToken || !cfg.chatId) {
-      alert('Bot Telegram belum dikonfigurasi. Silakan buka menu Telegram Alerts di sidebar kiri untuk menghubungkan bot Anda terlebih dahulu.');
+      alert('Bot Telegram belum dikonfigurasi. Silakan buka menu Telegram Alerts di sidebar kiri terlebih dahulu.');
       if (typeof window.navigateTo === 'function') window.navigateTo('telegram');
       return;
     }
 
     const msg = `🎯 <b>CONTRARIAN HARMONIC PRZ SETUP (ALA ARIST MD)</b>\n` +
       `----------------------------------------\n` +
-      `💎 <b>Aset:</b> ${s.symbol} (${s.name})\n` +
+      `💎 <b>Aset:</b> ${s.symbol}/USDT\n` +
       `📐 <b>Pola:</b> ${s.pattern}\n` +
       `⚡ <b>Arah:</b> ${s.direction === 'LONG' ? '🟢 LONG (Bottom Fishing)' : '🔴 SHORT (Top Reversal)'}\n` +
-      `💵 <b>Harga Live:</b> $${formatPrice(s.live)}\n` +
+      `💵 <b>Harga Live:</b> $${formatPrice(s.live)} (${s.change >= 0 ? '+' : ''}${s.change.toFixed(2)}%)\n` +
       `🎯 <b>Zona PRZ (Entry):</b> $${formatPrice(s.entry)}\n` +
       `🛑 <b>Stop Loss Ketat:</b> $${formatPrice(s.sl)} (${s.slPct.toFixed(2)}%)\n` +
       `🏆 <b>Target TP (RRR 1:${s.rrr}):</b> $${formatPrice(s.tp)}\n` +
       `🧠 <b>Psikologi Crowd:</b> ${s.crowdState}\n` +
-      `📝 <b>Aksi Kontrarian:</b> ${s.contrarianAction}\n` +
       `----------------------------------------\n` +
-      `<i>Filosofi Mancing: Umpan kecil (risk ketat), target asimetris 1:${s.rrr}.</i>`;
+      `<i>Filosofi Mancing: Umpan kecil, target asimetris 1:${s.rrr}.</i>`;
 
     try {
       const res = await window.TradeMasterAPI.sendTelegramMessage(cfg.botToken, cfg.chatId, msg);
@@ -370,18 +417,27 @@ window.TradeMasterContrarian = (function() {
   }
 
   async function refresh() {
-    const prices = await fetchLivePrices();
-    currentSetups = buildHarmonicSetups(prices);
-    renderScannerTable();
+    let tickers = [];
+    try {
+      if (window.TradeMasterAPI && typeof window.TradeMasterAPI.getAllCryptoTickers === 'function') {
+        tickers = await window.TradeMasterAPI.getAllCryptoTickers(150);
+      } else if (window.TradeMasterAPI && typeof window.TradeMasterAPI.getCryptoTickers === 'function') {
+        tickers = await window.TradeMasterAPI.getCryptoTickers(true);
+      }
+    } catch (e) {}
 
-    // Initialize calculator with first setup (BTC) if not yet customized
-    if (currentSetups.length > 0) {
-      const btc = currentSetups[0];
-      calcState.symbol = btc.symbol;
-      calcState.direction = btc.direction;
-      calcState.entry = Number(btc.entry.toFixed(0));
-      calcState.stopLoss = Number(btc.sl.toFixed(0));
-      calcState.rrrTarget = btc.rrr;
+    allSetups = (tickers || []).map(buildDynamicSetup);
+    applyFiltersAndRender();
+
+    // Initialize calculator with BTC (or first asset)
+    const btcIdx = allSetups.findIndex(s => s.symbol === 'BTC');
+    const first = allSetups[btcIdx >= 0 ? btcIdx : 0];
+    if (first) {
+      calcState.symbol = first.symbol;
+      calcState.direction = first.direction;
+      calcState.entry = Number(first.entry.toFixed(first.entry >= 100 ? 0 : 4));
+      calcState.stopLoss = Number(first.sl.toFixed(first.sl >= 100 ? 0 : 4));
+      calcState.rrrTarget = first.rrr;
       syncCalculatorInputs();
       calculateRRR();
     }
@@ -389,6 +445,9 @@ window.TradeMasterContrarian = (function() {
 
   return {
     refresh,
+    setFilter,
+    setSearch,
+    showMore,
     loadToCalculator,
     setRRRPreset,
     calculateRRR,
